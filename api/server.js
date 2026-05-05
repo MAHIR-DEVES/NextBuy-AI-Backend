@@ -50,7 +50,7 @@ var notFound = (req, res) => {
 import cors from "cors";
 
 // src/app/routes/index.ts
-import { Router as Router3 } from "express";
+import { Router as Router5 } from "express";
 
 // src/app/modules/user/user.route.ts
 import { Router } from "express";
@@ -694,11 +694,353 @@ router2.delete(
 );
 var ProductRoutes = router2;
 
-// src/app/routes/index.ts
+// src/app/modules/orders/order.route.ts
+import { Router as Router3 } from "express";
+
+// src/app/modules/orders/order.service.ts
+var createBuyNowOrder = async (userId, productId, quantity) => {
+  try {
+    const product = await prisma.product.findUnique({
+      where: { id: productId }
+    });
+    if (!product) {
+      throw new Error("Product not found");
+    }
+    const total = product.price * quantity;
+    const order = await prisma.order.create({
+      data: {
+        userId,
+        total,
+        items: {
+          create: [
+            {
+              productId: product.id,
+              name: product.name,
+              price: product.price,
+              quantity
+            }
+          ]
+        }
+      },
+      include: {
+        items: true,
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            phone: true,
+            avatar: true
+          }
+        }
+      }
+    });
+    return order;
+  } catch (error) {
+    throw new Error("Failed to create buy now order");
+  }
+};
+var checkoutCart = async (userId) => {
+  try {
+    const cartItems = await prisma.cart.findMany({
+      where: { userId },
+      include: { product: true }
+    });
+    if (cartItems.length === 0) {
+      throw new Error("Cart is empty");
+    }
+    const invalidItem = cartItems.find((item) => item.userId !== userId);
+    if (invalidItem) {
+      throw new Error("Unauthorized: Cart user mismatch");
+    }
+    const total = cartItems.reduce((sum, item) => {
+      return sum + item.product.price * item.quantity;
+    }, 0);
+    const order = await prisma.order.create({
+      data: {
+        userId,
+        total,
+        items: {
+          create: cartItems.map((item) => ({
+            productId: item.product.id,
+            name: item.product.name,
+            price: item.product.price,
+            quantity: item.quantity
+          }))
+        }
+      },
+      include: {
+        items: true
+      }
+    });
+    await prisma.cart.deleteMany({
+      where: { userId }
+    });
+    return order;
+  } catch (error) {
+    console.error(error);
+    throw new Error(error.message || "Failed to checkout cart");
+  }
+};
+var getUserOrders = async (userId) => {
+  try {
+    return prisma.order.findMany({
+      where: { userId },
+      include: {
+        items: true
+      },
+      orderBy: {
+        createdAt: "desc"
+      }
+    });
+  } catch (error) {
+    throw new Error("Failed to get user orders");
+  }
+};
+var getAllOrders = async () => {
+  try {
+    return prisma.order.findMany({
+      include: {
+        items: true,
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            phone: true,
+            avatar: true
+          }
+        }
+      },
+      orderBy: {
+        createdAt: "desc"
+      }
+    });
+  } catch (error) {
+    throw new Error("Failed to get all orders");
+  }
+};
+var OrderService = {
+  createBuyNowOrder,
+  checkoutCart,
+  getUserOrders,
+  getAllOrders
+};
+
+// src/app/modules/orders/order.controller.ts
+var buyNow = catchAsync(async (req, res) => {
+  const userId = req.user.id;
+  const { productId, quantity } = req.body;
+  const result = await OrderService.createBuyNowOrder(
+    userId,
+    productId,
+    quantity || 1
+  );
+  sendResponse(res, {
+    httpStatusCode: 201,
+    success: true,
+    message: "Order placed successfully (Buy Now)",
+    data: result
+  });
+});
+var checkout = catchAsync(async (req, res) => {
+  const userId = req.user.id;
+  const result = await OrderService.checkoutCart(userId);
+  sendResponse(res, {
+    httpStatusCode: 201,
+    success: true,
+    message: "Order placed successfully from cart",
+    data: result
+  });
+});
+var getOrders = catchAsync(async (req, res) => {
+  const userId = req.user.id;
+  const result = await OrderService.getUserOrders(userId);
+  sendResponse(res, {
+    httpStatusCode: 200,
+    success: true,
+    message: "Orders fetched successfully",
+    data: result
+  });
+});
+var getAllOrders2 = catchAsync(async (req, res) => {
+  const result = await OrderService.getAllOrders();
+  sendResponse(res, {
+    httpStatusCode: 200,
+    success: true,
+    message: "Orders fetched successfully",
+    data: result
+  });
+});
+var OrderController = {
+  buyNow,
+  checkout,
+  getOrders,
+  getAllOrders: getAllOrders2
+};
+
+// src/app/modules/orders/order.route.ts
 var router3 = Router3();
-router3.use("/users", UserRoute);
-router3.use("/products", ProductRoutes);
-var routes_default = router3;
+router3.post(
+  "/buy-now",
+  auth(Role.CUSTOMER, Role.ADMIN),
+  OrderController.buyNow
+);
+router3.post(
+  "/checkout",
+  auth(Role.CUSTOMER, Role.ADMIN),
+  OrderController.checkout
+);
+router3.get("/", auth(Role.CUSTOMER, Role.ADMIN), OrderController.getOrders);
+router3.get("/all", auth(Role.ADMIN), OrderController.getAllOrders);
+var OrderRoutes = router3;
+
+// src/app/modules/cart/cart.route.ts
+import { Router as Router4 } from "express";
+
+// src/app/modules/cart/cart.service.ts
+var addToCart = async (userId, productId, quantity) => {
+  const product = await prisma.product.findUnique({
+    where: { id: productId }
+  });
+  if (!product) {
+    throw new Error("Product not found");
+  }
+  const existingCart = await prisma.cart.findFirst({
+    where: { userId, productId }
+  });
+  if (existingCart) {
+    return await prisma.cart.update({
+      where: { id: existingCart.id },
+      data: {
+        quantity: existingCart.quantity + quantity
+      }
+    });
+  }
+  return await prisma.cart.create({
+    data: {
+      userId,
+      productId,
+      quantity
+    }
+  });
+};
+var getMyCart = async (userId) => {
+  return await prisma.cart.findMany({
+    where: { userId },
+    include: {
+      product: true
+    }
+  });
+};
+var updateCartItem = async (cartId, quantity) => {
+  if (quantity <= 0) {
+    throw new Error("Quantity must be greater than 0");
+  }
+  return await prisma.cart.update({
+    where: { id: cartId },
+    data: { quantity }
+  });
+};
+var deleteCartItem = async (cartId) => {
+  return await prisma.cart.delete({
+    where: { id: cartId }
+  });
+};
+var clearCart = async (userId) => {
+  return await prisma.cart.deleteMany({
+    where: { userId }
+  });
+};
+var CartService = {
+  addToCart,
+  getMyCart,
+  updateCartItem,
+  deleteCartItem,
+  clearCart
+};
+
+// src/app/modules/cart/cart.controller.ts
+var addToCart2 = catchAsync(async (req, res) => {
+  const userId = req.user?.id;
+  const { productId, quantity } = req.body;
+  const result = await CartService.addToCart(
+    userId,
+    productId,
+    quantity
+  );
+  sendResponse(res, {
+    httpStatusCode: 200,
+    success: true,
+    message: "Added to cart",
+    data: result
+  });
+});
+var getMyCart2 = catchAsync(async (req, res) => {
+  const userId = req.user?.id;
+  const result = await CartService.getMyCart(userId);
+  sendResponse(res, {
+    httpStatusCode: 200,
+    success: true,
+    message: "Cart fetched successfully",
+    data: result
+  });
+});
+var updateCartItem2 = catchAsync(async (req, res) => {
+  const { id } = req.params;
+  const { quantity } = req.body;
+  const result = await CartService.updateCartItem(id, quantity);
+  sendResponse(res, {
+    httpStatusCode: 200,
+    success: true,
+    message: "Cart updated successfully",
+    data: result
+  });
+});
+var deleteCartItem2 = catchAsync(async (req, res) => {
+  const { id } = req.params;
+  const result = await CartService.deleteCartItem(id);
+  sendResponse(res, {
+    httpStatusCode: 200,
+    success: true,
+    message: "Cart item deleted",
+    data: result
+  });
+});
+var clearCart2 = catchAsync(async (req, res) => {
+  const userId = req.user?.id;
+  const result = await CartService.clearCart(userId);
+  sendResponse(res, {
+    httpStatusCode: 200,
+    success: true,
+    message: "Cart cleared",
+    data: result
+  });
+});
+var CartController = {
+  addToCart: addToCart2,
+  getMyCart: getMyCart2,
+  updateCartItem: updateCartItem2,
+  deleteCartItem: deleteCartItem2,
+  clearCart: clearCart2
+};
+
+// src/app/modules/cart/cart.route.ts
+var router4 = Router4();
+router4.post("/", auth(Role.CUSTOMER), CartController.addToCart);
+router4.get("/", auth(Role.CUSTOMER), CartController.getMyCart);
+router4.patch("/:id", auth(Role.CUSTOMER), CartController.updateCartItem);
+router4.delete("/:id", auth(Role.CUSTOMER), CartController.deleteCartItem);
+router4.delete("/clear/all", auth(Role.CUSTOMER), CartController.clearCart);
+var CartRoute = router4;
+
+// src/app/routes/index.ts
+var router5 = Router5();
+router5.use("/users", UserRoute);
+router5.use("/products", ProductRoutes);
+router5.use("/orders", OrderRoutes);
+router5.use("/cart", CartRoute);
+var routes_default = router5;
 
 // src/app/modules/payment/payment.webhook.ts
 import Stripe from "stripe";
