@@ -1,0 +1,13 @@
+enum Role {
+  CUSTOMER
+  ADMIN
+  SELLER
+}
+
+enum STATUS {
+  ACTIVE
+  INACTIVE
+  BLOCKED
+}
+
+
