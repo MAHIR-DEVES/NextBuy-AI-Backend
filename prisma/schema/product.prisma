@@ -1,0 +1,30 @@
+model Product {
+  id            String      @id @default(uuid())
+  name          String
+  slug          String      @unique
+  description   String?
+
+  price         Float
+  discount      Float?
+  stock         Int         @default(0)
+
+  thumbnail     String
+  images        String[]
+
+  brand         String?
+  category      String?
+
+  rating        Float       @default(0)
+  reviewCount   Int         @default(0)
+
+  isFeatured    Boolean     @default(false)
+  isPublished   Boolean     @default(true)
+
+  // Relations
+  orderItems    OrderItem[]
+  carts         Cart[]
+  wishlist      Wishlist[]
+
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+}

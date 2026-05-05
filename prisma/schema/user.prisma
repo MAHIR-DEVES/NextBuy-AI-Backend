@@ -1,31 +1,27 @@
 model User {
-  id        String   @id @default(uuid())
-  name      String
-  email     String   @unique
-  password  String
-  phone     String?  @unique
-  avatar    String?
+  id            String    @id @default(uuid())
+  name          String
+  email         String    @unique
+  password      String
+  phone         String?   @unique
+  avatar        String?
 
-  role      Role     @default(CUSTOMER)
+  role          Role      @default(CUSTOMER)
+  status        STATUS    @default(ACTIVE)
 
-  // Status
-  status    STATUS   @default(ACTIVE)
+  address       String?
+  city          String?
+  country       String?
 
-  // Address (optional but important for ecommerce)
-  address   String?
-  city      String?
-  country   String?
+  lastLogin     DateTime?
+  emailVerified Boolean   @default(false)
+  provider      String?   // google, email
 
-  // Auth tracking
-  lastLogin DateTime?
-  emailVerified Boolean @default(false)
-  provider String? // google, email
+  // Relations
+  orders        Order[]
+  carts         Cart[]
+  wishlist      Wishlist[]
 
-  // Relations (future use)
-  orders    Order[]
-  carts     Cart[]
-  wishlist Wishlist[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
 }
