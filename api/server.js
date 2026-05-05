@@ -1,5 +1,5 @@
 // src/app.ts
-import express10 from "express";
+import express from "express";
 
 // src/app/config/env.ts
 import dotenv from "dotenv";
@@ -70,7 +70,7 @@ var config = {
   "clientVersion": "7.4.2",
   "engineVersion": "94a226be1cf2967af2541cca5529f0f7ba866919",
   "activeProvider": "postgresql",
-  "inlineSchema": 'model Attendance {\n  id           String    @id @default(uuid())\n  employeeName String\n  employeeId   String\n  designation  String\n  checkIn      DateTime\n  checkOut     DateTime?\n  createdAt    DateTime  @default(now())\n  updatedAt    DateTime  @updatedAt\n}\n\nmodel Blog {\n  id          String   @id @default(uuid())\n  title       String\n  description String\n  imageUrl    String?\n  createdAt   DateTime @default(now())\n  updatedAt   DateTime @updatedAt\n}\n\nmodel Course {\n  id          String       @id @default(uuid())\n  imageUrl    String\n  title       String\n  category    String\n  instructor  String\n  duration    String\n  price       Float\n  status      CourseStatus @default(DRAFT)\n  description String\n  createdAt   DateTime     @default(now())\n  updatedAt   DateTime     @updatedAt\n}\n\n// Role enum: employee permission control\nenum Role {\n  ADMIN\n  MANAGER\n  EMPLOY\n}\n\n// Role enum: employee permission control\nenum STATUS {\n  ACTIVE\n  BLOCK\n}\n\n// Designation enum: employee position\nenum Designation {\n  GRAPHICS_DESIGNER\n  VIDEO_EDITOR\n  WEB_DEVELOPER\n  CINEMATOGRAPHER\n  CONTENT_WRITER\n  VOICE_ARTIST\n  DIGITAL_MARKETER\n}\n\nenum CourseStatus {\n  DRAFT\n  PUBLISHED\n  ARCHIVED\n}\n\nmodel Hero {\n  id          String   @id @default(uuid())\n  title       String\n  description String\n  imageUrl    String\n  createdAt   DateTime @default(now())\n  updatedAt   DateTime @updatedAt\n}\n\nmodel Lead {\n  id        String   @id @default(uuid())\n  name      String\n  email     String\n  phone     String?\n  from      String\n  company   String?\n  isViewed  Boolean  @default(false)\n  date      DateTime\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n}\n\nmodel Payment {\n  id              String   @id @default(uuid())\n  userId          String\n  courseId        String\n  amount          Int\n  currency        String   @default("bdt")\n  status          String\n  stripeSessionId String\n  createdAt       DateTime @default(now())\n}\n\nmodel Portfolio {\n  id          String   @id @default(uuid())\n  title       String\n  category    String\n  description String\n  imageUrl    String?\n  videoUrl    String?\n  createdAt   DateTime @default(now())\n  updatedAt   DateTime @updatedAt\n}\n\n// This is your Prisma schema file,\n// learn more about it in the docs: https://pris.ly/d/prisma-schema\n\n// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?\n// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init\n\ngenerator client {\n  provider = "prisma-client"\n  output   = "../../src/generated/prisma"\n}\n\ndatasource db {\n  provider = "postgresql"\n}\n\n// Employee/User model\nmodel User {\n  id          String       @id @default(uuid())\n  employeeId  String       @unique\n  name        String\n  email       String       @unique\n  password    String\n  phone       String?\n  photoUrl    String?\n  role        Role         @default(EMPLOY)\n  designation Designation?\n\n  // Optional job info\n  skills     String? // comma separated or JSON string\n  experience Int? // years of experience\n  department String? // e.g., "Design", "Development"\n  salary     Float?\n\n  // Tracking fields\n  status      STATUS    @default(ACTIVE) // ACTIVE, INACTIVE, ON_LEAVE\n  joiningDate DateTime  @default(now())\n  createdAt   DateTime  @default(now())\n  updatedAt   DateTime  @updatedAt\n  lastLogin   DateTime? // track employee last login\n}\n',
+  "inlineSchema": 'model Cart {\n  id String @id @default(uuid())\n\n  userId String\n  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)\n\n  productId String\n  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)\n\n  quantity Int @default(1)\n\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n\n  @@unique([userId, productId]) // same product duplicate \u09A8\u09BE \u09B9\u09DF\n}\n\nenum Role {\n  CUSTOMER\n  ADMIN\n  SELLER\n}\n\nenum STATUS {\n  ACTIVE\n  INACTIVE\n  BLOCKED\n}\n\nenum OrderStatus {\n  PENDING\n  CONFIRMED\n  SHIPPED\n  DELIVERED\n  CANCELLED\n}\n\nmodel Order {\n  id String @id @default(uuid())\n\n  userId String\n  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)\n\n  total  Float\n  status OrderStatus @default(PENDING)\n\n  items OrderItem[]\n\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n}\n\nmodel OrderItem {\n  id String @id @default(uuid())\n\n  orderId String\n  order   Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)\n\n  productId String\n  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)\n\n  name     String // snapshot\n  price    Float // snapshot\n  quantity Int\n\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n}\n\nmodel Product {\n  id          String  @id @default(uuid())\n  name        String\n  slug        String  @unique\n  description String?\n\n  price    Float\n  discount Float?\n  stock    Int    @default(0)\n\n  thumbnail String\n  images    String[]\n\n  brand    String?\n  category String?\n\n  rating      Float @default(0)\n  reviewCount Int   @default(0)\n\n  isFeatured  Boolean @default(false)\n  isPublished Boolean @default(true)\n\n  // Relations\n  orderItems OrderItem[]\n  carts      Cart[]\n  wishlist   Wishlist[]\n\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n}\n\n// This is your Prisma schema file,\n// learn more about it in the docs: https://pris.ly/d/prisma-schema\n\n// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?\n// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init\n\ngenerator client {\n  provider = "prisma-client"\n  output   = "../../src/generated/prisma"\n}\n\ndatasource db {\n  provider = "postgresql"\n}\n\nmodel User {\n  id       String  @id @default(uuid())\n  name     String\n  email    String  @unique\n  password String\n  phone    String? @unique\n  avatar   String?\n\n  role   Role   @default(CUSTOMER)\n  status STATUS @default(ACTIVE)\n\n  address String?\n  city    String?\n  country String?\n\n  lastLogin     DateTime?\n  emailVerified Boolean   @default(false)\n  provider      String? // google, email\n\n  // Relations\n  orders   Order[]\n  carts    Cart[]\n  wishlist Wishlist[]\n\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n}\n\nmodel Wishlist {\n  id String @id @default(uuid())\n\n  userId String\n  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)\n\n  productId String\n  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)\n\n  createdAt DateTime @default(now())\n\n  @@unique([userId, productId]) // duplicate wishlist prevent\n}\n',
   "runtimeDataModel": {
     "models": {},
     "enums": {},
@@ -81,10 +81,10 @@ var config = {
     "graph": ""
   }
 };
-config.runtimeDataModel = JSON.parse('{"models":{"Attendance":{"fields":[{"name":"id","kind":"scalar","type":"String"},{"name":"employeeName","kind":"scalar","type":"String"},{"name":"employeeId","kind":"scalar","type":"String"},{"name":"designation","kind":"scalar","type":"String"},{"name":"checkIn","kind":"scalar","type":"DateTime"},{"name":"checkOut","kind":"scalar","type":"DateTime"},{"name":"createdAt","kind":"scalar","type":"DateTime"},{"name":"updatedAt","kind":"scalar","type":"DateTime"}],"dbName":null},"Blog":{"fields":[{"name":"id","kind":"scalar","type":"String"},{"name":"title","kind":"scalar","type":"String"},{"name":"description","kind":"scalar","type":"String"},{"name":"imageUrl","kind":"scalar","type":"String"},{"name":"createdAt","kind":"scalar","type":"DateTime"},{"name":"updatedAt","kind":"scalar","type":"DateTime"}],"dbName":null},"Course":{"fields":[{"name":"id","kind":"scalar","type":"String"},{"name":"imageUrl","kind":"scalar","type":"String"},{"name":"title","kind":"scalar","type":"String"},{"name":"category","kind":"scalar","type":"String"},{"name":"instructor","kind":"scalar","type":"String"},{"name":"duration","kind":"scalar","type":"String"},{"name":"price","kind":"scalar","type":"Float"},{"name":"status","kind":"enum","type":"CourseStatus"},{"name":"description","kind":"scalar","type":"String"},{"name":"createdAt","kind":"scalar","type":"DateTime"},{"name":"updatedAt","kind":"scalar","type":"DateTime"}],"dbName":null},"Hero":{"fields":[{"name":"id","kind":"scalar","type":"String"},{"name":"title","kind":"scalar","type":"String"},{"name":"description","kind":"scalar","type":"String"},{"name":"imageUrl","kind":"scalar","type":"String"},{"name":"createdAt","kind":"scalar","type":"DateTime"},{"name":"updatedAt","kind":"scalar","type":"DateTime"}],"dbName":null},"Lead":{"fields":[{"name":"id","kind":"scalar","type":"String"},{"name":"name","kind":"scalar","type":"String"},{"name":"email","kind":"scalar","type":"String"},{"name":"phone","kind":"scalar","type":"String"},{"name":"from","kind":"scalar","type":"String"},{"name":"company","kind":"scalar","type":"String"},{"name":"isViewed","kind":"scalar","type":"Boolean"},{"name":"date","kind":"scalar","type":"DateTime"},{"name":"createdAt","kind":"scalar","type":"DateTime"},{"name":"updatedAt","kind":"scalar","type":"DateTime"}],"dbName":null},"Payment":{"fields":[{"name":"id","kind":"scalar","type":"String"},{"name":"userId","kind":"scalar","type":"String"},{"name":"courseId","kind":"scalar","type":"String"},{"name":"amount","kind":"scalar","type":"Int"},{"name":"currency","kind":"scalar","type":"String"},{"name":"status","kind":"scalar","type":"String"},{"name":"stripeSessionId","kind":"scalar","type":"String"},{"name":"createdAt","kind":"scalar","type":"DateTime"}],"dbName":null},"Portfolio":{"fields":[{"name":"id","kind":"scalar","type":"String"},{"name":"title","kind":"scalar","type":"String"},{"name":"category","kind":"scalar","type":"String"},{"name":"description","kind":"scalar","type":"String"},{"name":"imageUrl","kind":"scalar","type":"String"},{"name":"videoUrl","kind":"scalar","type":"String"},{"name":"createdAt","kind":"scalar","type":"DateTime"},{"name":"updatedAt","kind":"scalar","type":"DateTime"}],"dbName":null},"User":{"fields":[{"name":"id","kind":"scalar","type":"String"},{"name":"employeeId","kind":"scalar","type":"String"},{"name":"name","kind":"scalar","type":"String"},{"name":"email","kind":"scalar","type":"String"},{"name":"password","kind":"scalar","type":"String"},{"name":"phone","kind":"scalar","type":"String"},{"name":"photoUrl","kind":"scalar","type":"String"},{"name":"role","kind":"enum","type":"Role"},{"name":"designation","kind":"enum","type":"Designation"},{"name":"skills","kind":"scalar","type":"String"},{"name":"experience","kind":"scalar","type":"Int"},{"name":"department","kind":"scalar","type":"String"},{"name":"salary","kind":"scalar","type":"Float"},{"name":"status","kind":"enum","type":"STATUS"},{"name":"joiningDate","kind":"scalar","type":"DateTime"},{"name":"createdAt","kind":"scalar","type":"DateTime"},{"name":"updatedAt","kind":"scalar","type":"DateTime"},{"name":"lastLogin","kind":"scalar","type":"DateTime"}],"dbName":null}},"enums":{},"types":{}}');
+config.runtimeDataModel = JSON.parse('{"models":{"Cart":{"fields":[{"name":"id","kind":"scalar","type":"String"},{"name":"userId","kind":"scalar","type":"String"},{"name":"user","kind":"object","type":"User","relationName":"CartToUser"},{"name":"productId","kind":"scalar","type":"String"},{"name":"product","kind":"object","type":"Product","relationName":"CartToProduct"},{"name":"quantity","kind":"scalar","type":"Int"},{"name":"createdAt","kind":"scalar","type":"DateTime"},{"name":"updatedAt","kind":"scalar","type":"DateTime"}],"dbName":null},"Order":{"fields":[{"name":"id","kind":"scalar","type":"String"},{"name":"userId","kind":"scalar","type":"String"},{"name":"user","kind":"object","type":"User","relationName":"OrderToUser"},{"name":"total","kind":"scalar","type":"Float"},{"name":"status","kind":"enum","type":"OrderStatus"},{"name":"items","kind":"object","type":"OrderItem","relationName":"OrderToOrderItem"},{"name":"createdAt","kind":"scalar","type":"DateTime"},{"name":"updatedAt","kind":"scalar","type":"DateTime"}],"dbName":null},"OrderItem":{"fields":[{"name":"id","kind":"scalar","type":"String"},{"name":"orderId","kind":"scalar","type":"String"},{"name":"order","kind":"object","type":"Order","relationName":"OrderToOrderItem"},{"name":"productId","kind":"scalar","type":"String"},{"name":"product","kind":"object","type":"Product","relationName":"OrderItemToProduct"},{"name":"name","kind":"scalar","type":"String"},{"name":"price","kind":"scalar","type":"Float"},{"name":"quantity","kind":"scalar","type":"Int"},{"name":"createdAt","kind":"scalar","type":"DateTime"},{"name":"updatedAt","kind":"scalar","type":"DateTime"}],"dbName":null},"Product":{"fields":[{"name":"id","kind":"scalar","type":"String"},{"name":"name","kind":"scalar","type":"String"},{"name":"slug","kind":"scalar","type":"String"},{"name":"description","kind":"scalar","type":"String"},{"name":"price","kind":"scalar","type":"Float"},{"name":"discount","kind":"scalar","type":"Float"},{"name":"stock","kind":"scalar","type":"Int"},{"name":"thumbnail","kind":"scalar","type":"String"},{"name":"images","kind":"scalar","type":"String"},{"name":"brand","kind":"scalar","type":"String"},{"name":"category","kind":"scalar","type":"String"},{"name":"rating","kind":"scalar","type":"Float"},{"name":"reviewCount","kind":"scalar","type":"Int"},{"name":"isFeatured","kind":"scalar","type":"Boolean"},{"name":"isPublished","kind":"scalar","type":"Boolean"},{"name":"orderItems","kind":"object","type":"OrderItem","relationName":"OrderItemToProduct"},{"name":"carts","kind":"object","type":"Cart","relationName":"CartToProduct"},{"name":"wishlist","kind":"object","type":"Wishlist","relationName":"ProductToWishlist"},{"name":"createdAt","kind":"scalar","type":"DateTime"},{"name":"updatedAt","kind":"scalar","type":"DateTime"}],"dbName":null},"User":{"fields":[{"name":"id","kind":"scalar","type":"String"},{"name":"name","kind":"scalar","type":"String"},{"name":"email","kind":"scalar","type":"String"},{"name":"password","kind":"scalar","type":"String"},{"name":"phone","kind":"scalar","type":"String"},{"name":"avatar","kind":"scalar","type":"String"},{"name":"role","kind":"enum","type":"Role"},{"name":"status","kind":"enum","type":"STATUS"},{"name":"address","kind":"scalar","type":"String"},{"name":"city","kind":"scalar","type":"String"},{"name":"country","kind":"scalar","type":"String"},{"name":"lastLogin","kind":"scalar","type":"DateTime"},{"name":"emailVerified","kind":"scalar","type":"Boolean"},{"name":"provider","kind":"scalar","type":"String"},{"name":"orders","kind":"object","type":"Order","relationName":"OrderToUser"},{"name":"carts","kind":"object","type":"Cart","relationName":"CartToUser"},{"name":"wishlist","kind":"object","type":"Wishlist","relationName":"UserToWishlist"},{"name":"createdAt","kind":"scalar","type":"DateTime"},{"name":"updatedAt","kind":"scalar","type":"DateTime"}],"dbName":null},"Wishlist":{"fields":[{"name":"id","kind":"scalar","type":"String"},{"name":"userId","kind":"scalar","type":"String"},{"name":"user","kind":"object","type":"User","relationName":"UserToWishlist"},{"name":"productId","kind":"scalar","type":"String"},{"name":"product","kind":"object","type":"Product","relationName":"ProductToWishlist"},{"name":"createdAt","kind":"scalar","type":"DateTime"}],"dbName":null}},"enums":{},"types":{}}');
 config.parameterizationSchema = {
-  strings: JSON.parse('["where","Attendance.findUnique","Attendance.findUniqueOrThrow","orderBy","cursor","Attendance.findFirst","Attendance.findFirstOrThrow","Attendance.findMany","data","Attendance.createOne","Attendance.createMany","Attendance.createManyAndReturn","Attendance.updateOne","Attendance.updateMany","Attendance.updateManyAndReturn","create","update","Attendance.upsertOne","Attendance.deleteOne","Attendance.deleteMany","having","_count","_min","_max","Attendance.groupBy","Attendance.aggregate","Blog.findUnique","Blog.findUniqueOrThrow","Blog.findFirst","Blog.findFirstOrThrow","Blog.findMany","Blog.createOne","Blog.createMany","Blog.createManyAndReturn","Blog.updateOne","Blog.updateMany","Blog.updateManyAndReturn","Blog.upsertOne","Blog.deleteOne","Blog.deleteMany","Blog.groupBy","Blog.aggregate","Course.findUnique","Course.findUniqueOrThrow","Course.findFirst","Course.findFirstOrThrow","Course.findMany","Course.createOne","Course.createMany","Course.createManyAndReturn","Course.updateOne","Course.updateMany","Course.updateManyAndReturn","Course.upsertOne","Course.deleteOne","Course.deleteMany","_avg","_sum","Course.groupBy","Course.aggregate","Hero.findUnique","Hero.findUniqueOrThrow","Hero.findFirst","Hero.findFirstOrThrow","Hero.findMany","Hero.createOne","Hero.createMany","Hero.createManyAndReturn","Hero.updateOne","Hero.updateMany","Hero.updateManyAndReturn","Hero.upsertOne","Hero.deleteOne","Hero.deleteMany","Hero.groupBy","Hero.aggregate","Lead.findUnique","Lead.findUniqueOrThrow","Lead.findFirst","Lead.findFirstOrThrow","Lead.findMany","Lead.createOne","Lead.createMany","Lead.createManyAndReturn","Lead.updateOne","Lead.updateMany","Lead.updateManyAndReturn","Lead.upsertOne","Lead.deleteOne","Lead.deleteMany","Lead.groupBy","Lead.aggregate","Payment.findUnique","Payment.findUniqueOrThrow","Payment.findFirst","Payment.findFirstOrThrow","Payment.findMany","Payment.createOne","Payment.createMany","Payment.createManyAndReturn","Payment.updateOne","Payment.updateMany","Payment.updateManyAndReturn","Payment.upsertOne","Payment.deleteOne","Payment.deleteMany","Payment.groupBy","Payment.aggregate","Portfolio.findUnique","Portfolio.findUniqueOrThrow","Portfolio.findFirst","Portfolio.findFirstOrThrow","Portfolio.findMany","Portfolio.createOne","Portfolio.createMany","Portfolio.createManyAndReturn","Portfolio.updateOne","Portfolio.updateMany","Portfolio.updateManyAndReturn","Portfolio.upsertOne","Portfolio.deleteOne","Portfolio.deleteMany","Portfolio.groupBy","Portfolio.aggregate","User.findUnique","User.findUniqueOrThrow","User.findFirst","User.findFirstOrThrow","User.findMany","User.createOne","User.createMany","User.createManyAndReturn","User.updateOne","User.updateMany","User.updateManyAndReturn","User.upsertOne","User.deleteOne","User.deleteMany","User.groupBy","User.aggregate","AND","OR","NOT","id","employeeId","name","email","password","phone","photoUrl","Role","role","Designation","designation","skills","experience","department","salary","STATUS","status","joiningDate","createdAt","updatedAt","lastLogin","equals","in","notIn","lt","lte","gt","gte","not","contains","startsWith","endsWith","title","category","description","imageUrl","videoUrl","userId","courseId","amount","currency","stripeSessionId","from","company","isViewed","date","instructor","duration","price","CourseStatus","employeeName","checkIn","checkOut","set","increment","decrement","multiply","divide"]'),
-  graph: "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_AQgAsQIAIQIAAAA2ACAIAABCACACAAAANgAgCAAAQgAgAwAAADMAIA8AADsAIBAAAEAAIAEAAAAzACABAAAANgAgBRUAAKwCACAWAACvAgAgFwAArgIAIDgAAK0CACA5AACwAgAgDowBAACAAgAwjQEAAEkAEI4BAACAAgAwjwEBAMoBACGfAQAAggLBASKhAUAA0QEAIaIBQADRAQAhrwEBAMoBACGwAQEAygEAIbEBAQDKAQAhsgEBAMoBACG9AQEAygEAIb4BAQDKAQAhvwEIAIECACEDAAAANgAgAwAASAAwFAAASQAgAwAAADYAIAMAADcAMAQAADMAIAmMAQAA_wEAMI0BAABPABCOAQAA_wEAMI8BAQAAAAGhAUAA7gEAIaIBQADuAQAhrwEBAOcBACGxAQEA5wEAIbIBAQDnAQAhAQAAAEwAIAEAAABMACAJjAEAAP8BADCNAQAATwAQjgEAAP8BADCPAQEA5wEAIaEBQADuAQAhogFAAO4BACGvAQEA5wEAIbEBAQDnAQAhsgEBAOcBACEAAwAAAE8AIAMAAFAAMAQAAEwAIAMAAABPACADAABQADAEAABMACADAAAATwAgAwAAUAAwBAAATAAgBo8BAQAAAAGhAUAAAAABogFAAAAAAa8BAQAAAAGxAQEAAAABsgEBAAAAAQEIAABUACAGjwEBAAAAAaEBQAAAAAGiAUAAAAABrwEBAAAAAbEBAQAAAAGyAQEAAAABAQgAAFYAMAEIAABWADAGjwEBAJMCACGhAUAAmgIAIaIBQACaAgAhrwEBAJMCACGxAQEAkwIAIbIBAQCTAgAhAgAAAEwAIAgAAFkAIAaPAQEAkwIAIaEBQACaAgAhogFAAJoCACGvAQEAkwIAIbEBAQCTAgAhsgEBAJMCACECAAAATwAgCAAAWwAgAgAAAE8AIAgAAFsAIAMAAABMACAPAABUACAQAABZACABAAAATAAgAQAAAE8AIAMVAACpAgAgFgAAqwIAIBcAAKoCACAJjAEAAP4BADCNAQAAYgAQjgEAAP4BADCPAQEAygEAIaEBQADRAQAhogFAANEBACGvAQEAygEAIbEBAQDKAQAhsgEBAMoBACEDAAAATwAgAwAAYQAwFAAAYgAgAwAAAE8AIAMAAFAAMAQAAEwAIA2MAQAA_AEAMI0BAABoABCOAQAA_AEAMI8BAQAAAAGRAQEA5wEAIZIBAQDnAQAhlAEBAOgBACGhAUAA7gEAIaIBQADuAQAhuQEBAOcBACG6AQEA6AEAIbsBIAD9AQAhvAFAAO4BACEBAAAAZQAgAQAAAGUAIA2MAQAA_AEAMI0BAABoABCOAQAA_AEAMI8BAQDnAQAhkQEBAOcBACGSAQEA5wEAIZQBAQDoAQAhoQFAAO4BACGiAUAA7gEAIbkBAQDnAQAhugEBAOgBACG7ASAA_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_AQAgAgAAALMBACAIAAC_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-wEAIKQBIAAAAAGrASAA-gEAIQKkASAAAAABqwEgAPsBACENjAEAAPwBADCNAQAAaAAQjgEAAPwBADCPAQEA5wEAIZEBAQDnAQAhkgEBAOcBACGUAQEA6AEAIaEBQADuAQAhogFAAO4BACG5AQEA5wEAIboBAQDoAQAhuwEgAP0BACG8AUAA7gEAIQKkASAAAAABqwEgAPsBACEJjAEAAP4BADCNAQAAYgAQjgEAAP4BADCPAQEAygEAIaEBQADRAQAhogFAANEBACGvAQEAygEAIbEBAQDKAQAhsgEBAMoBACEJjAEAAP8BADCNAQAATwAQjgEAAP8BADCPAQEA5wEAIaEBQADuAQAhogFAAO4BACGvAQEA5wEAIbEBAQDnAQAhsgEBAOcBACEOjAEAAIACADCNAQAASQAQjgEAAIACADCPAQEAygEAIZ8BAACCAsEBIqEBQADRAQAhogFAANEBACGvAQEAygEAIbABAQDKAQAhsQEBAMoBACGyAQEAygEAIb0BAQDKAQAhvgEBAMoBACG_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-URw_UhxAUxxBVRxCVwJDWB1EWhxFXAJGXR5HXhxIXxxJYAJKYx9LZCNMZiRNZyROaiRPayRQbCRRbiRScAJTcSVUcyRVdQJWdiZXdyRYeCRZeQJafCdbfStcfyxdgAEsXoMBLF-EASxghQEsYYcBLGKJAQJjigEtZIwBLGWOAQJmjwEuZ5ABLGiRASxpkgECapUBL2uWATVsmAE2bZkBNm6cATZvnQE2cJ4BNnGgATZyogECc6MBN3SlATZ1pwECdqgBOHepATZ4qgE2easBAnquATl7rwE9fLEBPn2yAT5-tQE-f7YBPoABtwE-gQG5AT6CAbsBAoMBvAE_hAG-AT6FAcABAoYBwQFAhwHCAT6IAcMBPokBxAECigHHAUGLAcgBRw"
+  strings: JSON.parse('["where","orderBy","cursor","user","order","orderItems","carts","product","wishlist","_count","items","orders","Cart.findUnique","Cart.findUniqueOrThrow","Cart.findFirst","Cart.findFirstOrThrow","Cart.findMany","data","Cart.createOne","Cart.createMany","Cart.createManyAndReturn","Cart.updateOne","Cart.updateMany","Cart.updateManyAndReturn","create","update","Cart.upsertOne","Cart.deleteOne","Cart.deleteMany","having","_avg","_sum","_min","_max","Cart.groupBy","Cart.aggregate","Order.findUnique","Order.findUniqueOrThrow","Order.findFirst","Order.findFirstOrThrow","Order.findMany","Order.createOne","Order.createMany","Order.createManyAndReturn","Order.updateOne","Order.updateMany","Order.updateManyAndReturn","Order.upsertOne","Order.deleteOne","Order.deleteMany","Order.groupBy","Order.aggregate","OrderItem.findUnique","OrderItem.findUniqueOrThrow","OrderItem.findFirst","OrderItem.findFirstOrThrow","OrderItem.findMany","OrderItem.createOne","OrderItem.createMany","OrderItem.createManyAndReturn","OrderItem.updateOne","OrderItem.updateMany","OrderItem.updateManyAndReturn","OrderItem.upsertOne","OrderItem.deleteOne","OrderItem.deleteMany","OrderItem.groupBy","OrderItem.aggregate","Product.findUnique","Product.findUniqueOrThrow","Product.findFirst","Product.findFirstOrThrow","Product.findMany","Product.createOne","Product.createMany","Product.createManyAndReturn","Product.updateOne","Product.updateMany","Product.updateManyAndReturn","Product.upsertOne","Product.deleteOne","Product.deleteMany","Product.groupBy","Product.aggregate","User.findUnique","User.findUniqueOrThrow","User.findFirst","User.findFirstOrThrow","User.findMany","User.createOne","User.createMany","User.createManyAndReturn","User.updateOne","User.updateMany","User.updateManyAndReturn","User.upsertOne","User.deleteOne","User.deleteMany","User.groupBy","User.aggregate","Wishlist.findUnique","Wishlist.findUniqueOrThrow","Wishlist.findFirst","Wishlist.findFirstOrThrow","Wishlist.findMany","Wishlist.createOne","Wishlist.createMany","Wishlist.createManyAndReturn","Wishlist.updateOne","Wishlist.updateMany","Wishlist.updateManyAndReturn","Wishlist.upsertOne","Wishlist.deleteOne","Wishlist.deleteMany","Wishlist.groupBy","Wishlist.aggregate","AND","OR","NOT","id","userId","productId","createdAt","equals","in","notIn","lt","lte","gt","gte","not","contains","startsWith","endsWith","name","email","password","phone","avatar","Role","role","STATUS","status","address","city","country","lastLogin","emailVerified","provider","updatedAt","every","some","none","slug","description","price","discount","stock","thumbnail","images","brand","category","rating","reviewCount","isFeatured","isPublished","has","hasEvery","hasSome","orderId","quantity","total","OrderStatus","userId_productId","is","isNot","connectOrCreate","upsert","createMany","set","disconnect","delete","connect","updateMany","deleteMany","push","increment","decrement","multiply","divide"]'),
+  graph: "pwM8YAwDAADgAQAgBwAA4QEAIHQAAOIBADB1AAAMABB2AADiAQAwdwEAAAABeAEAvwEAIXkBAL8BACF6QADFAQAhlQFAAMUBACGqAQIA1gEAIa0BAADnAQAgAQAAAAEAIAsDAADgAQAgCgAA1wEAIHQAAOUBADB1AAADABB2AADlAQAwdwEAvwEAIXgBAL8BACF6QADFAQAhjgEAAOYBrQEilQFAAMUBACGrAQgA1AEAIQIDAAD7AgAgCgAA6QIAIAsDAADgAQAgCgAA1wEAIHQAAOUBADB1AAADABB2AADlAQAwdwEAAAABeAEAvwEAIXpAAMUBACGOAQAA5gGtASKVAUAAxQEAIasBCADUAQAhAwAAAAMAIAEAAAQAMAIAAAUAIA0EAADkAQAgBwAA4QEAIHQAAOMBADB1AAAHABB2AADjAQAwdwEAvwEAIXkBAL8BACF6QADFAQAhhgEBAL8BACGVAUAAxQEAIZsBCADUAQAhqQEBAL8BACGqAQIA1gEAIQIEAAD9AgAgBwAA_AIAIA0EAADkAQAgBwAA4QEAIHQAAOMBADB1AAAHABB2AADjAQAwdwEAAAABeQEAvwEAIXpAAMUBACGGAQEAvwEAIZUBQADFAQAhmwEIANQBACGpAQEAvwEAIaoBAgDWAQAhAwAAAAcAIAEAAAgAMAIAAAkAIAMAAAAHACABAAAIADACAAAJACALAwAA4AEAIAcAAOEBACB0AADiAQAwdQAADAAQdgAA4gEAMHcBAL8BACF4AQC_AQAheQEAvwEAIXpAAMUBACGVAUAAxQEAIaoBAgDWAQAhAgMAAPsCACAHAAD8AgAgAwAAAAwAIAEAAA0AMAIAAAEAIAkDAADgAQAgBwAA4QEAIHQAAN8BADB1AAAPABB2AADfAQAwdwEAvwEAIXgBAL8BACF5AQC_AQAhekAAxQEAIQIDAAD7AgAgBwAA_AIAIAoDAADgAQAgBwAA4QEAIHQAAN8BADB1AAAPABB2AADfAQAwdwEAAAABeAEAvwEAIXkBAL8BACF6QADFAQAhrQEAAN4BACADAAAADwAgAQAAEAAwAgAAEQAgAQAAAAcAIAEAAAAMACABAAAADwAgAQAAAAcAIAMAAAAMACABAAANADACAAABACADAAAADwAgAQAAEAAwAgAAEQAgAQAAAAMAIAEAAAAMACABAAAADwAgAQAAAAEAIAMAAAAMACABAAANADACAAABACADAAAADAAgAQAADQAwAgAAAQAgAwAAAAwAIAEAAA0AMAIAAAEAIAgDAADZAgAgBwAAlwIAIHcBAAAAAXgBAAAAAXkBAAAAAXpAAAAAAZUBQAAAAAGqAQIAAAABAREAACAAIAZ3AQAAAAF4AQAAAAF5AQAAAAF6QAAAAAGVAUAAAAABqgECAAAAAQERAAAiADABEQAAIgAwCAMAANcCACAHAACVAgAgdwEA6wEAIXgBAOsBACF5AQDrAQAhekAA7AEAIZUBQADsAQAhqgECAJMCACECAAAAAQAgEQAAJQAgBncBAOsBACF4AQDrAQAheQEA6wEAIXpAAOwBACGVAUAA7AEAIaoBAgCTAgAhAgAAAAwAIBEAACcAIAIAAAAMACARAAAnACADAAAAAQAgGAAAIAAgGQAAJQAgAQAAAAEAIAEAAAAMACAFCQAA9gIAIB4AAPcCACAfAAD6AgAgIAAA-QIAICEAAPgCACAJdAAA3QEAMHUAAC4AEHYAAN0BADB3AQCmAQAheAEApgEAIXkBAKYBACF6QACnAQAhlQFAAKcBACGqAQIAzAEAIQMAAAAMACABAAAtADAdAAAuACADAAAADAAgAQAADQAwAgAAAQAgAQAAAAUAIAEAAAAFACADAAAAAwAgAQAABAAwAgAABQAgAwAAAAMAIAEAAAQAMAIAAAUAIAMAAAADACABAAAEADACAAAFACAIAwAA9QIAIAoAALUCACB3AQAAAAF4AQAAAAF6QAAAAAGOAQAAAK0BApUBQAAAAAGrAQgAAAABAREAADYAIAZ3AQAAAAF4AQAAAAF6QAAAAAGOAQAAAK0BApUBQAAAAAGrAQgAAAABAREAADgAMAERAAA4ADAIAwAA9AIAIAoAAKUCACB3AQDrAQAheAEA6wEAIXpAAOwBACGOAQAAowKtASKVAUAA7AEAIasBCACiAgAhAgAAAAUAIBEAADsAIAZ3AQDrAQAheAEA6wEAIXpAAOwBACGOAQAAowKtASKVAUAA7AEAIasBCACiAgAhAgAAAAMAIBEAAD0AIAIAAAADACARAAA9ACADAAAABQAgGAAANgAgGQAAOwAgAQAAAAUAIAEAAAADACAFCQAA7wIAIB4AAPACACAfAADzAgAgIAAA8gIAICEAAPECACAJdAAA2QEAMHUAAEQAEHYAANkBADB3AQCmAQAheAEApgEAIXpAAKcBACGOAQAA2gGtASKVAUAApwEAIasBCADKAQAhAwAAAAMAIAEAAEMAMB0AAEQAIAMAAAADACABAAAEADACAAAFACABAAAACQAgAQAAAAkAIAMAAAAHACABAAAIADACAAAJACADAAAABwAgAQAACAAwAgAACQAgAwAAAAcAIAEAAAgAMAIAAAkAIAoEAADkAgAgBwAAswIAIHcBAAAAAXkBAAAAAXpAAAAAAYYBAQAAAAGVAUAAAAABmwEIAAAAAakBAQAAAAGqAQIAAAABAREAAEwAIAh3AQAAAAF5AQAAAAF6QAAAAAGGAQEAAAABlQFAAAAAAZsBCAAAAAGpAQEAAAABqgECAAAAAQERAABOADABEQAATgAwCgQAAOICACAHAACxAgAgdwEA6wEAIXkBAOsBACF6QADsAQAhhgEBAOsBACGVAUAA7AEAIZsBCACiAgAhqQEBAOsBACGqAQIAkwIAIQIAAAAJACARAABRACAIdwEA6wEAIXkBAOsBACF6QADsAQAhhgEBAOsBACGVAUAA7AEAIZsBCACiAgAhqQEBAOsBACGqAQIAkwIAIQIAAAAHACARAABTACACAAAABwAgEQAAUwAgAwAAAAkAIBgAAEwAIBkAAFEAIAEAAAAJACABAAAABwAgBQkAAOoCACAeAADrAgAgHwAA7gIAICAAAO0CACAhAADsAgAgC3QAANgBADB1AABaABB2AADYAQAwdwEApgEAIXkBAKYBACF6QACnAQAhhgEBAKYBACGVAUAApwEAIZsBCADKAQAhqQEBAKYBACGqAQIAzAEAIQMAAAAHACABAABZADAdAABaACADAAAABwAgAQAACAAwAgAACQAgFwUAANcBACAGAADHAQAgCAAAyAEAIHQAANMBADB1AABgABB2AADTAQAwdwEAAAABekAAxQEAIYYBAQC_AQAhlQFAAMUBACGZAQEAAAABmgEBAMABACGbAQgA1AEAIZwBCADVAQAhnQECANYBACGeAQEAvwEAIZ8BAADNAQAgoAEBAMABACGhAQEAwAEAIaIBCADUAQAhowECANYBACGkASAAxAEAIaUBIADEAQAhAQAAAF0AIAEAAABdACAXBQAA1wEAIAYAAMcBACAIAADIAQAgdAAA0wEAMHUAAGAAEHYAANMBADB3AQC_AQAhekAAxQEAIYYBAQC_AQAhlQFAAMUBACGZAQEAvwEAIZoBAQDAAQAhmwEIANQBACGcAQgA1QEAIZ0BAgDWAQAhngEBAL8BACGfAQAAzQEAIKABAQDAAQAhoQEBAMABACGiAQgA1AEAIaMBAgDWAQAhpAEgAMQBACGlASAAxAEAIQcFAADpAgAgBgAAugIAIAgAALsCACCaAQAA8QEAIJwBAADxAQAgoAEAAPEBACChAQAA8QEAIAMAAABgACABAABhADACAABdACADAAAAYAAgAQAAYQAwAgAAXQAgAwAAAGAAIAEAAGEAMAIAAF0AIBQFAADmAgAgBgAA5wIAIAgAAOgCACB3AQAAAAF6QAAAAAGGAQEAAAABlQFAAAAAAZkBAQAAAAGaAQEAAAABmwEIAAAAAZwBCAAAAAGdAQIAAAABngEBAAAAAZ8BAADlAgAgoAEBAAAAAaEBAQAAAAGiAQgAAAABowECAAAAAaQBIAAAAAGlASAAAAABAREAAGUAIBF3AQAAAAF6QAAAAAGGAQEAAAABlQFAAAAAAZkBAQAAAAGaAQEAAAABmwEIAAAAAZwBCAAAAAGdAQIAAAABngEBAAAAAZ8BAADlAgAgoAEBAAAAAaEBAQAAAAGiAQgAAAABowECAAAAAaQBIAAAAAGlASAAAAABAREAAGcAMAERAABnADAUBQAAwwIAIAYAAMQCACAIAADFAgAgdwEA6wEAIXpAAOwBACGGAQEA6wEAIZUBQADsAQAhmQEBAOsBACGaAQEA9QEAIZsBCACiAgAhnAEIAMECACGdAQIAkwIAIZ4BAQDrAQAhnwEAAMICACCgAQEA9QEAIaEBAQD1AQAhogEIAKICACGjAQIAkwIAIaQBIAD5AQAhpQEgAPkBACECAAAAXQAgEQAAagAgEXcBAOsBACF6QADsAQAhhgEBAOsBACGVAUAA7AEAIZkBAQDrAQAhmgEBAPUBACGbAQgAogIAIZwBCADBAgAhnQECAJMCACGeAQEA6wEAIZ8BAADCAgAgoAEBAPUBACGhAQEA9QEAIaIBCACiAgAhowECAJMCACGkASAA-QEAIaUBIAD5AQAhAgAAAGAAIBEAAGwAIAIAAABgACARAABsACADAAAAXQAgGAAAZQAgGQAAagAgAQAAAF0AIAEAAABgACAJCQAAvAIAIB4AAL0CACAfAADAAgAgIAAAvwIAICEAAL4CACCaAQAA8QEAIJwBAADxAQAgoAEAAPEBACChAQAA8QEAIBR0AADJAQAwdQAAcwAQdgAAyQEAMHcBAKYBACF6QACnAQAhhgEBAKYBACGVAUAApwEAIZkBAQCmAQAhmgEBAK4BACGbAQgAygEAIZwBCADLAQAhnQECAMwBACGeAQEApgEAIZ8BAADNAQAgoAEBAK4BACGhAQEArgEAIaIBCADKAQAhowECAMwBACGkASAAsgEAIaUBIACyAQAhAwAAAGAAIAEAAHIAMB0AAHMAIAMAAABgACABAABhADACAABdACAWBgAAxwEAIAgAAMgBACALAADGAQAgdAAAvgEAMHUAAHkAEHYAAL4BADB3AQAAAAF6QADFAQAhhgEBAL8BACGHAQEAAAABiAEBAL8BACGJAQEAAAABigEBAMABACGMAQAAwQGMASKOAQAAwgGOASKPAQEAwAEAIZABAQDAAQAhkQEBAMABACGSAUAAwwEAIZMBIADEAQAhlAEBAMABACGVAUAAxQEAIQEAAAB2ACABAAAAdgAgFgYAAMcBACAIAADIAQAgCwAAxgEAIHQAAL4BADB1AAB5ABB2AAC-AQAwdwEAvwEAIXpAAMUBACGGAQEAvwEAIYcBAQC_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-QAAAAAF_QAAAAAGAAUAAAAABgQFAAAAAAYIBQACoAQAhCHsCAAAAAXwCAAAABH0CAAAABH4CAAAAAX8CAAAAAYABAgAAAAGBAQIAAAABggECAKkBACEIe0AAAAABfEAAAAAEfUAAAAAEfkAAAAABf0AAAAABgAFAAAAAAYEBQAAAAAGCAUAAqgEAIQ4JAACpAQAgIAAArAEAICEAAKwBACB7AQAAAAF8AQAAAAR9AQAAAAR-AQAAAAF_AQAAAAGAAQEAAAABgQEBAAAAAYIBAQCrAQAhgwEBAAAAAYQBAQAAAAGFAQEAAAABC3sBAAAAAXwBAAAABH0BAAAABH4BAAAAAX8BAAAAAYABAQAAAAGBAQEAAAABggEBAKwBACGDAQEAAAABhAEBAAAAAYUBAQAAAAETdAAArQEAMHUAAIwBABB2AACtAQAwdwEApgEAIXpAAKcBACGGAQEApgEAIYcBAQCmAQAhiAEBAKYBACGJAQEArgEAIYoBAQCuAQAhjAEAAK8BjAEijgEAALABjgEijwEBAK4BACGQAQEArgEAIZEBAQCuAQAhkgFAALEBACGTASAAsgEAIZQBAQCuAQAhlQFAAKcBACEOCQAAtgEAICAAAL0BACAhAAC9AQAgewEAAAABfAEAAAAFfQEAAAAFfgEAAAABfwEAAAABgAEBAAAAAYEBAQAAAAGCAQEAvAEAIYMBAQAAAAGEAQEAAAABhQEBAAAAAQcJAACpAQAgIAAAuwEAICEAALsBACB7AAAAjAECfAAAAIwBCH0AAACMAQiCAQAAugGMASIHCQAAqQEAICAAALkBACAhAAC5AQAgewAAAI4BAnwAAACOAQh9AAAAjgEIggEAALgBjgEiCwkAALYBACAgAAC3AQAgIQAAtwEAIHtAAAAAAXxAAAAABX1AAAAABX5AAAAAAX9AAAAAAYABQAAAAAGBAUAAAAABggFAALUBACEFCQAAqQEAICAAALQBACAhAAC0AQAgeyAAAAABggEgALMBACEFCQAAqQEAICAAALQBACAhAAC0AQAgeyAAAAABggEgALMBACECeyAAAAABggEgALQBACELCQAAtgEAICAAALcBACAhAAC3AQAge0AAAAABfEAAAAAFfUAAAAAFfkAAAAABf0AAAAABgAFAAAAAAYEBQAAAAAGCAUAAtQEAIQh7AgAAAAF8AgAAAAV9AgAAAAV-AgAAAAF_AgAAAAGAAQIAAAABgQECAAAAAYIBAgC2AQAhCHtAAAAAAXxAAAAABX1AAAAABX5AAAAAAX9AAAAAAYABQAAAAAGBAUAAAAABggFAALcBACEHCQAAqQEAICAAALkBACAhAAC5AQAgewAAAI4BAnwAAACOAQh9AAAAjgEIggEAALgBjgEiBHsAAACOAQJ8AAAAjgEIfQAAAI4BCIIBAAC5AY4BIgcJAACpAQAgIAAAuwEAICEAALsBACB7AAAAjAECfAAAAIwBCH0AAACMAQiCAQAAugGMASIEewAAAIwBAnwAAACMAQh9AAAAjAEIggEAALsBjAEiDgkAALYBACAgAAC9AQAgIQAAvQEAIHsBAAAAAXwBAAAABX0BAAAABX4BAAAAAX8BAAAAAYABAQAAAAGBAQEAAAABggEBALwBACGDAQEAAAABhAEBAAAAAYUBAQAAAAELewEAAAABfAEAAAAFfQEAAAAFfgEAAAABfwEAAAABgAEBAAAAAYEBAQAAAAGCAQEAvQEAIYMBAQAAAAGEAQEAAAABhQEBAAAAARYGAADHAQAgCAAAyAEAIAsAAMYBACB0AAC-AQAwdQAAeQAQdgAAvgEAMHcBAL8BACF6QADFAQAhhgEBAL8BACGHAQEAvwEAIYgBAQC_AQAhiQEBAMABACGKAQEAwAEAIYwBAADBAYwBIo4BAADCAY4BIo8BAQDAAQAhkAEBAMABACGRAQEAwAEAIZIBQADDAQAhkwEgAMQBACGUAQEAwAEAIZUBQADFAQAhC3sBAAAAAXwBAAAABH0BAAAABH4BAAAAAX8BAAAAAYABAQAAAAGBAQEAAAABggEBAKwBACGDAQEAAAABhAEBAAAAAYUBAQAAAAELewEAAAABfAEAAAAFfQEAAAAFfgEAAAABfwEAAAABgAEBAAAAAYEBAQAAAAGCAQEAvQEAIYMBAQAAAAGEAQEAAAABhQEBAAAAAQR7AAAAjAECfAAAAIwBCH0AAACMAQiCAQAAuwGMASIEewAAAI4BAnwAAACOAQh9AAAAjgEIggEAALkBjgEiCHtAAAAAAXxAAAAABX1AAAAABX5AAAAAAX9AAAAAAYABQAAAAAGBAUAAAAABggFAALcBACECeyAAAAABggEgALQBACEIe0AAAAABfEAAAAAEfUAAAAAEfkAAAAABf0AAAAABgAFAAAAAAYEBQAAAAAGCAUAAqgEAIQOWAQAAAwAglwEAAAMAIJgBAAADACADlgEAAAwAIJcBAAAMACCYAQAADAAgA5YBAAAPACCXAQAADwAgmAEAAA8AIBR0AADJAQAwdQAAcwAQdgAAyQEAMHcBAKYBACF6QACnAQAhhgEBAKYBACGVAUAApwEAIZkBAQCmAQAhmgEBAK4BACGbAQgAygEAIZwBCADLAQAhnQECAMwBACGeAQEApgEAIZ8BAADNAQAgoAEBAK4BACGhAQEArgEAIaIBCADKAQAhowECAMwBACGkASAAsgEAIaUBIACyAQAhDQkAAKkBACAeAADPAQAgHwAAzwEAICAAAM8BACAhAADPAQAgewgAAAABfAgAAAAEfQgAAAAEfggAAAABfwgAAAABgAEIAAAAAYEBCAAAAAGCAQgA0gEAIQ0JAAC2AQAgHgAA0QEAIB8AANEBACAgAADRAQAgIQAA0QEAIHsIAAAAAXwIAAAABX0IAAAABX4IAAAAAX8IAAAAAYABCAAAAAGBAQgAAAABggEIANABACENCQAAqQEAIB4AAM8BACAfAACpAQAgIAAAqQEAICEAAKkBACB7AgAAAAF8AgAAAAR9AgAAAAR-AgAAAAF_AgAAAAGAAQIAAAABgQECAAAAAYIBAgDOAQAhBHsBAAAABaYBAQAAAAGnAQEAAAAEqAEBAAAABA0JAACpAQAgHgAAzwEAIB8AAKkBACAgAACpAQAgIQAAqQEAIHsCAAAAAXwCAAAABH0CAAAABH4CAAAAAX8CAAAAAYABAgAAAAGBAQIAAAABggECAM4BACEIewgAAAABfAgAAAAEfQgAAAAEfggAAAABfwgAAAABgAEIAAAAAYEBCAAAAAGCAQgAzwEAIQ0JAAC2AQAgHgAA0QEAIB8AANEBACAgAADRAQAgIQAA0QEAIHsIAAAAAXwIAAAABX0IAAAABX4IAAAAAX8IAAAAAYABCAAAAAGBAQgAAAABggEIANABACEIewgAAAABfAgAAAAFfQgAAAAFfggAAAABfwgAAAABgAEIAAAAAYEBCAAAAAGCAQgA0QEAIQ0JAACpAQAgHgAAzwEAIB8AAM8BACAgAADPAQAgIQAAzwEAIHsIAAAAAXwIAAAABH0IAAAABH4IAAAAAX8IAAAAAYABCAAAAAGBAQgAAAABggEIANIBACEXBQAA1wEAIAYAAMcBACAIAADIAQAgdAAA0wEAMHUAAGAAEHYAANMBADB3AQC_AQAhekAAxQEAIYYBAQC_AQAhlQFAAMUBACGZAQEAvwEAIZoBAQDAAQAhmwEIANQBACGcAQgA1QEAIZ0BAgDWAQAhngEBAL8BACGfAQAAzQEAIKABAQDAAQAhoQEBAMABACGiAQgA1AEAIaMBAgDWAQAhpAEgAMQBACGlASAAxAEAIQh7CAAAAAF8CAAAAAR9CAAAAAR-CAAAAAF_CAAAAAGAAQgAAAABgQEIAAAAAYIBCADPAQAhCHsIAAAAAXwIAAAABX0IAAAABX4IAAAAAX8IAAAAAYABCAAAAAGBAQgAAAABggEIANEBACEIewIAAAABfAIAAAAEfQIAAAAEfgIAAAABfwIAAAABgAECAAAAAYEBAgAAAAGCAQIAqQEAIQOWAQAABwAglwEAAAcAIJgBAAAHACALdAAA2AEAMHUAAFoAEHYAANgBADB3AQCmAQAheQEApgEAIXpAAKcBACGGAQEApgEAIZUBQACnAQAhmwEIAMoBACGpAQEApgEAIaoBAgDMAQAhCXQAANkBADB1AABEABB2AADZAQAwdwEApgEAIXgBAKYBACF6QACnAQAhjgEAANoBrQEilQFAAKcBACGrAQgAygEAIQcJAACpAQAgIAAA3AEAICEAANwBACB7AAAArQECfAAAAK0BCH0AAACtAQiCAQAA2wGtASIHCQAAqQEAICAAANwBACAhAADcAQAgewAAAK0BAnwAAACtAQh9AAAArQEIggEAANsBrQEiBHsAAACtAQJ8AAAArQEIfQAAAK0BCIIBAADcAa0BIgl0AADdAQAwdQAALgAQdgAA3QEAMHcBAKYBACF4AQCmAQAheQEApgEAIXpAAKcBACGVAUAApwEAIaoBAgDMAQAhAngBAAAAAXkBAAAAAQkDAADgAQAgBwAA4QEAIHQAAN8BADB1AAAPABB2AADfAQAwdwEAvwEAIXgBAL8BACF5AQC_AQAhekAAxQEAIRgGAADHAQAgCAAAyAEAIAsAAMYBACB0AAC-AQAwdQAAeQAQdgAAvgEAMHcBAL8BACF6QADFAQAhhgEBAL8BACGHAQEAvwEAIYgBAQC_AQAhiQEBAMABACGKAQEAwAEAIYwBAADBAYwBIo4BAADCAY4BIo8BAQDAAQAhkAEBAMABACGRAQEAwAEAIZIBQADDAQAhkwEgAMQBACGUAQEAwAEAIZUBQADFAQAhrgEAAHkAIK8BAAB5ACAZBQAA1wEAIAYAAMcBACAIAADIAQAgdAAA0wEAMHUAAGAAEHYAANMBADB3AQC_AQAhekAAxQEAIYYBAQC_AQAhlQFAAMUBACGZAQEAvwEAIZoBAQDAAQAhmwEIANQBACGcAQgA1QEAIZ0BAgDWAQAhngEBAL8BACGfAQAAzQEAIKABAQDAAQAhoQEBAMABACGiAQgA1AEAIaMBAgDWAQAhpAEgAMQBACGlASAAxAEAIa4BAABgACCvAQAAYAAgCwMAAOABACAHAADhAQAgdAAA4gEAMHUAAAwAEHYAAOIBADB3AQC_AQAheAEAvwEAIXkBAL8BACF6QADFAQAhlQFAAMUBACGqAQIA1gEAIQ0EAADkAQAgBwAA4QEAIHQAAOMBADB1AAAHABB2AADjAQAwdwEAvwEAIXkBAL8BACF6QADFAQAhhgEBAL8BACGVAUAAxQEAIZsBCADUAQAhqQEBAL8BACGqAQIA1gEAIQ0DAADgAQAgCgAA1wEAIHQAAOUBADB1AAADABB2AADlAQAwdwEAvwEAIXgBAL8BACF6QADFAQAhjgEAAOYBrQEilQFAAMUBACGrAQgA1AEAIa4BAAADACCvAQAAAwAgCwMAAOABACAKAADXAQAgdAAA5QEAMHUAAAMAEHYAAOUBADB3AQC_AQAheAEAvwEAIXpAAMUBACGOAQAA5gGtASKVAUAAxQEAIasBCADUAQAhBHsAAACtAQJ8AAAArQEIfQAAAK0BCIIBAADcAa0BIgJ4AQAAAAF5AQAAAAEAAAABswEBAAAAAQGzAUAAAAABBRgAAKADACAZAACmAwAgsAEAAKEDACCxAQAApQMAILYBAAB2ACAFGAAAngMAIBkAAKMDACCwAQAAnwMAILEBAACiAwAgtgEAAF0AIAMYAACgAwAgsAEAAKEDACC2AQAAdgAgAxgAAJ4DACCwAQAAnwMAILYBAABdACAAAAAAAbMBAQAAAAEBswEAAACMAQIBswEAAACOAQIBswFAAAAAAQGzASAAAAABCxgAAJgCADAZAACdAgAwsAEAAJkCADCxAQAAmgIAMLIBAACbAgAgswEAAJwCADC0AQAAnAIAMLUBAACcAgAwtgEAAJwCADC3AQAAngIAMLgBAACfAgAwCxgAAIkCADAZAACOAgAwsAEAAIoCADCxAQAAiwIAMLIBAACMAgAgswEAAI0CADC0AQAAjQIAMLUBAACNAgAwtgEAAI0CADC3AQAAjwIAMLgBAACQAgAwCxgAAP0BADAZAACCAgAwsAEAAP4BADCxAQAA_wEAMLIBAACAAgAgswEAAIECADC0AQAAgQIAMLUBAACBAgAwtgEAAIECADC3AQAAgwIAMLgBAACEAgAwBAcAAPABACB3AQAAAAF5AQAAAAF6QAAAAAECAAAAEQAgGAAAiAIAIAMAAAARACAYAACIAgAgGQAAhwIAIAERAACdAwAwCgMAAOABACAHAADhAQAgdAAA3wEAMHUAAA8AEHYAAN8BADB3AQAAAAF4AQC_AQAheQEAvwEAIXpAAMUBACGtAQAA3gEAIAIAAAARACARAACHAgAgAgAAAIUCACARAACGAgAgB3QAAIQCADB1AACFAgAQdgAAhAIAMHcBAL8BACF4AQC_AQAheQEAvwEAIXpAAMUBACEHdAAAhAIAMHUAAIUCABB2AACEAgAwdwEAvwEAIXgBAL8BACF5AQC_AQAhekAAxQEAIQN3AQDrAQAheQEA6wEAIXpAAOwBACEEBwAA7gEAIHcBAOsBACF5AQDrAQAhekAA7AEAIQQHAADwAQAgdwEAAAABeQEAAAABekAAAAABBgcAAJcCACB3AQAAAAF5AQAAAAF6QAAAAAGVAUAAAAABqgECAAAAAQIAAAABACAYAACWAgAgAwAAAAEAIBgAAJYCACAZAACUAgAgAREAAJwDADAMAwAA4AEAIAcAAOEBACB0AADiAQAwdQAADAAQdgAA4gEAMHcBAAAAAXgBAL8BACF5AQC_AQAhekAAxQEAIZUBQADFAQAhqgECANYBACGtAQAA5wEAIAIAAAABACARAACUAgAgAgAAAJECACARAACSAgAgCXQAAJACADB1AACRAgAQdgAAkAIAMHcBAL8BACF4AQC_AQAheQEAvwEAIXpAAMUBACGVAUAAxQEAIaoBAgDWAQAhCXQAAJACADB1AACRAgAQdgAAkAIAMHcBAL8BACF4AQC_AQAheQEAvwEAIXpAAMUBACGVAUAAxQEAIaoBAgDWAQAhBXcBAOsBACF5AQDrAQAhekAA7AEAIZUBQADsAQAhqgECAJMCACEFswECAAAAAboBAgAAAAG7AQIAAAABvAECAAAAAb0BAgAAAAEGBwAAlQIAIHcBAOsBACF5AQDrAQAhekAA7AEAIZUBQADsAQAhqgECAJMCACEFGAAAlwMAIBkAAJoDACCwAQAAmAMAILEBAACZAwAgtgEAAF0AIAYHAACXAgAgdwEAAAABeQEAAAABekAAAAABlQFAAAAAAaoBAgAAAAEDGAAAlwMAILABAACYAwAgtgEAAF0AIAYKAAC1AgAgdwEAAAABekAAAAABjgEAAACtAQKVAUAAAAABqwEIAAAAAQIAAAAFACAYAAC0AgAgAwAAAAUAIBgAALQCACAZAACkAgAgAREAAJYDADALAwAA4AEAIAoAANcBACB0AADlAQAwdQAAAwAQdgAA5QEAMHcBAAAAAXgBAL8BACF6QADFAQAhjgEAAOYBrQEilQFAAMUBACGrAQgA1AEAIQIAAAAFACARAACkAgAgAgAAAKACACARAAChAgAgCXQAAJ8CADB1AACgAgAQdgAAnwIAMHcBAL8BACF4AQC_AQAhekAAxQEAIY4BAADmAa0BIpUBQADFAQAhqwEIANQBACEJdAAAnwIAMHUAAKACABB2AACfAgAwdwEAvwEAIXgBAL8BACF6QADFAQAhjgEAAOYBrQEilQFAAMUBACGrAQgA1AEAIQV3AQDrAQAhekAA7AEAIY4BAACjAq0BIpUBQADsAQAhqwEIAKICACEFswEIAAAAAboBCAAAAAG7AQgAAAABvAEIAAAAAb0BCAAAAAEBswEAAACtAQIGCgAApQIAIHcBAOsBACF6QADsAQAhjgEAAKMCrQEilQFAAOwBACGrAQgAogIAIQsYAACmAgAwGQAAqwIAMLABAACnAgAwsQEAAKgCADCyAQAAqQIAILMBAACqAgAwtAEAAKoCADC1AQAAqgIAMLYBAACqAgAwtwEAAKwCADC4AQAArQIAMAgHAACzAgAgdwEAAAABeQEAAAABekAAAAABhgEBAAAAAZUBQAAAAAGbAQgAAAABqgECAAAAAQIAAAAJACAYAACyAgAgAwAAAAkAIBgAALICACAZAACwAgAgAREAAJUDADANBAAA5AEAIAcAAOEBACB0AADjAQAwdQAABwAQdgAA4wEAMHcBAAAAAXkBAL8BACF6QADFAQAhhgEBAL8BACGVAUAAxQEAIZsBCADUAQAhqQEBAL8BACGqAQIA1gEAIQIAAAAJACARAACwAgAgAgAAAK4CACARAACvAgAgC3QAAK0CADB1AACuAgAQdgAArQIAMHcBAL8BACF5AQC_AQAhekAAxQEAIYYBAQC_AQAhlQFAAMUBACGbAQgA1AEAIakBAQC_AQAhqgECANYBACELdAAArQIAMHUAAK4CABB2AACtAgAwdwEAvwEAIXkBAL8BACF6QADFAQAhhgEBAL8BACGVAUAAxQEAIZsBCADUAQAhqQEBAL8BACGqAQIA1gEAIQd3AQDrAQAheQEA6wEAIXpAAOwBACGGAQEA6wEAIZUBQADsAQAhmwEIAKICACGqAQIAkwIAIQgHAACxAgAgdwEA6wEAIXkBAOsBACF6QADsAQAhhgEBAOsBACGVAUAA7AEAIZsBCACiAgAhqgECAJMCACEFGAAAkAMAIBkAAJMDACCwAQAAkQMAILEBAACSAwAgtgEAAF0AIAgHAACzAgAgdwEAAAABeQEAAAABekAAAAABhgEBAAAAAZUBQAAAAAGbAQgAAAABqgECAAAAAQMYAACQAwAgsAEAAJEDACC2AQAAXQAgBgoAALUCACB3AQAAAAF6QAAAAAGOAQAAAK0BApUBQAAAAAGrAQgAAAABBBgAAKYCADCwAQAApwIAMLIBAACpAgAgtgEAAKoCADAEGAAAmAIAMLABAACZAgAwsgEAAJsCACC2AQAAnAIAMAQYAACJAgAwsAEAAIoCADCyAQAAjAIAILYBAACNAgAwBBgAAP0BADCwAQAA_gEAMLIBAACAAgAgtgEAAIECADAAAAAAAAAAAAWzAQgAAAABugEIAAAAAbsBCAAAAAG8AQgAAAABvQEIAAAAAQKzAQEAAAAEuQEBAAAABQsYAADaAgAwGQAA3gIAMLABAADbAgAwsQEAANwCADCyAQAA3QIAILMBAACqAgAwtAEAAKoCADC1AQAAqgIAMLYBAACqAgAwtwEAAN8CADC4AQAArQIAMAsYAADPAgAwGQAA0wIAMLABAADQAgAwsQEAANECADCyAQAA0gIAILMBAACNAgAwtAEAAI0CADC1AQAAjQIAMLYBAACNAgAwtwEAANQCADC4AQAAkAIAMAsYAADGAgAwGQAAygIAMLABAADHAgAwsQEAAMgCADCyAQAAyQIAILMBAACBAgAwtAEAAIECADC1AQAAgQIAMLYBAACBAgAwtwEAAMsCADC4AQAAhAIAMAQDAADvAQAgdwEAAAABeAEAAAABekAAAAABAgAAABEAIBgAAM4CACADAAAAEQAgGAAAzgIAIBkAAM0CACABEQAAjwMAMAIAAAARACARAADNAgAgAgAAAIUCACARAADMAgAgA3cBAOsBACF4AQDrAQAhekAA7AEAIQQDAADtAQAgdwEA6wEAIXgBAOsBACF6QADsAQAhBAMAAO8BACB3AQAAAAF4AQAAAAF6QAAAAAEGAwAA2QIAIHcBAAAAAXgBAAAAAXpAAAAAAZUBQAAAAAGqAQIAAAABAgAAAAEAIBgAANgCACADAAAAAQAgGAAA2AIAIBkAANYCACABEQAAjgMAMAIAAAABACARAADWAgAgAgAAAJECACARAADVAgAgBXcBAOsBACF4AQDrAQAhekAA7AEAIZUBQADsAQAhqgECAJMCACEGAwAA1wIAIHcBAOsBACF4AQDrAQAhekAA7AEAIZUBQADsAQAhqgECAJMCACEFGAAAiQMAIBkAAIwDACCwAQAAigMAILEBAACLAwAgtgEAAHYAIAYDAADZAgAgdwEAAAABeAEAAAABekAAAAABlQFAAAAAAaoBAgAAAAEDGAAAiQMAILABAACKAwAgtgEAAHYAIAgEAADkAgAgdwEAAAABekAAAAABhgEBAAAAAZUBQAAAAAGbAQgAAAABqQEBAAAAAaoBAgAAAAECAAAACQAgGAAA4wIAIAMAAAAJACAYAADjAgAgGQAA4QIAIAERAACIAwAwAgAAAAkAIBEAAOECACACAAAArgIAIBEAAOACACAHdwEA6wEAIXpAAOwBACGGAQEA6wEAIZUBQADsAQAhmwEIAKICACGpAQEA6wEAIaoBAgCTAgAhCAQAAOICACB3AQDrAQAhekAA7AEAIYYBAQDrAQAhlQFAAOwBACGbAQgAogIAIakBAQDrAQAhqgECAJMCACEFGAAAgwMAIBkAAIYDACCwAQAAhAMAILEBAACFAwAgtgEAAAUAIAgEAADkAgAgdwEAAAABekAAAAABhgEBAAAAAZUBQAAAAAGbAQgAAAABqQEBAAAAAaoBAgAAAAEDGAAAgwMAILABAACEAwAgtgEAAAUAIAGzAQEAAAAEBBgAANoCADCwAQAA2wIAMLIBAADdAgAgtgEAAKoCADAEGAAAzwIAMLABAADQAgAwsgEAANICACC2AQAAjQIAMAQYAADGAgAwsAEAAMcCADCyAQAAyQIAILYBAACBAgAwAAAAAAAAAAAAAAAFGAAA_gIAIBkAAIEDACCwAQAA_wIAILEBAACAAwAgtgEAAHYAIAMYAAD-AgAgsAEAAP8CACC2AQAAdgAgAAAAAAAKBgAAugIAIAgAALsCACALAAC5AgAgiQEAAPEBACCKAQAA8QEAII8BAADxAQAgkAEAAPEBACCRAQAA8QEAIJIBAADxAQAglAEAAPEBACAHBQAA6QIAIAYAALoCACAIAAC7AgAgmgEAAPEBACCcAQAA8QEAIKABAADxAQAgoQEAAPEBACACAwAA-wIAIAoAAOkCACASBgAAtwIAIAgAALgCACB3AQAAAAF6QAAAAAGGAQEAAAABhwEBAAAAAYgBAQAAAAGJAQEAAAABigEBAAAAAYwBAAAAjAECjgEAAACOAQKPAQEAAAABkAEBAAAAAZEBAQAAAAGSAUAAAAABkwEgAAAAAZQBAQAAAAGVAUAAAAABAgAAAHYAIBgAAP4CACADAAAAeQAgGAAA_gIAIBkAAIIDACAUAAAAeQAgBgAA-wEAIAgAAPwBACARAACCAwAgdwEA6wEAIXpAAOwBACGGAQEA6wEAIYcBAQDrAQAhiAEBAOsBACGJAQEA9QEAIYoBAQD1AQAhjAEAAPYBjAEijgEAAPcBjgEijwEBAPUBACGQAQEA9QEAIZEBAQD1AQAhkgFAAPgBACGTASAA-QEAIZQBAQD1AQAhlQFAAOwBACESBgAA-wEAIAgAAPwBACB3AQDrAQAhekAA7AEAIYYBAQDrAQAhhwEBAOsBACGIAQEA6wEAIYkBAQD1AQAhigEBAPUBACGMAQAA9gGMASKOAQAA9wGOASKPAQEA9QEAIZABAQD1AQAhkQEBAPUBACGSAUAA-AEAIZMBIAD5AQAhlAEBAPUBACGVAUAA7AEAIQcDAAD1AgAgdwEAAAABeAEAAAABekAAAAABjgEAAACtAQKVAUAAAAABqwEIAAAAAQIAAAAFACAYAACDAwAgAwAAAAMAIBgAAIMDACAZAACHAwAgCQAAAAMAIAMAAPQCACARAACHAwAgdwEA6wEAIXgBAOsBACF6QADsAQAhjgEAAKMCrQEilQFAAOwBACGrAQgAogIAIQcDAAD0AgAgdwEA6wEAIXgBAOsBACF6QADsAQAhjgEAAKMCrQEilQFAAOwBACGrAQgAogIAIQd3AQAAAAF6QAAAAAGGAQEAAAABlQFAAAAAAZsBCAAAAAGpAQEAAAABqgECAAAAARIIAAC4AgAgCwAAtgIAIHcBAAAAAXpAAAAAAYYBAQAAAAGHAQEAAAABiAEBAAAAAYkBAQAAAAGKAQEAAAABjAEAAACMAQKOAQAAAI4BAo8BAQAAAAGQAQEAAAABkQEBAAAAAZIBQAAAAAGTASAAAAABlAEBAAAAAZUBQAAAAAECAAAAdgAgGAAAiQMAIAMAAAB5ACAYAACJAwAgGQAAjQMAIBQAAAB5ACAIAAD8AQAgCwAA-gEAIBEAAI0DACB3AQDrAQAhekAA7AEAIYYBAQDrAQAhhwEBAOsBACGIAQEA6wEAIYkBAQD1AQAhigEBAPUBACGMAQAA9gGMASKOAQAA9wGOASKPAQEA9QEAIZABAQD1AQAhkQEBAPUBACGSAUAA-AEAIZMBIAD5AQAhlAEBAPUBACGVAUAA7AEAIRIIAAD8AQAgCwAA-gEAIHcBAOsBACF6QADsAQAhhgEBAOsBACGHAQEA6wEAIYgBAQDrAQAhiQEBAPUBACGKAQEA9QEAIYwBAAD2AYwBIo4BAAD3AY4BIo8BAQD1AQAhkAEBAPUBACGRAQEA9QEAIZIBQAD4AQAhkwEgAPkBACGUAQEA9QEAIZUBQADsAQAhBXcBAAAAAXgBAAAAAXpAAAAAAZUBQAAAAAGqAQIAAAABA3cBAAAAAXgBAAAAAXpAAAAAARMGAADnAgAgCAAA6AIAIHcBAAAAAXpAAAAAAYYBAQAAAAGVAUAAAAABmQEBAAAAAZoBAQAAAAGbAQgAAAABnAEIAAAAAZ0BAgAAAAGeAQEAAAABnwEAAOUCACCgAQEAAAABoQEBAAAAAaIBCAAAAAGjAQIAAAABpAEgAAAAAaUBIAAAAAECAAAAXQAgGAAAkAMAIAMAAABgACAYAACQAwAgGQAAlAMAIBUAAABgACAGAADEAgAgCAAAxQIAIBEAAJQDACB3AQDrAQAhekAA7AEAIYYBAQDrAQAhlQFAAOwBACGZAQEA6wEAIZoBAQD1AQAhmwEIAKICACGcAQgAwQIAIZ0BAgCTAgAhngEBAOsBACGfAQAAwgIAIKABAQD1AQAhoQEBAPUBACGiAQgAogIAIaMBAgCTAgAhpAEgAPkBACGlASAA-QEAIRMGAADEAgAgCAAAxQIAIHcBAOsBACF6QADsAQAhhgEBAOsBACGVAUAA7AEAIZkBAQDrAQAhmgEBAPUBACGbAQgAogIAIZwBCADBAgAhnQECAJMCACGeAQEA6wEAIZ8BAADCAgAgoAEBAPUBACGhAQEA9QEAIaIBCACiAgAhowECAJMCACGkASAA-QEAIaUBIAD5AQAhB3cBAAAAAXkBAAAAAXpAAAAAAYYBAQAAAAGVAUAAAAABmwEIAAAAAaoBAgAAAAEFdwEAAAABekAAAAABjgEAAACtAQKVAUAAAAABqwEIAAAAARMFAADmAgAgCAAA6AIAIHcBAAAAAXpAAAAAAYYBAQAAAAGVAUAAAAABmQEBAAAAAZoBAQAAAAGbAQgAAAABnAEIAAAAAZ0BAgAAAAGeAQEAAAABnwEAAOUCACCgAQEAAAABoQEBAAAAAaIBCAAAAAGjAQIAAAABpAEgAAAAAaUBIAAAAAECAAAAXQAgGAAAlwMAIAMAAABgACAYAACXAwAgGQAAmwMAIBUAAABgACAFAADDAgAgCAAAxQIAIBEAAJsDACB3AQDrAQAhekAA7AEAIYYBAQDrAQAhlQFAAOwBACGZAQEA6wEAIZoBAQD1AQAhmwEIAKICACGcAQgAwQIAIZ0BAgCTAgAhngEBAOsBACGfAQAAwgIAIKABAQD1AQAhoQEBAPUBACGiAQgAogIAIaMBAgCTAgAhpAEgAPkBACGlASAA-QEAIRMFAADDAgAgCAAAxQIAIHcBAOsBACF6QADsAQAhhgEBAOsBACGVAUAA7AEAIZkBAQDrAQAhmgEBAPUBACGbAQgAogIAIZwBCADBAgAhnQECAJMCACGeAQEA6wEAIZ8BAADCAgAgoAEBAPUBACGhAQEA9QEAIaIBCACiAgAhowECAJMCACGkASAA-QEAIaUBIAD5AQAhBXcBAAAAAXkBAAAAAXpAAAAAAZUBQAAAAAGqAQIAAAABA3cBAAAAAXkBAAAAAXpAAAAAARMFAADmAgAgBgAA5wIAIHcBAAAAAXpAAAAAAYYBAQAAAAGVAUAAAAABmQEBAAAAAZoBAQAAAAGbAQgAAAABnAEIAAAAAZ0BAgAAAAGeAQEAAAABnwEAAOUCACCgAQEAAAABoQEBAAAAAaIBCAAAAAGjAQIAAAABpAEgAAAAAaUBIAAAAAECAAAAXQAgGAAAngMAIBIGAAC3AgAgCwAAtgIAIHcBAAAAAXpAAAAAAYYBAQAAAAGHAQEAAAABiAEBAAAAAYkBAQAAAAGKAQEAAAABjAEAAACMAQKOAQAAAI4BAo8BAQAAAAGQAQEAAAABkQEBAAAAAZIBQAAAAAGTASAAAAABlAEBAAAAAZUBQAAAAAECAAAAdgAgGAAAoAMAIAMAAABgACAYAACeAwAgGQAApAMAIBUAAABgACAFAADDAgAgBgAAxAIAIBEAAKQDACB3AQDrAQAhekAA7AEAIYYBAQDrAQAhlQFAAOwBACGZAQEA6wEAIZoBAQD1AQAhmwEIAKICACGcAQgAwQIAIZ0BAgCTAgAhngEBAOsBACGfAQAAwgIAIKABAQD1AQAhoQEBAPUBACGiAQgAogIAIaMBAgCTAgAhpAEgAPkBACGlASAA-QEAIRMFAADDAgAgBgAAxAIAIHcBAOsBACF6QADsAQAhhgEBAOsBACGVAUAA7AEAIZkBAQDrAQAhmgEBAPUBACGbAQgAogIAIZwBCADBAgAhnQECAJMCACGeAQEA6wEAIZ8BAADCAgAgoAEBAPUBACGhAQEA9QEAIaIBCACiAgAhowECAJMCACGkASAA-QEAIaUBIAD5AQAhAwAAAHkAIBgAAKADACAZAACnAwAgFAAAAHkAIAYAAPsBACALAAD6AQAgEQAApwMAIHcBAOsBACF6QADsAQAhhgEBAOsBACGHAQEA6wEAIYgBAQDrAQAhiQEBAPUBACGKAQEA9QEAIYwBAAD2AYwBIo4BAAD3AY4BIo8BAQD1AQAhkAEBAPUBACGRAQEA9QEAIZIBQAD4AQAhkwEgAPkBACGUAQEA9QEAIZUBQADsAQAhEgYAAPsBACALAAD6AQAgdwEA6wEAIXpAAOwBACGGAQEA6wEAIYcBAQDrAQAhiAEBAOsBACGJAQEA9QEAIYoBAQD1AQAhjAEAAPYBjAEijgEAAPcBjgEijwEBAPUBACGQAQEA9QEAIZEBAQD1AQAhkgFAAPgBACGTASAA-QEAIZQBAQD1AQAhlQFAAOwBACECAwACBwAFBAYXAQgYBgkACQsGAwMDAAIJAAgKCgQCBAADBwAFBAULBAYOAQgSBgkABwIDAAIHAAUDBRMABhQACBUAAQoWAAMGGgAIGwALGQAAAgMAAgcABQIDAAIHAAUFCQAOHgAPHwAQIAARIQASAAAAAAAFCQAOHgAPHwAQIAARIQASAQMAAgEDAAIFCQAXHgAYHwAZIAAaIQAbAAAAAAAFCQAXHgAYHwAZIAAaIQAbAgQAAwcABQIEAAMHAAUFCQAgHgAhHwAiIAAjIQAkAAAAAAAFCQAgHgAhHwAiIAAjIQAkAAAFCQApHgAqHwArIAAsIQAtAAAAAAAFCQApHgAqHwArIAAsIQAtAAADCQAyIAAzIQA0AAAAAwkAMiAAMyEANAIDAAIHAAUCAwACBwAFAwkAOSAAOiEAOwAAAAMJADkgADohADsMAgENHAEOHQEPHgEQHwESIQETIwoUJAsVJgEWKAoXKQwaKgEbKwEcLAoiLw0jMBMkMQMlMgMmMwMnNAMoNQMpNwMqOQorOhQsPAMtPgouPxUvQAMwQQMxQgoyRRYzRhw0RwQ1SAQ2SQQ3SgQ4SwQ5TQQ6Two7UB08UgQ9VAo-VR4_VgRAVwRBWApCWx9DXCVEXgVFXwVGYgVHYwVIZAVJZgVKaApLaSZMawVNbQpObidPbwVQcAVRcQpSdChTdS5UdwJVeAJWewJXfAJYfQJZfwJagQEKW4IBL1yEAQJdhgEKXocBMF-IAQJgiQECYYoBCmKNATFjjgE1ZI8BBmWQAQZmkQEGZ5IBBmiTAQZplQEGapcBCmuYATZsmgEGbZwBCm6dATdvngEGcJ8BBnGgAQpyowE4c6QBPA"
 };
 async function decodeBase64AsWasm(wasmBase64) {
   const { Buffer } = await import("buffer");
@@ -121,9 +121,9 @@ var defineExtension = runtime2.Extensions.defineExtension;
 
 // src/generated/prisma/enums.ts
 var Role = {
+  CUSTOMER: "CUSTOMER",
   ADMIN: "ADMIN",
-  MANAGER: "MANAGER",
-  EMPLOY: "EMPLOY"
+  SELLER: "SELLER"
 };
 
 // src/generated/prisma/client.ts
@@ -139,32 +139,32 @@ var prisma = new PrismaClient({ adapter });
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 var registerUser = async (payload) => {
+  const { photoUrl, ...rest } = payload;
   const hashedPassword = await bcrypt.hash(payload.password, 10);
-  if (payload.joiningDate) {
-    payload.joiningDate = new Date(payload.joiningDate);
-  }
   const user = await prisma.user.create({
     data: {
-      ...payload,
-      password: hashedPassword
+      ...rest,
+      password: hashedPassword,
+      avatar: photoUrl
+      //  photoUrl → avatar mapping
     },
     select: {
       id: true,
       name: true,
       email: true,
       phone: true,
-      photoUrl: true,
+      avatar: true,
+      //  correct field
       role: true,
-      designation: true,
-      skills: true,
-      experience: true,
-      department: true,
-      joiningDate: true,
-      salary: true,
       status: true,
+      address: true,
+      city: true,
+      country: true,
+      lastLogin: true,
+      emailVerified: true,
+      provider: true,
       createdAt: true,
-      updatedAt: true,
-      lastLogin: true
+      updatedAt: true
     }
   });
   return user;
@@ -184,18 +184,12 @@ var loginUser = async (payload) => {
   const token = jwt.sign(
     {
       id: user.id,
-      employeeId: user.employeeId,
       email: user.email,
       role: user.role,
       name: user.name,
       phone: user.phone,
-      photoUrl: user.photoUrl,
-      designation: user.designation,
-      skills: user.skills,
-      experience: user.experience,
-      department: user.department,
-      status: user.status,
-      salary: user.salary
+      photoUrl: user.avatar,
+      status: user.status
     },
     envVars.JWT_SECRET,
     {
@@ -217,34 +211,62 @@ var getSingleUser = async (id) => {
     where: { id }
   });
 };
-var updateUser = async (id, payload) => {
-  if (payload.password) {
-    payload.password = await bcrypt.hash(payload.password, 10);
-  }
-  if (payload.joiningDate) {
-    payload.joiningDate = new Date(payload.joiningDate);
-  }
-  return await prisma.user.update({
+var getCurrentUser = async (id) => {
+  const user = await prisma.user.findUnique({
     where: { id },
-    data: payload,
     select: {
       id: true,
       name: true,
       email: true,
       phone: true,
-      photoUrl: true,
+      avatar: true,
       role: true,
-      designation: true,
-      skills: true,
-      experience: true,
-      department: true,
       status: true,
-      joiningDate: true,
+      address: true,
+      city: true,
+      country: true,
+      emailVerified: true,
+      provider: true,
       createdAt: true,
       updatedAt: true,
       lastLogin: true
     }
   });
+  if (!user) {
+    throw new Error("User not found");
+  }
+  return user;
+};
+var updateUser = async (id, payload) => {
+  if (payload.password) {
+    payload.password = await bcrypt.hash(payload.password, 10);
+  }
+  const { photoUrl, ...rest } = payload;
+  const user = await prisma.user.update({
+    where: { id },
+    data: {
+      ...rest,
+      avatar: photoUrl
+    },
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      phone: true,
+      avatar: true,
+      role: true,
+      status: true,
+      address: true,
+      city: true,
+      country: true,
+      emailVerified: true,
+      provider: true,
+      createdAt: true,
+      updatedAt: true,
+      lastLogin: true
+    }
+  });
+  return user;
 };
 var updatePassword = async (id, oldPassword, newPassword) => {
   const user = await prisma.user.findUnique({ where: { id } });
@@ -252,7 +274,7 @@ var updatePassword = async (id, oldPassword, newPassword) => {
   const isMatch = await bcrypt.compare(oldPassword, user.password);
   if (!isMatch) throw new Error("Old password is incorrect");
   const hashedPassword = await bcrypt.hash(newPassword, 10);
-  return await prisma.user.update({
+  const updatedUser = await prisma.user.update({
     where: { id },
     data: { password: hashedPassword },
     select: {
@@ -260,19 +282,20 @@ var updatePassword = async (id, oldPassword, newPassword) => {
       name: true,
       email: true,
       phone: true,
-      photoUrl: true,
+      avatar: true,
       role: true,
-      designation: true,
-      skills: true,
-      experience: true,
-      department: true,
       status: true,
-      joiningDate: true,
+      address: true,
+      city: true,
+      country: true,
+      emailVerified: true,
+      provider: true,
+      lastLogin: true,
       createdAt: true,
-      updatedAt: true,
-      lastLogin: true
+      updatedAt: true
     }
   });
+  return updatedUser;
 };
 var deleteUser = async (id) => {
   const user = await prisma.user.delete({
@@ -280,14 +303,15 @@ var deleteUser = async (id) => {
   });
   return user;
 };
-var UseService = {
+var UserService = {
   registerUser,
   deleteUser,
   getAllUsers,
   loginUser,
   getSingleUser,
   updateUser,
-  updatePassword
+  updatePassword,
+  getCurrentUser
 };
 
 // src/app/shared/catchAsync.ts
@@ -314,7 +338,7 @@ var sendResponse = (res, responseData) => {
 // src/app/modules/user/user.controller.ts
 var registerUser2 = catchAsync(async (req, res) => {
   const payload = req.body;
-  const result = await UseService.registerUser(payload);
+  const result = await UserService.registerUser(payload);
   sendResponse(res, {
     httpStatusCode: 201,
     success: true,
@@ -323,7 +347,7 @@ var registerUser2 = catchAsync(async (req, res) => {
   });
 });
 var loginUser2 = catchAsync(async (req, res) => {
-  const result = await UseService.loginUser(req.body);
+  const result = await UserService.loginUser(req.body);
   sendResponse(res, {
     httpStatusCode: 200,
     success: true,
@@ -332,7 +356,7 @@ var loginUser2 = catchAsync(async (req, res) => {
   });
 });
 var getAllUsers2 = catchAsync(async (req, res) => {
-  const result = await UseService.getAllUsers();
+  const result = await UserService.getAllUsers();
   sendResponse(res, {
     httpStatusCode: 200,
     success: true,
@@ -342,7 +366,20 @@ var getAllUsers2 = catchAsync(async (req, res) => {
 });
 var getSingleUser2 = catchAsync(async (req, res) => {
   const { id } = req.params;
-  const result = await UseService.getSingleUser(id);
+  const result = await UserService.getSingleUser(id);
+  sendResponse(res, {
+    httpStatusCode: 200,
+    success: true,
+    message: "user fetched successfully",
+    data: result
+  });
+});
+var getCurrentUser2 = catchAsync(async (req, res) => {
+  const id = req.user?.id;
+  if (!id) {
+    throw new Error("Unauthorized");
+  }
+  const result = await UserService.getCurrentUser(id);
   sendResponse(res, {
     httpStatusCode: 200,
     success: true,
@@ -353,7 +390,7 @@ var getSingleUser2 = catchAsync(async (req, res) => {
 var updateUser2 = catchAsync(async (req, res) => {
   const { id } = req.params;
   const payload = req.body;
-  const result = await UseService.updateUser(id, payload);
+  const result = await UserService.updateUser(id, payload);
   sendResponse(res, {
     httpStatusCode: 200,
     success: true,
@@ -364,7 +401,7 @@ var updateUser2 = catchAsync(async (req, res) => {
 var changePassword = catchAsync(async (req, res) => {
   const { id } = req.params;
   const { oldPassword, newPassword } = req.body;
-  const result = await UseService.updatePassword(
+  const result = await UserService.updatePassword(
     id,
     oldPassword,
     newPassword
@@ -378,7 +415,7 @@ var changePassword = catchAsync(async (req, res) => {
 });
 var deleteUser2 = catchAsync(async (req, res) => {
   const { id } = req.params;
-  const result = await UseService.deleteUser(id);
+  const result = await UserService.deleteUser(id);
   sendResponse(res, {
     httpStatusCode: 200,
     success: true,
@@ -393,7 +430,8 @@ var UserController = {
   loginUser: loginUser2,
   getSingleUser: getSingleUser2,
   updateUser: updateUser2,
-  changePassword
+  changePassword,
+  getCurrentUser: getCurrentUser2
 };
 
 // src/app/middleware/auth.ts
@@ -436,1146 +474,42 @@ router.post("/", UserController.registerUser);
 router.post("/login", UserController.loginUser);
 router.get("/", UserController.getAllUsers);
 router.get(
+  "/me",
+  auth(Role.ADMIN, Role.SELLER, Role.CUSTOMER),
+  UserController.getCurrentUser
+);
+router.get(
   "/:id",
-  auth(Role.ADMIN, Role.MANAGER),
+  auth(Role.ADMIN, Role.SELLER, Role.CUSTOMER),
   UserController.getSingleUser
 );
 router.put(
   "/:id",
-  auth(Role.EMPLOY, Role.ADMIN, Role.MANAGER),
+  auth(Role.SELLER, Role.CUSTOMER, Role.ADMIN),
   UserController.updateUser
 );
 router.put(
   "/:id/password",
-  auth(Role.EMPLOY, Role.ADMIN, Role.MANAGER),
+  auth(Role.SELLER, Role.CUSTOMER, Role.ADMIN),
   UserController.changePassword
 );
 router.delete("/:id", auth(Role.ADMIN), UserController.deleteUser);
 var UserRoute = router;
 
-// src/app/modules/blog/blog.route.ts
-import express from "express";
-
-// src/app/modules/blog/blog.service.ts
-var createBlog = async (payload) => {
-  const result = await prisma.blog.create({
-    data: payload
-  });
-  return result;
-};
-var getAllBlogs = async (query) => {
-  const { page = 1, limit = 10, search } = query;
-  const skip = (Number(page) - 1) * Number(limit);
-  const whereCondition = search ? {
-    title: {
-      contains: search,
-      mode: "insensitive"
-    }
-  } : {};
-  const result = await prisma.blog.findMany({
-    where: whereCondition,
-    skip,
-    take: Number(limit),
-    orderBy: {
-      createdAt: "desc"
-    }
-  });
-  const total = await prisma.blog.count({
-    where: whereCondition
-  });
-  return {
-    meta: {
-      page: Number(page),
-      limit: Number(limit),
-      total
-    },
-    data: result
-  };
-};
-var getSingleBlog = async (id) => {
-  return await prisma.blog.findUnique({
-    where: { id }
-  });
-};
-var updateBlog = async (id, payload) => {
-  return await prisma.blog.update({
-    where: { id },
-    data: payload
-  });
-};
-var deleteBlog = async (id) => {
-  return await prisma.blog.delete({
-    where: { id }
-  });
-};
-var BlogService = {
-  createBlog,
-  getAllBlogs,
-  getSingleBlog,
-  updateBlog,
-  deleteBlog
-};
-
-// src/app/modules/blog/blog.controller.ts
-var createBlog2 = async (req, res) => {
-  const result = await BlogService.createBlog(req.body);
-  res.status(201).json({
-    success: true,
-    message: "Blog created successfully",
-    data: result
-  });
-};
-var getAllBlogs2 = async (req, res) => {
-  const result = await BlogService.getAllBlogs(req.query);
-  res.status(200).json({
-    success: true,
-    ...result
-  });
-};
-var getSingleBlog2 = async (req, res) => {
-  const { id } = req.params;
-  const result = await BlogService.getSingleBlog(id);
-  res.status(200).json({
-    success: true,
-    data: result
-  });
-};
-var updateBlog2 = async (req, res) => {
-  const { id } = req.params;
-  const result = await BlogService.updateBlog(id, req.body);
-  res.status(200).json({
-    success: true,
-    message: "Blog updated successfully",
-    data: result
-  });
-};
-var deleteBlog2 = async (req, res) => {
-  const { id } = req.params;
-  await BlogService.deleteBlog(id);
-  res.status(200).json({
-    success: true,
-    message: "Blog deleted successfully"
-  });
-};
-var BlogController = {
-  createBlog: createBlog2,
-  getAllBlogs: getAllBlogs2,
-  getSingleBlog: getSingleBlog2,
-  updateBlog: updateBlog2,
-  deleteBlog: deleteBlog2
-};
-
-// src/app/modules/blog/blog.route.ts
-var router2 = express.Router();
-router2.get("/", BlogController.getAllBlogs);
-router2.get("/:id", BlogController.getSingleBlog);
-router2.post("/", auth(Role.ADMIN), BlogController.createBlog);
-router2.patch("/:id", auth("ADMIN"), BlogController.updateBlog);
-router2.delete("/:id", auth("ADMIN"), BlogController.deleteBlog);
-var BlogRoutes = router2;
-
-// src/app/modules/hero-managenment/hero.route.ts
-import express2 from "express";
-
-// src/app/modules/hero-managenment/hero.service.ts
-var createHero = async (payload) => {
-  return await prisma.hero.create({
-    data: payload
-  });
-};
-var getAllHero = async () => {
-  return await prisma.hero.findMany({
-    orderBy: {
-      createdAt: "desc"
-    }
-  });
-};
-var getSingleHero = async (id) => {
-  return await prisma.hero.findUnique({
-    where: { id }
-  });
-};
-var updateHero = async (id, payload) => {
-  return await prisma.hero.update({
-    where: { id },
-    data: payload
-  });
-};
-var deleteHero = async (id) => {
-  return await prisma.hero.delete({
-    where: { id }
-  });
-};
-var HeroService = {
-  createHero,
-  getAllHero,
-  getSingleHero,
-  updateHero,
-  deleteHero
-};
-
-// src/app/modules/hero-managenment/hero.controller.ts
-var createHero2 = async (req, res) => {
-  const result = await HeroService.createHero(req.body);
-  res.status(201).json({
-    success: true,
-    message: "Hero content created successfully",
-    data: result
-  });
-};
-var getAllHero2 = async (req, res) => {
-  const result = await HeroService.getAllHero();
-  res.status(200).json({
-    success: true,
-    data: result
-  });
-};
-var getSingleHero2 = async (req, res) => {
-  const result = await HeroService.getSingleHero(req.params.id);
-  res.status(200).json({
-    success: true,
-    data: result
-  });
-};
-var updateHero2 = async (req, res) => {
-  const result = await HeroService.updateHero(
-    req.params.id,
-    req.body
-  );
-  res.status(200).json({
-    success: true,
-    message: "Hero updated successfully",
-    data: result
-  });
-};
-var deleteHero2 = async (req, res) => {
-  await HeroService.deleteHero(req.params.id);
-  res.status(200).json({
-    success: true,
-    message: "Hero deleted successfully"
-  });
-};
-var HeroController = {
-  createHero: createHero2,
-  getAllHero: getAllHero2,
-  getSingleHero: getSingleHero2,
-  updateHero: updateHero2,
-  deleteHero: deleteHero2
-};
-
-// src/app/modules/hero-managenment/hero.route.ts
-var router3 = express2.Router();
-router3.get("/", HeroController.getAllHero);
-router3.get("/:id", HeroController.getSingleHero);
-router3.post("/", auth("ADMIN"), HeroController.createHero);
-router3.patch("/:id", auth("ADMIN"), HeroController.updateHero);
-router3.delete("/:id", auth("ADMIN"), HeroController.deleteHero);
-var HeroRoutes = router3;
-
-// src/app/modules/portfolio/portfolio.route.ts
-import express3 from "express";
-
-// src/app/modules/portfolio/portfolio.service.ts
-var createPortfolio = async (payload) => {
-  return await prisma.portfolio.create({
-    data: payload
-  });
-};
-var getAllPortfolio = async (query) => {
-  const { page = 1, limit = 10, category } = query;
-  const skip = (Number(page) - 1) * Number(limit);
-  const whereCondition = category ? { category: { equals: category, mode: "insensitive" } } : {};
-  const data = await prisma.portfolio.findMany({
-    where: whereCondition,
-    skip,
-    take: Number(limit),
-    orderBy: { createdAt: "desc" }
-  });
-  const total = await prisma.portfolio.count({
-    where: whereCondition
-  });
-  return {
-    meta: {
-      page: Number(page),
-      limit: Number(limit),
-      total
-    },
-    data
-  };
-};
-var getSinglePortfolio = async (id) => {
-  return await prisma.portfolio.findUnique({
-    where: { id }
-  });
-};
-var updatePortfolio = async (id, payload) => {
-  return await prisma.portfolio.update({
-    where: { id },
-    data: payload
-  });
-};
-var deletePortfolio = async (id) => {
-  return await prisma.portfolio.delete({
-    where: { id }
-  });
-};
-var PortfolioService = {
-  createPortfolio,
-  getAllPortfolio,
-  getSinglePortfolio,
-  updatePortfolio,
-  deletePortfolio
-};
-
-// src/app/modules/portfolio/portfolio.controller.ts
-var createPortfolio2 = async (req, res) => {
-  const result = await PortfolioService.createPortfolio(req.body);
-  res.status(201).json({
-    success: true,
-    message: "Portfolio created successfully",
-    data: result
-  });
-};
-var getAllPortfolio2 = async (req, res) => {
-  const result = await PortfolioService.getAllPortfolio(req.query);
-  res.status(200).json({
-    success: true,
-    ...result
-  });
-};
-var getSinglePortfolio2 = async (req, res) => {
-  const result = await PortfolioService.getSinglePortfolio(
-    req.params.id
-  );
-  res.status(200).json({
-    success: true,
-    data: result
-  });
-};
-var updatePortfolio2 = async (req, res) => {
-  const result = await PortfolioService.updatePortfolio(
-    req.params.id,
-    req.body
-  );
-  res.status(200).json({
-    success: true,
-    message: "Portfolio updated successfully",
-    data: result
-  });
-};
-var deletePortfolio2 = async (req, res) => {
-  await PortfolioService.deletePortfolio(req.params.id);
-  res.status(200).json({
-    success: true,
-    message: "Portfolio deleted successfully"
-  });
-};
-var PortfolioController = {
-  createPortfolio: createPortfolio2,
-  getAllPortfolio: getAllPortfolio2,
-  getSinglePortfolio: getSinglePortfolio2,
-  updatePortfolio: updatePortfolio2,
-  deletePortfolio: deletePortfolio2
-};
-
-// src/app/modules/portfolio/portfolio.route.ts
-var router4 = express3.Router();
-router4.get("/", PortfolioController.getAllPortfolio);
-router4.get("/:id", PortfolioController.getSinglePortfolio);
-router4.post("/", auth("ADMIN"), PortfolioController.createPortfolio);
-router4.patch("/:id", auth("ADMIN"), PortfolioController.updatePortfolio);
-router4.delete("/:id", auth("ADMIN"), PortfolioController.deletePortfolio);
-var PortfolioRoutes = router4;
-
-// src/app/modules/lead/lead.route.ts
-import express4 from "express";
-
-// src/app/modules/lead/lead.service.ts
-var createLead = async (payload) => {
-  return await prisma.lead.create({
-    data: payload
-  });
-};
-var getAllLeads = async (query) => {
-  const { page = 1, limit = 10 } = query;
-  const skip = (Number(page) - 1) * Number(limit);
-  const data = await prisma.lead.findMany({
-    skip,
-    take: Number(limit),
-    orderBy: {
-      createdAt: "desc"
-    }
-  });
-  const total = await prisma.lead.count();
-  return {
-    meta: {
-      page: Number(page),
-      limit: Number(limit),
-      total
-    },
-    data
-  };
-};
-var getSingleLead = async (id) => {
-  return await prisma.lead.findUnique({
-    where: { id }
-  });
-};
-var markAsViewed = async (id) => {
-  return await prisma.lead.update({
-    where: { id },
-    data: { isViewed: true }
-  });
-};
-var deleteLead = async (id) => {
-  return await prisma.lead.delete({
-    where: { id }
-  });
-};
-var LeadService = {
-  createLead,
-  getAllLeads,
-  getSingleLead,
-  deleteLead,
-  markAsViewed
-};
-
-// src/app/modules/lead/lead.controller.ts
-var createLead2 = async (req, res) => {
-  const result = await LeadService.createLead({
-    ...req.body,
-    date: new Date(req.body.date)
-  });
-  res.status(201).json({
-    success: true,
-    message: "Lead submitted successfully",
-    data: result
-  });
-};
-var getAllLeads2 = async (req, res) => {
-  const result = await LeadService.getAllLeads(req.query);
-  res.status(200).json({
-    success: true,
-    ...result
-  });
-};
-var getSingleLead2 = async (req, res) => {
-  const result = await LeadService.getSingleLead(req.params.id);
-  res.status(200).json({
-    success: true,
-    data: result
-  });
-};
-var markAsViewed2 = async (req, res) => {
-  const result = await LeadService.markAsViewed(req.params.id);
-  res.status(200).json({
-    success: true,
-    message: "Lead marked as viewed",
-    data: result
-  });
-};
-var deleteLead2 = async (req, res) => {
-  await LeadService.deleteLead(req.params.id);
-  res.status(200).json({
-    success: true,
-    message: "Lead deleted successfully"
-  });
-};
-var LeadController = {
-  createLead: createLead2,
-  getAllLeads: getAllLeads2,
-  getSingleLead: getSingleLead2,
-  deleteLead: deleteLead2,
-  markAsViewed: markAsViewed2
-};
-
-// src/app/modules/lead/lead.route.ts
-var router5 = express4.Router();
-router5.post("/", LeadController.createLead);
-router5.get("/", auth("ADMIN"), LeadController.getAllLeads);
-router5.get("/:id", auth("ADMIN"), LeadController.getSingleLead);
-router5.patch("/:id/view", auth("ADMIN"), LeadController.markAsViewed);
-router5.delete("/:id", auth("ADMIN"), LeadController.deleteLead);
-var LeadRoutes = router5;
-
-// src/app/modules/course/course.route.ts
-import express5 from "express";
-
-// src/app/modules/course/course.service.ts
-var createCourse = async (payload) => {
-  return await prisma.course.create({
-    data: payload
-  });
-};
-var getAllCourses = async (query) => {
-  const { page = 1, limit = 10, category, status: status3 } = query;
-  const skip = (Number(page) - 1) * Number(limit);
-  const whereCondition = {};
-  if (category) {
-    whereCondition.category = {
-      equals: category,
-      mode: "insensitive"
-    };
-  }
-  if (status3) {
-    whereCondition.status = status3;
-  }
-  const data = await prisma.course.findMany({
-    where: whereCondition,
-    skip,
-    take: Number(limit),
-    orderBy: {
-      createdAt: "desc"
-    }
-  });
-  const total = await prisma.course.count({
-    where: whereCondition
-  });
-  return {
-    meta: {
-      page: Number(page),
-      limit: Number(limit),
-      total
-    },
-    data
-  };
-};
-var getSingleCourse = async (id) => {
-  return await prisma.course.findUnique({
-    where: { id }
-  });
-};
-var updateCourse = async (id, payload) => {
-  return await prisma.course.update({
-    where: { id },
-    data: payload
-  });
-};
-var deleteCourse = async (id) => {
-  return await prisma.course.delete({
-    where: { id }
-  });
-};
-var CourseService = {
-  createCourse,
-  getAllCourses,
-  getSingleCourse,
-  updateCourse,
-  deleteCourse
-};
-
-// src/app/modules/course/course.controller.ts
-var createCourse2 = async (req, res) => {
-  const result = await CourseService.createCourse(req.body);
-  res.status(201).json({
-    success: true,
-    message: "Course created successfully",
-    data: result
-  });
-};
-var getAllCourses2 = async (req, res) => {
-  const result = await CourseService.getAllCourses(req.query);
-  res.status(200).json({
-    success: true,
-    ...result
-  });
-};
-var getSingleCourse2 = async (req, res) => {
-  const result = await CourseService.getSingleCourse(req.params.id);
-  res.status(200).json({
-    success: true,
-    data: result
-  });
-};
-var updateCourse2 = async (req, res) => {
-  const result = await CourseService.updateCourse(
-    req.params.id,
-    req.body
-  );
-  res.status(200).json({
-    success: true,
-    message: "Course updated successfully",
-    data: result
-  });
-};
-var deleteCourse2 = async (req, res) => {
-  await CourseService.deleteCourse(req.params.id);
-  res.status(200).json({
-    success: true,
-    message: "Course deleted successfully"
-  });
-};
-var CourseController = {
-  createCourse: createCourse2,
-  getAllCourses: getAllCourses2,
-  getSingleCourse: getSingleCourse2,
-  updateCourse: updateCourse2,
-  deleteCourse: deleteCourse2
-};
-
-// src/app/modules/course/course.route.ts
-var router6 = express5.Router();
-router6.get("/", CourseController.getAllCourses);
-router6.get("/:id", CourseController.getSingleCourse);
-router6.post("/", auth("ADMIN"), CourseController.createCourse);
-router6.patch("/:id", auth("ADMIN"), CourseController.updateCourse);
-router6.delete("/:id", auth("ADMIN"), CourseController.deleteCourse);
-var CourseRoutes = router6;
-
-// src/app/modules/attendance/attendance.route.ts
-import express6 from "express";
-
-// src/app/modules/attendance/attendance.service.ts
-var createAttendance = async (payload) => {
-  return await prisma.attendance.create({
-    data: payload
-  });
-};
-var getAllAttendance = async (query) => {
-  const { page = 1, limit = 10 } = query;
-  const skip = (Number(page) - 1) * Number(limit);
-  const data = await prisma.attendance.findMany({
-    skip,
-    take: Number(limit),
-    orderBy: { createdAt: "desc" }
-  });
-  const total = await prisma.attendance.count();
-  return {
-    meta: { page: Number(page), limit: Number(limit), total },
-    data
-  };
-};
-var getSingleAttendance = async (id) => {
-  return await prisma.attendance.findUnique({
-    where: { id }
-  });
-};
-var updateAttendance = async (id, payload) => {
-  return await prisma.attendance.update({
-    where: { id },
-    data: payload
-  });
-};
-var deleteAttendance = async (id) => {
-  return await prisma.attendance.delete({
-    where: { id }
-  });
-};
-var getEmployeeAttendancePaginated = async (employeeId, page = 1, limit = 30) => {
-  const skip = (page - 1) * limit;
-  const records = await prisma.attendance.findMany({
-    where: { employeeId },
-    orderBy: { checkIn: "desc" },
-    skip,
-    take: limit
-  });
-  const total = await prisma.attendance.count({
-    where: { employeeId }
-  });
-  return {
-    total,
-    page,
-    limit,
-    totalPages: Math.ceil(total / limit),
-    records
-  };
-};
-var AttendanceService = {
-  createAttendance,
-  getAllAttendance,
-  getSingleAttendance,
-  updateAttendance,
-  deleteAttendance,
-  getEmployeeAttendancePaginated
-};
-
-// src/app/modules/attendance/attendance.controller.ts
-var createAttendance2 = async (req, res) => {
-  try {
-    const result = await AttendanceService.createAttendance({
-      ...req.body,
-      checkIn: new Date(req.body.checkIn),
-      checkOut: req.body.checkOut ? new Date(req.body.checkOut) : void 0
-    });
-    res.status(201).json({
-      success: true,
-      message: "Attendance recorded successfully",
-      data: result
-    });
-  } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
-  }
-};
-var getMyAttendance = async (req, res) => {
-  try {
-    const employeeId = req.user?.employeeId;
-    console.log(employeeId);
-    if (!employeeId) {
-      return res.status(401).json({ success: false, message: "Unauthorized" });
-    }
-    const page = Number(req.query.page) || 1;
-    const limit = Number(req.query.limit) || 30;
-    const result = await AttendanceService.getEmployeeAttendancePaginated(
-      employeeId,
-      page,
-      limit
-    );
-    res.status(200).json({ success: true, ...result });
-  } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
-  }
-};
-var getAllAttendance2 = async (req, res) => {
-  const result = await AttendanceService.getAllAttendance(req.query);
-  res.status(200).json({ success: true, ...result });
-};
-var getSingleAttendance2 = async (req, res) => {
-  const result = await AttendanceService.getSingleAttendance(
-    req.params.id
-  );
-  res.status(200).json({ success: true, data: result });
-};
-var updateAttendance2 = async (req, res) => {
-  try {
-    const payload = {};
-    if (req.body.checkOut) {
-      payload.checkOut = new Date(req.body.checkOut);
-    }
-    const result = await AttendanceService.updateAttendance(
-      req.params.id,
-      payload
-    );
-    res.status(200).json({
-      success: true,
-      message: "Attendance updated",
-      data: result
-    });
-  } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
-  }
-};
-var deleteAttendance2 = async (req, res) => {
-  await AttendanceService.deleteAttendance(req.params.id);
-  res.status(200).json({ success: true, message: "Attendance deleted" });
-};
-var AttendanceController = {
-  createAttendance: createAttendance2,
-  getMyAttendance,
-  getAllAttendance: getAllAttendance2,
-  getSingleAttendance: getSingleAttendance2,
-  updateAttendance: updateAttendance2,
-  deleteAttendance: deleteAttendance2
-};
-
-// src/app/modules/attendance/attendance.route.ts
-var router7 = express6.Router();
-router7.get(
-  "/my",
-  auth(Role.EMPLOY, Role.MANAGER, Role.ADMIN),
-  AttendanceController.getMyAttendance
-);
-router7.post(
-  "/",
-  auth(Role.EMPLOY, Role.ADMIN, Role.MANAGER),
-  AttendanceController.createAttendance
-);
-router7.get(
-  "/",
-  auth(Role.MANAGER, Role.ADMIN),
-  AttendanceController.getAllAttendance
-);
-router7.get("/:id", auth(Role.ADMIN), AttendanceController.getSingleAttendance);
-router7.patch(
-  "/:id",
-  auth(Role.EMPLOY, Role.MANAGER, Role.ADMIN),
-  AttendanceController.updateAttendance
-);
-router7.delete("/:id", auth(Role.ADMIN), AttendanceController.deleteAttendance);
-var AttendanceRoutes = router7;
-
-// src/app/modules/stats/stats.route.ts
-import express7 from "express";
-
-// src/app/modules/stats/stats.service.ts
-var getStats = async () => {
-  const [users, blogs, leads, courses, portfolios] = await Promise.all([
-    prisma.user.count(),
-    prisma.blog.count(),
-    prisma.lead.count(),
-    prisma.course.count(),
-    prisma.portfolio.count()
-  ]);
-  return {
-    users,
-    blogs,
-    leads,
-    courses,
-    portfolios
-  };
-};
-var StatsService = {
-  getStats
-};
-
-// src/app/modules/stats/stats.controller.ts
-var getStats2 = async (req, res) => {
-  try {
-    const result = await StatsService.getStats();
-    res.status(200).json({
-      success: true,
-      message: "Stats fetched successfully",
-      data: result
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: "Failed to fetch stats"
-    });
-  }
-};
-var StatsController = {
-  getStats: getStats2
-};
-
-// src/app/modules/stats/stats.route.ts
-var router8 = express7.Router();
-router8.get("/", StatsController.getStats);
-var StatsRoutes = router8;
-
-// src/app/modules/payment/payment.route.ts
-import express8 from "express";
-
-// src/app/modules/payment/payment.service.ts
-import Stripe from "stripe";
-var stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
-var createCheckoutSessionService = async (payload) => {
-  const { courseId, price, userId } = payload;
-  const session = await stripe.checkout.sessions.create({
-    payment_method_types: ["card"],
-    mode: "payment",
-    success_url: `${process.env.CLIENT_URL}/courses/${courseId}`,
-    cancel_url: `${process.env.CLIENT_URL}/courses/${courseId}`,
-    line_items: [
-      {
-        price_data: {
-          currency: "bdt",
-          product_data: {
-            name: "Course Purchase"
-          },
-          unit_amount: price * 100
-        },
-        quantity: 1
-      }
-    ],
-    metadata: {
-      courseId,
-      userId
-    }
-  });
-  return session;
-};
-
-// src/app/modules/payment/payment.controller.ts
-var createCheckoutSession = async (req, res) => {
-  const session = await createCheckoutSessionService(req.body);
-  res.json({
-    success: true,
-    url: session.url
-  });
-};
-
-// src/app/modules/payment/payment.route.ts
-var router9 = express8.Router();
-router9.post("/create-checkout-session", createCheckoutSession);
-var paymentRoutes = router9;
-
-// src/app/modules/chatbot/chatbot.route.ts
-import express9 from "express";
-
-// src/app/modules/chatbot/chatbot.service.ts
-import { GoogleGenerativeAI } from "@google/generative-ai";
-
-// src/app/modules/chatbot/chatbot.knowledge.ts
-var COMPANY_KNOWLEDGE = `
-## Company
-- Name: DeltA Digivast
-- Type: Digital agency \u2013 web development, design, and digital marketing
-- Location: Bangladesh (serves global clients)
-- Contact Page: /contact
-- Portfolio Page: /portfolio
-
-## Services & Pricing
-
-### 1. Business Website
-- Description: Professional multi-page website for businesses (Home, About, Services, Contact, Blog)
-- Starting price: $300 \u2013 $800
-- Delivery: 7 \u2013 14 business days
-- Technologies: Next.js, React, Tailwind CSS, Node.js
-- Best for: Small to medium businesses wanting a strong online presence
-
-### 2. E-Commerce Website
-- Description: Full online store with product management, cart, checkout, and payment gateway
-- Starting price: $600 \u2013 $2,000
-- Delivery: 14 \u2013 30 business days
-- Technologies: Next.js, Stripe, PostgreSQL, Prisma
-- Best for: Businesses wanting to sell products online
-
-### 3. Custom Web Application
-- Description: Fully custom web app with backend, database, authentication, and dashboard
-- Starting price: $1,000 \u2013 $5,000+
-- Delivery: 30 \u2013 60 business days
-- Technologies: React/Next.js, Node.js/Express, PostgreSQL, Prisma, REST API
-- Best for: Startups and businesses needing a bespoke software solution
-
-### 4. UI/UX Design
-- Description: User-centered interface design including wireframes, prototypes, and final design files
-- Starting price: $150 \u2013 $500
-- Delivery: 5 \u2013 10 business days
-- Tools: Figma
-- Best for: Teams that need design before development, or want a redesign
-
-### 5. SEO Optimization
-- Description: On-page SEO, speed optimization, structured data, sitemap, and Google Search Console setup
-- Starting price: $100 \u2013 $300 (one-time)
-- Delivery: 3 \u2013 7 business days
-- Best for: Websites that want to rank higher on Google
-
-### 6. Digital Marketing
-- Description: Social media management, content strategy, paid ads (Facebook/Google)
-- Starting price: $200/month
-- Best for: Businesses wanting to grow their online audience and generate leads
-
-### 7. Graphic Design
-- Description: Logo, brand identity, social media graphics, banners, flyers
-- Starting price: $50 \u2013 $300
-- Delivery: 2 \u2013 5 business days
-- Tools: Adobe Illustrator, Photoshop, Figma
-
-## Packages
-
-### Starter Package (~$350)
-- Business website (up to 5 pages)
-- Basic SEO setup
-- Mobile responsive
-- Contact form
-- Delivery: 10 days
-
-### Business Package (~$900)
-- Professional website (up to 10 pages)
-- UI/UX design included
-- On-page SEO
-- Blog/CMS
-- 1 month post-launch support
-- Delivery: 20 days
-
-### Enterprise Package (Custom pricing)
-- Full custom web application or e-commerce
-- Custom design system
-- Admin dashboard
-- API integrations
-- 3 months post-launch support
-- Delivery: 45\u201360 days
-
-## Technology Stack
-- Frontend: Next.js, React, TypeScript, Tailwind CSS
-- Backend: Node.js, Express, TypeScript
-- Database: PostgreSQL, Prisma ORM
-- Payments: Stripe
-- Deployment: Vercel (frontend), Railway/Neon (backend/DB)
-- Design: Figma
-
-## Workflow (How a Project is Delivered)
-1. Discovery call / requirement gathering
-2. Proposal & quote sent within 24 hours
-3. Design phase (wireframes \u2192 approval)
-4. Development phase
-5. Testing & review
-6. Launch
-7. Post-launch support
-
-## FAQ
-Q: How much does a website cost?
-A: Prices start from $300 for a basic business website. E-commerce starts at $600, and custom apps from $1,000. The exact price depends on your requirements. Share your needs and we'll send a free custom quote!
-
-Q: How long does it take to build a website?
-A: A standard business website takes 7\u201314 days. E-commerce projects take 14\u201330 days. Complex custom apps take 30\u201360 days. We always give you a clear timeline before starting.
-
-Q: What technologies do you use?
-A: We mainly use Next.js, React, TypeScript, Node.js, PostgreSQL, and Prisma. We deploy on Vercel and use Stripe for payments.
-
-Q: Do you provide post-launch support?
-A: Yes! All packages include at least 1 month of post-launch support. The Enterprise package includes 3 months. Extended support plans are also available.
-
-Q: Can I see examples of your work?
-A: Absolutely! Visit our Portfolio page at /portfolio to see past projects.
-
-Q: Do you work with international clients?
-A: Yes, we work with clients worldwide. Communication is in English, and payments are accepted internationally.
-
-Q: Can you redesign my existing website?
-A: Yes! We offer redesign services. Share your current site and we'll suggest improvements.
-
-Q: What if I don't know exactly what I need?
-A: No problem! Contact us and we'll schedule a free discovery call to understand your goals and recommend the best solution.
-
-Q: How do I get started?
-A: Simply go to our Contact page at /contact, fill in your details, or chat with me and share your project idea. We'll get back to you within 24 hours.
-
-Q: Do you offer payment plans?
-A: Yes, for projects above $500 we offer a 50% deposit upfront and 50% on delivery.
-`;
-var SYSTEM_PROMPT = `
-You are the AI assistant for DeltA Digivast, a professional digital agency.
-Your role is to help website visitors by:
-1. Answering questions about DeltA Digivast's services, pricing, and workflow
-2. Recommending the most suitable package based on the visitor's needs
-3. Guiding interested visitors toward contacting the team for a custom quote
-
-## Your Knowledge Base
-${COMPANY_KNOWLEDGE}
-
-## Behavior Rules
-- Be friendly, helpful, and professional at all times
-- Keep answers concise (2\u20134 sentences max unless a detailed list is needed)
-- Only answer questions related to DeltA Digivast or digital services
-- If a visitor describes their project needs, identify which service or package fits best and explain why
-- Always mention that prices are starting prices and vary by project scope
-- When a visitor shows clear buying intent (e.g., "I want to hire you", "how do I start", "I need a quote"), ask for their name and email so the team can follow up
-- If you are unsure about something specific, suggest the visitor contact the team directly via the Contact page (/contact)
-- Do NOT make up prices, timelines, or services not listed in your knowledge base
-- Do NOT discuss topics unrelated to digital services, web development, or the agency
-- When recommending a package, briefly explain why it fits the user's described needs
-- End responses that involve next steps with a clear call to action (e.g., "Ready to get started? Share your email and we'll send a free quote!")
-- Use markdown formatting: **bold** for package names and prices, bullet lists for features
-- Always be encouraging and solution-focused
-`.trim();
-
-// src/app/modules/chatbot/chatbot.service.ts
-var genAI = null;
-var getClient = () => {
-  if (!genAI) {
-    const apiKey = process.env.GEMINI_API_KEY;
-    if (!apiKey) throw new Error("GEMINI_API_KEY is not set in environment variables");
-    genAI = new GoogleGenerativeAI(apiKey);
-  }
-  return genAI;
-};
-var chat = async ({ messages, leadData }) => {
-  if (!messages || messages.length === 0) {
-    throw new Error("messages array cannot be empty");
-  }
-  const lastMessage = messages[messages.length - 1];
-  if (lastMessage.role !== "user") {
-    throw new Error('The last message must have role "user"');
-  }
-  const history = messages.slice(0, -1).map((m) => ({
-    role: m.role,
-    parts: [{ text: m.content }]
-  }));
-  const attemptChat = async (modelName) => {
-    const model = getClient().getGenerativeModel({
-      model: modelName
-    });
-    const chatSession = model.startChat({
-      history: [
-        { role: "user", parts: [{ text: SYSTEM_PROMPT }] },
-        {
-          role: "model",
-          parts: [
-            {
-              text: "I understand. I am the DeltA Digivast AI assistant. I will help visitors according to your instructions. How can I help you today?"
-            }
-          ]
-        },
-        ...history
-      ],
-      generationConfig: {
-        maxOutputTokens: 512,
-        temperature: 0.7
-      }
-    });
-    return await chatSession.sendMessage(lastMessage.content);
-  };
-  let result;
-  try {
-    result = await attemptChat("gemini-2.5-flash");
-  } catch (err) {
-    const message = err.message || "";
-    if (message.includes("404")) {
-      try {
-        result = await attemptChat("gemini-flash-latest");
-      } catch (fallbackErr) {
-        throw new Error(
-          `AI Model Error: ${fallbackErr.message || "Models not found."}`
-        );
-      }
-    } else if (message.includes("429") || message.includes("quota")) {
-      throw new Error(
-        "Our AI assistant is temporarily busy (Quota exceeded). Please try again in a moment."
-      );
-    } else {
-      throw err;
-    }
-  }
-  const reply = result.response.text();
-  let leadSaved = false;
-  if (leadData?.email && leadData?.name) {
-    await prisma.lead.create({
-      data: {
-        name: leadData.name,
-        email: leadData.email,
-        from: "chatbot",
-        company: leadData.message ?? void 0,
-        date: /* @__PURE__ */ new Date()
-      }
-    });
-    leadSaved = true;
-  }
-  return { reply, leadSaved };
-};
-var ChatbotService = { chat };
-
-// src/app/modules/chatbot/chatbot.controller.ts
-var chat2 = catchAsync(async (req, res) => {
-  const { messages, leadData } = req.body;
-  const result = await ChatbotService.chat({ messages, leadData });
-  sendResponse(res, {
-    httpStatusCode: 200,
-    success: true,
-    message: "Chatbot reply generated successfully",
-    data: result
-  });
-});
-var ChatbotController = { chat: chat2 };
-
-// src/app/modules/chatbot/chatbot.route.ts
-var router10 = express9.Router();
-router10.post("/chat", ChatbotController.chat);
-var ChatbotRoutes = router10;
-
 // src/app/routes/index.ts
-var router11 = Router2();
-router11.use("/users", UserRoute);
-router11.use("/blogs", BlogRoutes);
-router11.use("/hero", HeroRoutes);
-router11.use("/portfolio", PortfolioRoutes);
-router11.use("/leads", LeadRoutes);
-router11.use("/courses", CourseRoutes);
-router11.use("/attendance", AttendanceRoutes);
-router11.use("/stats", StatsRoutes);
-router11.use("/payment", paymentRoutes);
-router11.use("/chatbot", ChatbotRoutes);
-var routes_default = router11;
+var router2 = Router2();
+router2.use("/users", UserRoute);
+var routes_default = router2;
 
 // src/app/modules/payment/payment.webhook.ts
-import Stripe2 from "stripe";
-var stripe2 = new Stripe2(process.env.STRIPE_SECRET_KEY);
+import Stripe from "stripe";
+var stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 var handleWebhook = async (req, res) => {
   const sig = req.headers["stripe-signature"];
   const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
   let event;
   try {
-    event = stripe2.webhooks.constructEvent(req.body, sig, endpointSecret);
+    event = stripe.webhooks.constructEvent(req.body, sig, endpointSecret);
   } catch (err) {
     return res.status(400).send("Webhook Error");
   }
@@ -1596,7 +530,7 @@ var handleWebhook = async (req, res) => {
 };
 
 // src/app.ts
-var app = express10();
+var app = express();
 var corsOptions = {
   origin: [
     "http://localhost:3000",
@@ -1616,9 +550,9 @@ var corsOptions = {
   optionsSuccessStatus: 204
 };
 app.use(cors(corsOptions));
-app.use(express10.urlencoded({ extended: true }));
-app.post("/webhook", express10.raw({ type: "application/json" }), handleWebhook);
-app.use(express10.json());
+app.use(express.urlencoded({ extended: true }));
+app.post("/webhook", express.raw({ type: "application/json" }), handleWebhook);
+app.use(express.json());
 app.use("/api/v1", routes_default);
 app.get("/", (req, res) => {
   res.status(200).json({
