@@ -50,7 +50,7 @@ var notFound = (req, res) => {
 import cors from "cors";
 
 // src/app/routes/index.ts
-import { Router as Router2 } from "express";
+import { Router as Router3 } from "express";
 
 // src/app/modules/user/user.route.ts
 import { Router } from "express";
@@ -496,10 +496,209 @@ router.put(
 router.delete("/:id", auth(Role.ADMIN), UserController.deleteUser);
 var UserRoute = router;
 
-// src/app/routes/index.ts
+// src/app/modules/products/product.route.ts
+import { Router as Router2 } from "express";
+
+// src/app/modules/products/product.service.ts
+var createProduct = async (payload) => {
+  try {
+    const result = await prisma.product.create({
+      data: payload
+    });
+    return result;
+  } catch (error) {
+    throw new Error("Failed to create product");
+  }
+};
+var getAllProducts = async (query) => {
+  try {
+    const {
+      search,
+      category,
+      brand,
+      minPrice,
+      maxPrice,
+      sortBy = "createdAt",
+      sortOrder = "desc",
+      page = 1,
+      limit = 10,
+      isFeatured
+    } = query;
+    const skip = (Number(page) - 1) * Number(limit);
+    const filters = {};
+    if (search) {
+      filters.OR = [
+        {
+          name: {
+            contains: search,
+            mode: "insensitive"
+          }
+        },
+        {
+          description: {
+            contains: search,
+            mode: "insensitive"
+          }
+        }
+      ];
+    }
+    if (category) {
+      filters.category = category;
+    }
+    if (brand) {
+      filters.brand = brand;
+    }
+    if (isFeatured !== void 0) {
+      filters.isFeatured = isFeatured === "true";
+    }
+    if (minPrice || maxPrice) {
+      filters.price = {
+        gte: minPrice ? Number(minPrice) : void 0,
+        lte: maxPrice ? Number(maxPrice) : void 0
+      };
+    }
+    const orderBy = {
+      [sortBy]: sortOrder
+    };
+    const result = await prisma.product.findMany({
+      where: filters,
+      orderBy,
+      skip,
+      take: Number(limit)
+    });
+    const total = await prisma.product.count({
+      where: filters
+    });
+    return {
+      data: result,
+      meta: {
+        total,
+        page: Number(page),
+        limit: Number(limit),
+        totalPages: Math.ceil(total / Number(limit))
+      }
+    };
+  } catch (error) {
+    throw new Error("Failed to fetch products");
+  }
+};
+var getSingleProduct = async (id) => {
+  try {
+    const result = await prisma.product.findUnique({
+      where: { id }
+    });
+    return result;
+  } catch (error) {
+    throw new Error("Failed to fetch product");
+  }
+};
+var updateProduct = async (id, payload) => {
+  try {
+    const result = await prisma.product.update({
+      where: { id },
+      data: payload
+    });
+    return result;
+  } catch (error) {
+    throw new Error("Failed to update product");
+  }
+};
+var deleteProduct = async (id) => {
+  try {
+    const result = await prisma.product.delete({
+      where: { id }
+    });
+    return result;
+  } catch (error) {
+    throw new Error("Failed to delete product");
+  }
+};
+var ProductService = {
+  createProduct,
+  getAllProducts,
+  getSingleProduct,
+  updateProduct,
+  deleteProduct
+};
+
+// src/app/modules/products/product.controller.ts
+var createProduct2 = async (req, res) => {
+  const result = await ProductService.createProduct(req.body);
+  res.status(201).json({
+    success: true,
+    message: "Product created successfully",
+    data: result
+  });
+};
+var getAllProducts2 = async (req, res) => {
+  const result = await ProductService.getAllProducts(req.query);
+  res.status(200).json({
+    success: true,
+    message: "Products fetched successfully",
+    data: result
+  });
+};
+var getSingleProduct2 = async (req, res) => {
+  const { id } = req.params;
+  const result = await ProductService.getSingleProduct(id);
+  res.status(200).json({
+    success: true,
+    message: "Product fetched successfully",
+    data: result
+  });
+};
+var updateProduct2 = async (req, res) => {
+  const { id } = req.params;
+  const result = await ProductService.updateProduct(id, req.body);
+  res.status(200).json({
+    success: true,
+    message: "Product updated successfully",
+    data: result
+  });
+};
+var deleteProduct2 = async (req, res) => {
+  const { id } = req.params;
+  const result = await ProductService.deleteProduct(id);
+  res.status(200).json({
+    success: true,
+    message: "Product deleted successfully",
+    data: result
+  });
+};
+var ProductController = {
+  createProduct: createProduct2,
+  getAllProducts: getAllProducts2,
+  getSingleProduct: getSingleProduct2,
+  updateProduct: updateProduct2,
+  deleteProduct: deleteProduct2
+};
+
+// src/app/modules/products/product.route.ts
 var router2 = Router2();
-router2.use("/users", UserRoute);
-var routes_default = router2;
+router2.post(
+  "/",
+  auth(Role.ADMIN, Role.SELLER),
+  ProductController.createProduct
+);
+router2.get("/", ProductController.getAllProducts);
+router2.get("/:id", ProductController.getSingleProduct);
+router2.patch(
+  "/:id",
+  auth(Role.ADMIN, Role.SELLER),
+  ProductController.updateProduct
+);
+router2.delete(
+  "/:id",
+  auth(Role.ADMIN, Role.SELLER),
+  ProductController.deleteProduct
+);
+var ProductRoutes = router2;
+
+// src/app/routes/index.ts
+var router3 = Router3();
+router3.use("/users", UserRoute);
+router3.use("/products", ProductRoutes);
+var routes_default = router3;
 
 // src/app/modules/payment/payment.webhook.ts
 import Stripe from "stripe";
