@@ -8,12 +8,7 @@ import { handleWebhook } from './app/modules/payment/payment.webhook';
 const app: Application = express();
 // FIRST: CORS
 const corsOptions = {
-  origin: [
-    'http://localhost:3000',
-    'https://delt-a-digivast-frontend.vercel.app',
-    'https://deltadigivast.vercel.app',
-    'https://www.deltadigivast.com',
-  ],
+  origin: ['http://localhost:3000', 'http://localhost:3001'],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   allowedHeaders: [

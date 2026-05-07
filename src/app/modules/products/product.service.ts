@@ -11,6 +11,7 @@ const createProduct = async (payload: IProduct) => {
 
     return result;
   } catch (error) {
+    console.log(error);
     throw new Error('Failed to create product');
   }
 };
