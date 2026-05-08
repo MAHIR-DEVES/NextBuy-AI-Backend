@@ -7,6 +7,10 @@ const createBuyNowOrder = async (
   userId: string,
   productId: string,
   quantity: number,
+  name: string,
+  phone: string,
+  address: string,
+  isInsideDhaka: boolean,
 ) => {
   try {
     const product = await prisma.product.findUnique({
@@ -23,6 +27,12 @@ const createBuyNowOrder = async (
       data: {
         userId,
         total,
+
+        name,
+        phone,
+        address,
+        isInsideDhaka,
+
         items: {
           create: [
             {
@@ -34,22 +44,10 @@ const createBuyNowOrder = async (
           ],
         },
       },
-      include: {
-        items: true,
-        user: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            phone: true,
-            avatar: true,
-          },
-        },
-      },
     });
-
     return order;
   } catch (error) {
+    console.log(error);
     throw new Error('Failed to create buy now order');
   }
 };
@@ -57,7 +55,13 @@ const createBuyNowOrder = async (
 /**
  * CART CHECKOUT (multiple product order)
  */
-const checkoutCart = async (userId: string) => {
+const checkoutCart = async (
+  userId: string,
+  name: string,
+  phone: string,
+  address: string,
+  isInsideDhaka: boolean,
+) => {
   try {
     const cartItems = await prisma.cart.findMany({
       where: { userId },
@@ -67,21 +71,24 @@ const checkoutCart = async (userId: string) => {
     if (cartItems.length === 0) {
       throw new Error('Cart is empty');
     }
-    //  2. Ownership check (extra safety)
-    const invalidItem = cartItems.find(item => item.userId !== userId);
 
-    if (invalidItem) {
-      throw new Error('Unauthorized: Cart user mismatch');
-    }
+    const shippingFee = isInsideDhaka ? 60 : 120;
 
-    const total = cartItems.reduce((sum, item) => {
+    const subtotal = cartItems.reduce((sum, item) => {
       return sum + item.product.price * item.quantity;
     }, 0);
+
+    const total = subtotal + shippingFee;
 
     const order = await prisma.order.create({
       data: {
         userId,
+        name,
+        phone,
+        address,
+        isInsideDhaka,
         total,
+
         items: {
           create: cartItems.map(item => ({
             productId: item.product.id,
@@ -91,23 +98,24 @@ const checkoutCart = async (userId: string) => {
           })),
         },
       },
+
       include: {
         items: true,
       },
     });
 
-    // clear cart after order
+    // clear cart
     await prisma.cart.deleteMany({
       where: { userId },
     });
 
     return order;
   } catch (error: any) {
-    console.error(error);
-    throw new Error(error.message || 'Failed to checkout cart');
+    console.log(error);
+
+    throw new Error(error.message);
   }
 };
-
 /**
  * GET USER ORDERS
  */

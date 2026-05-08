@@ -5,7 +5,11 @@ import { Role } from '../../../generated/prisma/enums';
 
 const router = Router();
 
-router.post('/', auth(Role.CUSTOMER), CartController.addToCart);
+router.post(
+  '/',
+  auth(Role.CUSTOMER, Role.SELLER, Role.ADMIN),
+  CartController.addToCart,
+);
 
 router.get('/', auth(Role.CUSTOMER), CartController.getMyCart);
 

@@ -7,6 +7,12 @@ model Order {
   total      Float
   status     OrderStatus @default(PENDING)
 
+  name      String
+  phone     String
+  address   String
+  isInsideDhaka Boolean
+  shippingFee Float @default(0)
+
   items      OrderItem[]
 
   createdAt  DateTime    @default(now())

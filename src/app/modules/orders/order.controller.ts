@@ -10,11 +10,15 @@ import { sendResponse } from '../../shared/sendResponse';
 
 const buyNow = catchAsync(async (req: Request, res: Response) => {
   const userId = req.user!.id;
-  const { productId, quantity } = req.body;
+  const { productId, quantity, name, phone, address, isInsideDhaka } = req.body;
   const result = await OrderService.createBuyNowOrder(
     userId,
     productId,
     quantity || 1,
+    name,
+    phone,
+    address,
+    isInsideDhaka,
   );
   sendResponse(res, {
     httpStatusCode: 201,
@@ -29,8 +33,17 @@ const buyNow = catchAsync(async (req: Request, res: Response) => {
  */
 
 const checkout = catchAsync(async (req: Request, res: Response) => {
-  const userId = req.user!.id;
-  const result = await OrderService.checkoutCart(userId);
+  const user = req.user!;
+
+  const { name, phone, address, isInsideDhaka } = req.body;
+
+  const result = await OrderService.checkoutCart(
+    user.id,
+    name,
+    phone,
+    address,
+    isInsideDhaka,
+  );
   sendResponse(res, {
     httpStatusCode: 201,
     success: true,
