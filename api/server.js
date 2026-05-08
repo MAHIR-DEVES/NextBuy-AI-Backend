@@ -1,5 +1,5 @@
 // src/app.ts
-import express from "express";
+import express2 from "express";
 
 // src/app/config/env.ts
 import dotenv from "dotenv";
@@ -70,7 +70,7 @@ var config = {
   "clientVersion": "7.4.2",
   "engineVersion": "94a226be1cf2967af2541cca5529f0f7ba866919",
   "activeProvider": "postgresql",
-  "inlineSchema": 'model Cart {\n  id String @id @default(uuid())\n\n  userId String\n  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)\n\n  productId String\n  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)\n\n  quantity Int @default(1)\n\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n\n  @@unique([userId, productId]) // same product duplicate \u09A8\u09BE \u09B9\u09DF\n}\n\nenum Role {\n  CUSTOMER\n  ADMIN\n  SELLER\n}\n\nenum STATUS {\n  ACTIVE\n  INACTIVE\n  BLOCKED\n}\n\nenum OrderStatus {\n  PENDING\n  CONFIRMED\n  SHIPPED\n  DELIVERED\n  CANCELLED\n}\n\nmodel Order {\n  id String @id @default(uuid())\n\n  userId String\n  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)\n\n  total  Float\n  status OrderStatus @default(PENDING)\n\n  items OrderItem[]\n\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n}\n\nmodel OrderItem {\n  id String @id @default(uuid())\n\n  orderId String\n  order   Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)\n\n  productId String\n  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)\n\n  name     String // snapshot\n  price    Float // snapshot\n  quantity Int\n\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n}\n\nmodel Product {\n  id          String  @id @default(uuid())\n  name        String\n  slug        String  @unique\n  description String?\n\n  price    Float\n  discount Float?\n  stock    Int    @default(0)\n\n  thumbnail String\n  images    String[]\n\n  brand    String?\n  category String?\n\n  rating      Float @default(0)\n  reviewCount Int   @default(0)\n\n  isFeatured  Boolean @default(false)\n  isPublished Boolean @default(true)\n\n  // Relations\n  orderItems OrderItem[]\n  carts      Cart[]\n  wishlist   Wishlist[]\n\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n}\n\n// This is your Prisma schema file,\n// learn more about it in the docs: https://pris.ly/d/prisma-schema\n\n// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?\n// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init\n\ngenerator client {\n  provider = "prisma-client"\n  output   = "../../src/generated/prisma"\n}\n\ndatasource db {\n  provider = "postgresql"\n}\n\nmodel User {\n  id       String  @id @default(uuid())\n  name     String\n  email    String  @unique\n  password String\n  phone    String? @unique\n  avatar   String?\n\n  role   Role   @default(CUSTOMER)\n  status STATUS @default(ACTIVE)\n\n  address String?\n  city    String?\n  country String?\n\n  lastLogin     DateTime?\n  emailVerified Boolean   @default(false)\n  provider      String? // google, email\n\n  // Relations\n  orders   Order[]\n  carts    Cart[]\n  wishlist Wishlist[]\n\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n}\n\nmodel Wishlist {\n  id String @id @default(uuid())\n\n  userId String\n  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)\n\n  productId String\n  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)\n\n  createdAt DateTime @default(now())\n\n  @@unique([userId, productId]) // duplicate wishlist prevent\n}\n',
+  "inlineSchema": 'model Cart {\n  id String @id @default(uuid())\n\n  userId String\n  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)\n\n  productId String\n  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)\n\n  quantity Int @default(1)\n\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n\n  @@unique([userId, productId]) // same product duplicate \u09A8\u09BE \u09B9\u09DF\n}\n\nenum Role {\n  CUSTOMER\n  ADMIN\n  SELLER\n}\n\nenum STATUS {\n  ACTIVE\n  INACTIVE\n  BLOCKED\n}\n\nenum OrderStatus {\n  PENDING\n  CONFIRMED\n  SHIPPED\n  DELIVERED\n  CANCELLED\n}\n\nmodel Order {\n  id String @id @default(uuid())\n\n  userId String\n  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)\n\n  total  Float\n  status OrderStatus @default(PENDING)\n\n  name          String\n  phone         String\n  address       String\n  isInsideDhaka Boolean\n  shippingFee   Float   @default(0)\n\n  items OrderItem[]\n\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n}\n\nmodel OrderItem {\n  id String @id @default(uuid())\n\n  orderId String\n  order   Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)\n\n  productId String\n  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)\n\n  name     String // snapshot\n  price    Float // snapshot\n  quantity Int\n\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n}\n\nmodel Product {\n  id          String  @id @default(uuid())\n  name        String\n  slug        String  @unique\n  description String?\n\n  price    Float\n  discount Float?\n  stock    Int    @default(0)\n\n  thumbnail String\n  images    String[]\n\n  brand    String?\n  category String?\n\n  rating      Float @default(0)\n  reviewCount Int   @default(0)\n\n  isFeatured  Boolean @default(false)\n  isPublished Boolean @default(true)\n\n  // Relations\n  orderItems OrderItem[]\n  carts      Cart[]\n  wishlist   Wishlist[]\n\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n}\n\n// This is your Prisma schema file,\n// learn more about it in the docs: https://pris.ly/d/prisma-schema\n\n// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?\n// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init\n\ngenerator client {\n  provider = "prisma-client"\n  output   = "../../src/generated/prisma"\n}\n\ndatasource db {\n  provider = "postgresql"\n}\n\nmodel User {\n  id       String  @id @default(uuid())\n  name     String\n  email    String  @unique\n  password String\n  phone    String? @unique\n  avatar   String?\n\n  role   Role   @default(CUSTOMER)\n  status STATUS @default(ACTIVE)\n\n  address String?\n  city    String?\n  country String?\n\n  lastLogin     DateTime?\n  emailVerified Boolean   @default(false)\n  provider      String? // google, email\n\n  // Relations\n  orders   Order[]\n  carts    Cart[]\n  wishlist Wishlist[]\n\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n}\n\nmodel Wishlist {\n  id String @id @default(uuid())\n\n  userId String\n  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)\n\n  productId String\n  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)\n\n  createdAt DateTime @default(now())\n\n  @@unique([userId, productId]) // duplicate wishlist prevent\n}\n',
   "runtimeDataModel": {
     "models": {},
     "enums": {},
@@ -81,10 +81,10 @@ var config = {
     "graph": ""
   }
 };
-config.runtimeDataModel = JSON.parse('{"models":{"Cart":{"fields":[{"name":"id","kind":"scalar","type":"String"},{"name":"userId","kind":"scalar","type":"String"},{"name":"user","kind":"object","type":"User","relationName":"CartToUser"},{"name":"productId","kind":"scalar","type":"String"},{"name":"product","kind":"object","type":"Product","relationName":"CartToProduct"},{"name":"quantity","kind":"scalar","type":"Int"},{"name":"createdAt","kind":"scalar","type":"DateTime"},{"name":"updatedAt","kind":"scalar","type":"DateTime"}],"dbName":null},"Order":{"fields":[{"name":"id","kind":"scalar","type":"String"},{"name":"userId","kind":"scalar","type":"String"},{"name":"user","kind":"object","type":"User","relationName":"OrderToUser"},{"name":"total","kind":"scalar","type":"Float"},{"name":"status","kind":"enum","type":"OrderStatus"},{"name":"items","kind":"object","type":"OrderItem","relationName":"OrderToOrderItem"},{"name":"createdAt","kind":"scalar","type":"DateTime"},{"name":"updatedAt","kind":"scalar","type":"DateTime"}],"dbName":null},"OrderItem":{"fields":[{"name":"id","kind":"scalar","type":"String"},{"name":"orderId","kind":"scalar","type":"String"},{"name":"order","kind":"object","type":"Order","relationName":"OrderToOrderItem"},{"name":"productId","kind":"scalar","type":"String"},{"name":"product","kind":"object","type":"Product","relationName":"OrderItemToProduct"},{"name":"name","kind":"scalar","type":"String"},{"name":"price","kind":"scalar","type":"Float"},{"name":"quantity","kind":"scalar","type":"Int"},{"name":"createdAt","kind":"scalar","type":"DateTime"},{"name":"updatedAt","kind":"scalar","type":"DateTime"}],"dbName":null},"Product":{"fields":[{"name":"id","kind":"scalar","type":"String"},{"name":"name","kind":"scalar","type":"String"},{"name":"slug","kind":"scalar","type":"String"},{"name":"description","kind":"scalar","type":"String"},{"name":"price","kind":"scalar","type":"Float"},{"name":"discount","kind":"scalar","type":"Float"},{"name":"stock","kind":"scalar","type":"Int"},{"name":"thumbnail","kind":"scalar","type":"String"},{"name":"images","kind":"scalar","type":"String"},{"name":"brand","kind":"scalar","type":"String"},{"name":"category","kind":"scalar","type":"String"},{"name":"rating","kind":"scalar","type":"Float"},{"name":"reviewCount","kind":"scalar","type":"Int"},{"name":"isFeatured","kind":"scalar","type":"Boolean"},{"name":"isPublished","kind":"scalar","type":"Boolean"},{"name":"orderItems","kind":"object","type":"OrderItem","relationName":"OrderItemToProduct"},{"name":"carts","kind":"object","type":"Cart","relationName":"CartToProduct"},{"name":"wishlist","kind":"object","type":"Wishlist","relationName":"ProductToWishlist"},{"name":"createdAt","kind":"scalar","type":"DateTime"},{"name":"updatedAt","kind":"scalar","type":"DateTime"}],"dbName":null},"User":{"fields":[{"name":"id","kind":"scalar","type":"String"},{"name":"name","kind":"scalar","type":"String"},{"name":"email","kind":"scalar","type":"String"},{"name":"password","kind":"scalar","type":"String"},{"name":"phone","kind":"scalar","type":"String"},{"name":"avatar","kind":"scalar","type":"String"},{"name":"role","kind":"enum","type":"Role"},{"name":"status","kind":"enum","type":"STATUS"},{"name":"address","kind":"scalar","type":"String"},{"name":"city","kind":"scalar","type":"String"},{"name":"country","kind":"scalar","type":"String"},{"name":"lastLogin","kind":"scalar","type":"DateTime"},{"name":"emailVerified","kind":"scalar","type":"Boolean"},{"name":"provider","kind":"scalar","type":"String"},{"name":"orders","kind":"object","type":"Order","relationName":"OrderToUser"},{"name":"carts","kind":"object","type":"Cart","relationName":"CartToUser"},{"name":"wishlist","kind":"object","type":"Wishlist","relationName":"UserToWishlist"},{"name":"createdAt","kind":"scalar","type":"DateTime"},{"name":"updatedAt","kind":"scalar","type":"DateTime"}],"dbName":null},"Wishlist":{"fields":[{"name":"id","kind":"scalar","type":"String"},{"name":"userId","kind":"scalar","type":"String"},{"name":"user","kind":"object","type":"User","relationName":"UserToWishlist"},{"name":"productId","kind":"scalar","type":"String"},{"name":"product","kind":"object","type":"Product","relationName":"ProductToWishlist"},{"name":"createdAt","kind":"scalar","type":"DateTime"}],"dbName":null}},"enums":{},"types":{}}');
+config.runtimeDataModel = JSON.parse('{"models":{"Cart":{"fields":[{"name":"id","kind":"scalar","type":"String"},{"name":"userId","kind":"scalar","type":"String"},{"name":"user","kind":"object","type":"User","relationName":"CartToUser"},{"name":"productId","kind":"scalar","type":"String"},{"name":"product","kind":"object","type":"Product","relationName":"CartToProduct"},{"name":"quantity","kind":"scalar","type":"Int"},{"name":"createdAt","kind":"scalar","type":"DateTime"},{"name":"updatedAt","kind":"scalar","type":"DateTime"}],"dbName":null},"Order":{"fields":[{"name":"id","kind":"scalar","type":"String"},{"name":"userId","kind":"scalar","type":"String"},{"name":"user","kind":"object","type":"User","relationName":"OrderToUser"},{"name":"total","kind":"scalar","type":"Float"},{"name":"status","kind":"enum","type":"OrderStatus"},{"name":"name","kind":"scalar","type":"String"},{"name":"phone","kind":"scalar","type":"String"},{"name":"address","kind":"scalar","type":"String"},{"name":"isInsideDhaka","kind":"scalar","type":"Boolean"},{"name":"shippingFee","kind":"scalar","type":"Float"},{"name":"items","kind":"object","type":"OrderItem","relationName":"OrderToOrderItem"},{"name":"createdAt","kind":"scalar","type":"DateTime"},{"name":"updatedAt","kind":"scalar","type":"DateTime"}],"dbName":null},"OrderItem":{"fields":[{"name":"id","kind":"scalar","type":"String"},{"name":"orderId","kind":"scalar","type":"String"},{"name":"order","kind":"object","type":"Order","relationName":"OrderToOrderItem"},{"name":"productId","kind":"scalar","type":"String"},{"name":"product","kind":"object","type":"Product","relationName":"OrderItemToProduct"},{"name":"name","kind":"scalar","type":"String"},{"name":"price","kind":"scalar","type":"Float"},{"name":"quantity","kind":"scalar","type":"Int"},{"name":"createdAt","kind":"scalar","type":"DateTime"},{"name":"updatedAt","kind":"scalar","type":"DateTime"}],"dbName":null},"Product":{"fields":[{"name":"id","kind":"scalar","type":"String"},{"name":"name","kind":"scalar","type":"String"},{"name":"slug","kind":"scalar","type":"String"},{"name":"description","kind":"scalar","type":"String"},{"name":"price","kind":"scalar","type":"Float"},{"name":"discount","kind":"scalar","type":"Float"},{"name":"stock","kind":"scalar","type":"Int"},{"name":"thumbnail","kind":"scalar","type":"String"},{"name":"images","kind":"scalar","type":"String"},{"name":"brand","kind":"scalar","type":"String"},{"name":"category","kind":"scalar","type":"String"},{"name":"rating","kind":"scalar","type":"Float"},{"name":"reviewCount","kind":"scalar","type":"Int"},{"name":"isFeatured","kind":"scalar","type":"Boolean"},{"name":"isPublished","kind":"scalar","type":"Boolean"},{"name":"orderItems","kind":"object","type":"OrderItem","relationName":"OrderItemToProduct"},{"name":"carts","kind":"object","type":"Cart","relationName":"CartToProduct"},{"name":"wishlist","kind":"object","type":"Wishlist","relationName":"ProductToWishlist"},{"name":"createdAt","kind":"scalar","type":"DateTime"},{"name":"updatedAt","kind":"scalar","type":"DateTime"}],"dbName":null},"User":{"fields":[{"name":"id","kind":"scalar","type":"String"},{"name":"name","kind":"scalar","type":"String"},{"name":"email","kind":"scalar","type":"String"},{"name":"password","kind":"scalar","type":"String"},{"name":"phone","kind":"scalar","type":"String"},{"name":"avatar","kind":"scalar","type":"String"},{"name":"role","kind":"enum","type":"Role"},{"name":"status","kind":"enum","type":"STATUS"},{"name":"address","kind":"scalar","type":"String"},{"name":"city","kind":"scalar","type":"String"},{"name":"country","kind":"scalar","type":"String"},{"name":"lastLogin","kind":"scalar","type":"DateTime"},{"name":"emailVerified","kind":"scalar","type":"Boolean"},{"name":"provider","kind":"scalar","type":"String"},{"name":"orders","kind":"object","type":"Order","relationName":"OrderToUser"},{"name":"carts","kind":"object","type":"Cart","relationName":"CartToUser"},{"name":"wishlist","kind":"object","type":"Wishlist","relationName":"UserToWishlist"},{"name":"createdAt","kind":"scalar","type":"DateTime"},{"name":"updatedAt","kind":"scalar","type":"DateTime"}],"dbName":null},"Wishlist":{"fields":[{"name":"id","kind":"scalar","type":"String"},{"name":"userId","kind":"scalar","type":"String"},{"name":"user","kind":"object","type":"User","relationName":"UserToWishlist"},{"name":"productId","kind":"scalar","type":"String"},{"name":"product","kind":"object","type":"Product","relationName":"ProductToWishlist"},{"name":"createdAt","kind":"scalar","type":"DateTime"}],"dbName":null}},"enums":{},"types":{}}');
 config.parameterizationSchema = {
-  strings: JSON.parse('["where","orderBy","cursor","user","order","orderItems","carts","product","wishlist","_count","items","orders","Cart.findUnique","Cart.findUniqueOrThrow","Cart.findFirst","Cart.findFirstOrThrow","Cart.findMany","data","Cart.createOne","Cart.createMany","Cart.createManyAndReturn","Cart.updateOne","Cart.updateMany","Cart.updateManyAndReturn","create","update","Cart.upsertOne","Cart.deleteOne","Cart.deleteMany","having","_avg","_sum","_min","_max","Cart.groupBy","Cart.aggregate","Order.findUnique","Order.findUniqueOrThrow","Order.findFirst","Order.findFirstOrThrow","Order.findMany","Order.createOne","Order.createMany","Order.createManyAndReturn","Order.updateOne","Order.updateMany","Order.updateManyAndReturn","Order.upsertOne","Order.deleteOne","Order.deleteMany","Order.groupBy","Order.aggregate","OrderItem.findUnique","OrderItem.findUniqueOrThrow","OrderItem.findFirst","OrderItem.findFirstOrThrow","OrderItem.findMany","OrderItem.createOne","OrderItem.createMany","OrderItem.createManyAndReturn","OrderItem.updateOne","OrderItem.updateMany","OrderItem.updateManyAndReturn","OrderItem.upsertOne","OrderItem.deleteOne","OrderItem.deleteMany","OrderItem.groupBy","OrderItem.aggregate","Product.findUnique","Product.findUniqueOrThrow","Product.findFirst","Product.findFirstOrThrow","Product.findMany","Product.createOne","Product.createMany","Product.createManyAndReturn","Product.updateOne","Product.updateMany","Product.updateManyAndReturn","Product.upsertOne","Product.deleteOne","Product.deleteMany","Product.groupBy","Product.aggregate","User.findUnique","User.findUniqueOrThrow","User.findFirst","User.findFirstOrThrow","User.findMany","User.createOne","User.createMany","User.createManyAndReturn","User.updateOne","User.updateMany","User.updateManyAndReturn","User.upsertOne","User.deleteOne","User.deleteMany","User.groupBy","User.aggregate","Wishlist.findUnique","Wishlist.findUniqueOrThrow","Wishlist.findFirst","Wishlist.findFirstOrThrow","Wishlist.findMany","Wishlist.createOne","Wishlist.createMany","Wishlist.createManyAndReturn","Wishlist.updateOne","Wishlist.updateMany","Wishlist.updateManyAndReturn","Wishlist.upsertOne","Wishlist.deleteOne","Wishlist.deleteMany","Wishlist.groupBy","Wishlist.aggregate","AND","OR","NOT","id","userId","productId","createdAt","equals","in","notIn","lt","lte","gt","gte","not","contains","startsWith","endsWith","name","email","password","phone","avatar","Role","role","STATUS","status","address","city","country","lastLogin","emailVerified","provider","updatedAt","every","some","none","slug","description","price","discount","stock","thumbnail","images","brand","category","rating","reviewCount","isFeatured","isPublished","has","hasEvery","hasSome","orderId","quantity","total","OrderStatus","userId_productId","is","isNot","connectOrCreate","upsert","createMany","set","disconnect","delete","connect","updateMany","deleteMany","push","increment","decrement","multiply","divide"]'),
-  graph: "pwM8YAwDAADgAQAgBwAA4QEAIHQAAOIBADB1AAAMABB2AADiAQAwdwEAAAABeAEAvwEAIXkBAL8BACF6QADFAQAhlQFAAMUBACGqAQIA1gEAIa0BAADnAQAgAQAAAAEAIAsDAADgAQAgCgAA1wEAIHQAAOUBADB1AAADABB2AADlAQAwdwEAvwEAIXgBAL8BACF6QADFAQAhjgEAAOYBrQEilQFAAMUBACGrAQgA1AEAIQIDAAD7AgAgCgAA6QIAIAsDAADgAQAgCgAA1wEAIHQAAOUBADB1AAADABB2AADlAQAwdwEAAAABeAEAvwEAIXpAAMUBACGOAQAA5gGtASKVAUAAxQEAIasBCADUAQAhAwAAAAMAIAEAAAQAMAIAAAUAIA0EAADkAQAgBwAA4QEAIHQAAOMBADB1AAAHABB2AADjAQAwdwEAvwEAIXkBAL8BACF6QADFAQAhhgEBAL8BACGVAUAAxQEAIZsBCADUAQAhqQEBAL8BACGqAQIA1gEAIQIEAAD9AgAgBwAA_AIAIA0EAADkAQAgBwAA4QEAIHQAAOMBADB1AAAHABB2AADjAQAwdwEAAAABeQEAvwEAIXpAAMUBACGGAQEAvwEAIZUBQADFAQAhmwEIANQBACGpAQEAvwEAIaoBAgDWAQAhAwAAAAcAIAEAAAgAMAIAAAkAIAMAAAAHACABAAAIADACAAAJACALAwAA4AEAIAcAAOEBACB0AADiAQAwdQAADAAQdgAA4gEAMHcBAL8BACF4AQC_AQAheQEAvwEAIXpAAMUBACGVAUAAxQEAIaoBAgDWAQAhAgMAAPsCACAHAAD8AgAgAwAAAAwAIAEAAA0AMAIAAAEAIAkDAADgAQAgBwAA4QEAIHQAAN8BADB1AAAPABB2AADfAQAwdwEAvwEAIXgBAL8BACF5AQC_AQAhekAAxQEAIQIDAAD7AgAgBwAA_AIAIAoDAADgAQAgBwAA4QEAIHQAAN8BADB1AAAPABB2AADfAQAwdwEAAAABeAEAvwEAIXkBAL8BACF6QADFAQAhrQEAAN4BACADAAAADwAgAQAAEAAwAgAAEQAgAQAAAAcAIAEAAAAMACABAAAADwAgAQAAAAcAIAMAAAAMACABAAANADACAAABACADAAAADwAgAQAAEAAwAgAAEQAgAQAAAAMAIAEAAAAMACABAAAADwAgAQAAAAEAIAMAAAAMACABAAANADACAAABACADAAAADAAgAQAADQAwAgAAAQAgAwAAAAwAIAEAAA0AMAIAAAEAIAgDAADZAgAgBwAAlwIAIHcBAAAAAXgBAAAAAXkBAAAAAXpAAAAAAZUBQAAAAAGqAQIAAAABAREAACAAIAZ3AQAAAAF4AQAAAAF5AQAAAAF6QAAAAAGVAUAAAAABqgECAAAAAQERAAAiADABEQAAIgAwCAMAANcCACAHAACVAgAgdwEA6wEAIXgBAOsBACF5AQDrAQAhekAA7AEAIZUBQADsAQAhqgECAJMCACECAAAAAQAgEQAAJQAgBncBAOsBACF4AQDrAQAheQEA6wEAIXpAAOwBACGVAUAA7AEAIaoBAgCTAgAhAgAAAAwAIBEAACcAIAIAAAAMACARAAAnACADAAAAAQAgGAAAIAAgGQAAJQAgAQAAAAEAIAEAAAAMACAFCQAA9gIAIB4AAPcCACAfAAD6AgAgIAAA-QIAICEAAPgCACAJdAAA3QEAMHUAAC4AEHYAAN0BADB3AQCmAQAheAEApgEAIXkBAKYBACF6QACnAQAhlQFAAKcBACGqAQIAzAEAIQMAAAAMACABAAAtADAdAAAuACADAAAADAAgAQAADQAwAgAAAQAgAQAAAAUAIAEAAAAFACADAAAAAwAgAQAABAAwAgAABQAgAwAAAAMAIAEAAAQAMAIAAAUAIAMAAAADACABAAAEADACAAAFACAIAwAA9QIAIAoAALUCACB3AQAAAAF4AQAAAAF6QAAAAAGOAQAAAK0BApUBQAAAAAGrAQgAAAABAREAADYAIAZ3AQAAAAF4AQAAAAF6QAAAAAGOAQAAAK0BApUBQAAAAAGrAQgAAAABAREAADgAMAERAAA4ADAIAwAA9AIAIAoAAKUCACB3AQDrAQAheAEA6wEAIXpAAOwBACGOAQAAowKtASKVAUAA7AEAIasBCACiAgAhAgAAAAUAIBEAADsAIAZ3AQDrAQAheAEA6wEAIXpAAOwBACGOAQAAowKtASKVAUAA7AEAIasBCACiAgAhAgAAAAMAIBEAAD0AIAIAAAADACARAAA9ACADAAAABQAgGAAANgAgGQAAOwAgAQAAAAUAIAEAAAADACAFCQAA7wIAIB4AAPACACAfAADzAgAgIAAA8gIAICEAAPECACAJdAAA2QEAMHUAAEQAEHYAANkBADB3AQCmAQAheAEApgEAIXpAAKcBACGOAQAA2gGtASKVAUAApwEAIasBCADKAQAhAwAAAAMAIAEAAEMAMB0AAEQAIAMAAAADACABAAAEADACAAAFACABAAAACQAgAQAAAAkAIAMAAAAHACABAAAIADACAAAJACADAAAABwAgAQAACAAwAgAACQAgAwAAAAcAIAEAAAgAMAIAAAkAIAoEAADkAgAgBwAAswIAIHcBAAAAAXkBAAAAAXpAAAAAAYYBAQAAAAGVAUAAAAABmwEIAAAAAakBAQAAAAGqAQIAAAABAREAAEwAIAh3AQAAAAF5AQAAAAF6QAAAAAGGAQEAAAABlQFAAAAAAZsBCAAAAAGpAQEAAAABqgECAAAAAQERAABOADABEQAATgAwCgQAAOICACAHAACxAgAgdwEA6wEAIXkBAOsBACF6QADsAQAhhgEBAOsBACGVAUAA7AEAIZsBCACiAgAhqQEBAOsBACGqAQIAkwIAIQIAAAAJACARAABRACAIdwEA6wEAIXkBAOsBACF6QADsAQAhhgEBAOsBACGVAUAA7AEAIZsBCACiAgAhqQEBAOsBACGqAQIAkwIAIQIAAAAHACARAABTACACAAAABwAgEQAAUwAgAwAAAAkAIBgAAEwAIBkAAFEAIAEAAAAJACABAAAABwAgBQkAAOoCACAeAADrAgAgHwAA7gIAICAAAO0CACAhAADsAgAgC3QAANgBADB1AABaABB2AADYAQAwdwEApgEAIXkBAKYBACF6QACnAQAhhgEBAKYBACGVAUAApwEAIZsBCADKAQAhqQEBAKYBACGqAQIAzAEAIQMAAAAHACABAABZADAdAABaACADAAAABwAgAQAACAAwAgAACQAgFwUAANcBACAGAADHAQAgCAAAyAEAIHQAANMBADB1AABgABB2AADTAQAwdwEAAAABekAAxQEAIYYBAQC_AQAhlQFAAMUBACGZAQEAAAABmgEBAMABACGbAQgA1AEAIZwBCADVAQAhnQECANYBACGeAQEAvwEAIZ8BAADNAQAgoAEBAMABACGhAQEAwAEAIaIBCADUAQAhowECANYBACGkASAAxAEAIaUBIADEAQAhAQAAAF0AIAEAAABdACAXBQAA1wEAIAYAAMcBACAIAADIAQAgdAAA0wEAMHUAAGAAEHYAANMBADB3AQC_AQAhekAAxQEAIYYBAQC_AQAhlQFAAMUBACGZAQEAvwEAIZoBAQDAAQAhmwEIANQBACGcAQgA1QEAIZ0BAgDWAQAhngEBAL8BACGfAQAAzQEAIKABAQDAAQAhoQEBAMABACGiAQgA1AEAIaMBAgDWAQAhpAEgAMQBACGlASAAxAEAIQcFAADpAgAgBgAAugIAIAgAALsCACCaAQAA8QEAIJwBAADxAQAgoAEAAPEBACChAQAA8QEAIAMAAABgACABAABhADACAABdACADAAAAYAAgAQAAYQAwAgAAXQAgAwAAAGAAIAEAAGEAMAIAAF0AIBQFAADmAgAgBgAA5wIAIAgAAOgCACB3AQAAAAF6QAAAAAGGAQEAAAABlQFAAAAAAZkBAQAAAAGaAQEAAAABmwEIAAAAAZwBCAAAAAGdAQIAAAABngEBAAAAAZ8BAADlAgAgoAEBAAAAAaEBAQAAAAGiAQgAAAABowECAAAAAaQBIAAAAAGlASAAAAABAREAAGUAIBF3AQAAAAF6QAAAAAGGAQEAAAABlQFAAAAAAZkBAQAAAAGaAQEAAAABmwEIAAAAAZwBCAAAAAGdAQIAAAABngEBAAAAAZ8BAADlAgAgoAEBAAAAAaEBAQAAAAGiAQgAAAABowECAAAAAaQBIAAAAAGlASAAAAABAREAAGcAMAERAABnADAUBQAAwwIAIAYAAMQCACAIAADFAgAgdwEA6wEAIXpAAOwBACGGAQEA6wEAIZUBQADsAQAhmQEBAOsBACGaAQEA9QEAIZsBCACiAgAhnAEIAMECACGdAQIAkwIAIZ4BAQDrAQAhnwEAAMICACCgAQEA9QEAIaEBAQD1AQAhogEIAKICACGjAQIAkwIAIaQBIAD5AQAhpQEgAPkBACECAAAAXQAgEQAAagAgEXcBAOsBACF6QADsAQAhhgEBAOsBACGVAUAA7AEAIZkBAQDrAQAhmgEBAPUBACGbAQgAogIAIZwBCADBAgAhnQECAJMCACGeAQEA6wEAIZ8BAADCAgAgoAEBAPUBACGhAQEA9QEAIaIBCACiAgAhowECAJMCACGkASAA-QEAIaUBIAD5AQAhAgAAAGAAIBEAAGwAIAIAAABgACARAABsACADAAAAXQAgGAAAZQAgGQAAagAgAQAAAF0AIAEAAABgACAJCQAAvAIAIB4AAL0CACAfAADAAgAgIAAAvwIAICEAAL4CACCaAQAA8QEAIJwBAADxAQAgoAEAAPEBACChAQAA8QEAIBR0AADJAQAwdQAAcwAQdgAAyQEAMHcBAKYBACF6QACnAQAhhgEBAKYBACGVAUAApwEAIZkBAQCmAQAhmgEBAK4BACGbAQgAygEAIZwBCADLAQAhnQECAMwBACGeAQEApgEAIZ8BAADNAQAgoAEBAK4BACGhAQEArgEAIaIBCADKAQAhowECAMwBACGkASAAsgEAIaUBIACyAQAhAwAAAGAAIAEAAHIAMB0AAHMAIAMAAABgACABAABhADACAABdACAWBgAAxwEAIAgAAMgBACALAADGAQAgdAAAvgEAMHUAAHkAEHYAAL4BADB3AQAAAAF6QADFAQAhhgEBAL8BACGHAQEAAAABiAEBAL8BACGJAQEAAAABigEBAMABACGMAQAAwQGMASKOAQAAwgGOASKPAQEAwAEAIZABAQDAAQAhkQEBAMABACGSAUAAwwEAIZMBIADEAQAhlAEBAMABACGVAUAAxQEAIQEAAAB2ACABAAAAdgAgFgYAAMcBACAIAADIAQAgCwAAxgEAIHQAAL4BADB1AAB5ABB2AAC-AQAwdwEAvwEAIXpAAMUBACGGAQEAvwEAIYcBAQC_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-QAAAAAF_QAAAAAGAAUAAAAABgQFAAAAAAYIBQACoAQAhCHsCAAAAAXwCAAAABH0CAAAABH4CAAAAAX8CAAAAAYABAgAAAAGBAQIAAAABggECAKkBACEIe0AAAAABfEAAAAAEfUAAAAAEfkAAAAABf0AAAAABgAFAAAAAAYEBQAAAAAGCAUAAqgEAIQ4JAACpAQAgIAAArAEAICEAAKwBACB7AQAAAAF8AQAAAAR9AQAAAAR-AQAAAAF_AQAAAAGAAQEAAAABgQEBAAAAAYIBAQCrAQAhgwEBAAAAAYQBAQAAAAGFAQEAAAABC3sBAAAAAXwBAAAABH0BAAAABH4BAAAAAX8BAAAAAYABAQAAAAGBAQEAAAABggEBAKwBACGDAQEAAAABhAEBAAAAAYUBAQAAAAETdAAArQEAMHUAAIwBABB2AACtAQAwdwEApgEAIXpAAKcBACGGAQEApgEAIYcBAQCmAQAhiAEBAKYBACGJAQEArgEAIYoBAQCuAQAhjAEAAK8BjAEijgEAALABjgEijwEBAK4BACGQAQEArgEAIZEBAQCuAQAhkgFAALEBACGTASAAsgEAIZQBAQCuAQAhlQFAAKcBACEOCQAAtgEAICAAAL0BACAhAAC9AQAgewEAAAABfAEAAAAFfQEAAAAFfgEAAAABfwEAAAABgAEBAAAAAYEBAQAAAAGCAQEAvAEAIYMBAQAAAAGEAQEAAAABhQEBAAAAAQcJAACpAQAgIAAAuwEAICEAALsBACB7AAAAjAECfAAAAIwBCH0AAACMAQiCAQAAugGMASIHCQAAqQEAICAAALkBACAhAAC5AQAgewAAAI4BAnwAAACOAQh9AAAAjgEIggEAALgBjgEiCwkAALYBACAgAAC3AQAgIQAAtwEAIHtAAAAAAXxAAAAABX1AAAAABX5AAAAAAX9AAAAAAYABQAAAAAGBAUAAAAABggFAALUBACEFCQAAqQEAICAAALQBACAhAAC0AQAgeyAAAAABggEgALMBACEFCQAAqQEAICAAALQBACAhAAC0AQAgeyAAAAABggEgALMBACECeyAAAAABggEgALQBACELCQAAtgEAICAAALcBACAhAAC3AQAge0AAAAABfEAAAAAFfUAAAAAFfkAAAAABf0AAAAABgAFAAAAAAYEBQAAAAAGCAUAAtQEAIQh7AgAAAAF8AgAAAAV9AgAAAAV-AgAAAAF_AgAAAAGAAQIAAAABgQECAAAAAYIBAgC2AQAhCHtAAAAAAXxAAAAABX1AAAAABX5AAAAAAX9AAAAAAYABQAAAAAGBAUAAAAABggFAALcBACEHCQAAqQEAICAAALkBACAhAAC5AQAgewAAAI4BAnwAAACOAQh9AAAAjgEIggEAALgBjgEiBHsAAACOAQJ8AAAAjgEIfQAAAI4BCIIBAAC5AY4BIgcJAACpAQAgIAAAuwEAICEAALsBACB7AAAAjAECfAAAAIwBCH0AAACMAQiCAQAAugGMASIEewAAAIwBAnwAAACMAQh9AAAAjAEIggEAALsBjAEiDgkAALYBACAgAAC9AQAgIQAAvQEAIHsBAAAAAXwBAAAABX0BAAAABX4BAAAAAX8BAAAAAYABAQAAAAGBAQEAAAABggEBALwBACGDAQEAAAABhAEBAAAAAYUBAQAAAAELewEAAAABfAEAAAAFfQEAAAAFfgEAAAABfwEAAAABgAEBAAAAAYEBAQAAAAGCAQEAvQEAIYMBAQAAAAGEAQEAAAABhQEBAAAAARYGAADHAQAgCAAAyAEAIAsAAMYBACB0AAC-AQAwdQAAeQAQdgAAvgEAMHcBAL8BACF6QADFAQAhhgEBAL8BACGHAQEAvwEAIYgBAQC_AQAhiQEBAMABACGKAQEAwAEAIYwBAADBAYwBIo4BAADCAY4BIo8BAQDAAQAhkAEBAMABACGRAQEAwAEAIZIBQADDAQAhkwEgAMQBACGUAQEAwAEAIZUBQADFAQAhC3sBAAAAAXwBAAAABH0BAAAABH4BAAAAAX8BAAAAAYABAQAAAAGBAQEAAAABggEBAKwBACGDAQEAAAABhAEBAAAAAYUBAQAAAAELewEAAAABfAEAAAAFfQEAAAAFfgEAAAABfwEAAAABgAEBAAAAAYEBAQAAAAGCAQEAvQEAIYMBAQAAAAGEAQEAAAABhQEBAAAAAQR7AAAAjAECfAAAAIwBCH0AAACMAQiCAQAAuwGMASIEewAAAI4BAnwAAACOAQh9AAAAjgEIggEAALkBjgEiCHtAAAAAAXxAAAAABX1AAAAABX5AAAAAAX9AAAAAAYABQAAAAAGBAUAAAAABggFAALcBACECeyAAAAABggEgALQBACEIe0AAAAABfEAAAAAEfUAAAAAEfkAAAAABf0AAAAABgAFAAAAAAYEBQAAAAAGCAUAAqgEAIQOWAQAAAwAglwEAAAMAIJgBAAADACADlgEAAAwAIJcBAAAMACCYAQAADAAgA5YBAAAPACCXAQAADwAgmAEAAA8AIBR0AADJAQAwdQAAcwAQdgAAyQEAMHcBAKYBACF6QACnAQAhhgEBAKYBACGVAUAApwEAIZkBAQCmAQAhmgEBAK4BACGbAQgAygEAIZwBCADLAQAhnQECAMwBACGeAQEApgEAIZ8BAADNAQAgoAEBAK4BACGhAQEArgEAIaIBCADKAQAhowECAMwBACGkASAAsgEAIaUBIACyAQAhDQkAAKkBACAeAADPAQAgHwAAzwEAICAAAM8BACAhAADPAQAgewgAAAABfAgAAAAEfQgAAAAEfggAAAABfwgAAAABgAEIAAAAAYEBCAAAAAGCAQgA0gEAIQ0JAAC2AQAgHgAA0QEAIB8AANEBACAgAADRAQAgIQAA0QEAIHsIAAAAAXwIAAAABX0IAAAABX4IAAAAAX8IAAAAAYABCAAAAAGBAQgAAAABggEIANABACENCQAAqQEAIB4AAM8BACAfAACpAQAgIAAAqQEAICEAAKkBACB7AgAAAAF8AgAAAAR9AgAAAAR-AgAAAAF_AgAAAAGAAQIAAAABgQECAAAAAYIBAgDOAQAhBHsBAAAABaYBAQAAAAGnAQEAAAAEqAEBAAAABA0JAACpAQAgHgAAzwEAIB8AAKkBACAgAACpAQAgIQAAqQEAIHsCAAAAAXwCAAAABH0CAAAABH4CAAAAAX8CAAAAAYABAgAAAAGBAQIAAAABggECAM4BACEIewgAAAABfAgAAAAEfQgAAAAEfggAAAABfwgAAAABgAEIAAAAAYEBCAAAAAGCAQgAzwEAIQ0JAAC2AQAgHgAA0QEAIB8AANEBACAgAADRAQAgIQAA0QEAIHsIAAAAAXwIAAAABX0IAAAABX4IAAAAAX8IAAAAAYABCAAAAAGBAQgAAAABggEIANABACEIewgAAAABfAgAAAAFfQgAAAAFfggAAAABfwgAAAABgAEIAAAAAYEBCAAAAAGCAQgA0QEAIQ0JAACpAQAgHgAAzwEAIB8AAM8BACAgAADPAQAgIQAAzwEAIHsIAAAAAXwIAAAABH0IAAAABH4IAAAAAX8IAAAAAYABCAAAAAGBAQgAAAABggEIANIBACEXBQAA1wEAIAYAAMcBACAIAADIAQAgdAAA0wEAMHUAAGAAEHYAANMBADB3AQC_AQAhekAAxQEAIYYBAQC_AQAhlQFAAMUBACGZAQEAvwEAIZoBAQDAAQAhmwEIANQBACGcAQgA1QEAIZ0BAgDWAQAhngEBAL8BACGfAQAAzQEAIKABAQDAAQAhoQEBAMABACGiAQgA1AEAIaMBAgDWAQAhpAEgAMQBACGlASAAxAEAIQh7CAAAAAF8CAAAAAR9CAAAAAR-CAAAAAF_CAAAAAGAAQgAAAABgQEIAAAAAYIBCADPAQAhCHsIAAAAAXwIAAAABX0IAAAABX4IAAAAAX8IAAAAAYABCAAAAAGBAQgAAAABggEIANEBACEIewIAAAABfAIAAAAEfQIAAAAEfgIAAAABfwIAAAABgAECAAAAAYEBAgAAAAGCAQIAqQEAIQOWAQAABwAglwEAAAcAIJgBAAAHACALdAAA2AEAMHUAAFoAEHYAANgBADB3AQCmAQAheQEApgEAIXpAAKcBACGGAQEApgEAIZUBQACnAQAhmwEIAMoBACGpAQEApgEAIaoBAgDMAQAhCXQAANkBADB1AABEABB2AADZAQAwdwEApgEAIXgBAKYBACF6QACnAQAhjgEAANoBrQEilQFAAKcBACGrAQgAygEAIQcJAACpAQAgIAAA3AEAICEAANwBACB7AAAArQECfAAAAK0BCH0AAACtAQiCAQAA2wGtASIHCQAAqQEAICAAANwBACAhAADcAQAgewAAAK0BAnwAAACtAQh9AAAArQEIggEAANsBrQEiBHsAAACtAQJ8AAAArQEIfQAAAK0BCIIBAADcAa0BIgl0AADdAQAwdQAALgAQdgAA3QEAMHcBAKYBACF4AQCmAQAheQEApgEAIXpAAKcBACGVAUAApwEAIaoBAgDMAQAhAngBAAAAAXkBAAAAAQkDAADgAQAgBwAA4QEAIHQAAN8BADB1AAAPABB2AADfAQAwdwEAvwEAIXgBAL8BACF5AQC_AQAhekAAxQEAIRgGAADHAQAgCAAAyAEAIAsAAMYBACB0AAC-AQAwdQAAeQAQdgAAvgEAMHcBAL8BACF6QADFAQAhhgEBAL8BACGHAQEAvwEAIYgBAQC_AQAhiQEBAMABACGKAQEAwAEAIYwBAADBAYwBIo4BAADCAY4BIo8BAQDAAQAhkAEBAMABACGRAQEAwAEAIZIBQADDAQAhkwEgAMQBACGUAQEAwAEAIZUBQADFAQAhrgEAAHkAIK8BAAB5ACAZBQAA1wEAIAYAAMcBACAIAADIAQAgdAAA0wEAMHUAAGAAEHYAANMBADB3AQC_AQAhekAAxQEAIYYBAQC_AQAhlQFAAMUBACGZAQEAvwEAIZoBAQDAAQAhmwEIANQBACGcAQgA1QEAIZ0BAgDWAQAhngEBAL8BACGfAQAAzQEAIKABAQDAAQAhoQEBAMABACGiAQgA1AEAIaMBAgDWAQAhpAEgAMQBACGlASAAxAEAIa4BAABgACCvAQAAYAAgCwMAAOABACAHAADhAQAgdAAA4gEAMHUAAAwAEHYAAOIBADB3AQC_AQAheAEAvwEAIXkBAL8BACF6QADFAQAhlQFAAMUBACGqAQIA1gEAIQ0EAADkAQAgBwAA4QEAIHQAAOMBADB1AAAHABB2AADjAQAwdwEAvwEAIXkBAL8BACF6QADFAQAhhgEBAL8BACGVAUAAxQEAIZsBCADUAQAhqQEBAL8BACGqAQIA1gEAIQ0DAADgAQAgCgAA1wEAIHQAAOUBADB1AAADABB2AADlAQAwdwEAvwEAIXgBAL8BACF6QADFAQAhjgEAAOYBrQEilQFAAMUBACGrAQgA1AEAIa4BAAADACCvAQAAAwAgCwMAAOABACAKAADXAQAgdAAA5QEAMHUAAAMAEHYAAOUBADB3AQC_AQAheAEAvwEAIXpAAMUBACGOAQAA5gGtASKVAUAAxQEAIasBCADUAQAhBHsAAACtAQJ8AAAArQEIfQAAAK0BCIIBAADcAa0BIgJ4AQAAAAF5AQAAAAEAAAABswEBAAAAAQGzAUAAAAABBRgAAKADACAZAACmAwAgsAEAAKEDACCxAQAApQMAILYBAAB2ACAFGAAAngMAIBkAAKMDACCwAQAAnwMAILEBAACiAwAgtgEAAF0AIAMYAACgAwAgsAEAAKEDACC2AQAAdgAgAxgAAJ4DACCwAQAAnwMAILYBAABdACAAAAAAAbMBAQAAAAEBswEAAACMAQIBswEAAACOAQIBswFAAAAAAQGzASAAAAABCxgAAJgCADAZAACdAgAwsAEAAJkCADCxAQAAmgIAMLIBAACbAgAgswEAAJwCADC0AQAAnAIAMLUBAACcAgAwtgEAAJwCADC3AQAAngIAMLgBAACfAgAwCxgAAIkCADAZAACOAgAwsAEAAIoCADCxAQAAiwIAMLIBAACMAgAgswEAAI0CADC0AQAAjQIAMLUBAACNAgAwtgEAAI0CADC3AQAAjwIAMLgBAACQAgAwCxgAAP0BADAZAACCAgAwsAEAAP4BADCxAQAA_wEAMLIBAACAAgAgswEAAIECADC0AQAAgQIAMLUBAACBAgAwtgEAAIECADC3AQAAgwIAMLgBAACEAgAwBAcAAPABACB3AQAAAAF5AQAAAAF6QAAAAAECAAAAEQAgGAAAiAIAIAMAAAARACAYAACIAgAgGQAAhwIAIAERAACdAwAwCgMAAOABACAHAADhAQAgdAAA3wEAMHUAAA8AEHYAAN8BADB3AQAAAAF4AQC_AQAheQEAvwEAIXpAAMUBACGtAQAA3gEAIAIAAAARACARAACHAgAgAgAAAIUCACARAACGAgAgB3QAAIQCADB1AACFAgAQdgAAhAIAMHcBAL8BACF4AQC_AQAheQEAvwEAIXpAAMUBACEHdAAAhAIAMHUAAIUCABB2AACEAgAwdwEAvwEAIXgBAL8BACF5AQC_AQAhekAAxQEAIQN3AQDrAQAheQEA6wEAIXpAAOwBACEEBwAA7gEAIHcBAOsBACF5AQDrAQAhekAA7AEAIQQHAADwAQAgdwEAAAABeQEAAAABekAAAAABBgcAAJcCACB3AQAAAAF5AQAAAAF6QAAAAAGVAUAAAAABqgECAAAAAQIAAAABACAYAACWAgAgAwAAAAEAIBgAAJYCACAZAACUAgAgAREAAJwDADAMAwAA4AEAIAcAAOEBACB0AADiAQAwdQAADAAQdgAA4gEAMHcBAAAAAXgBAL8BACF5AQC_AQAhekAAxQEAIZUBQADFAQAhqgECANYBACGtAQAA5wEAIAIAAAABACARAACUAgAgAgAAAJECACARAACSAgAgCXQAAJACADB1AACRAgAQdgAAkAIAMHcBAL8BACF4AQC_AQAheQEAvwEAIXpAAMUBACGVAUAAxQEAIaoBAgDWAQAhCXQAAJACADB1AACRAgAQdgAAkAIAMHcBAL8BACF4AQC_AQAheQEAvwEAIXpAAMUBACGVAUAAxQEAIaoBAgDWAQAhBXcBAOsBACF5AQDrAQAhekAA7AEAIZUBQADsAQAhqgECAJMCACEFswECAAAAAboBAgAAAAG7AQIAAAABvAECAAAAAb0BAgAAAAEGBwAAlQIAIHcBAOsBACF5AQDrAQAhekAA7AEAIZUBQADsAQAhqgECAJMCACEFGAAAlwMAIBkAAJoDACCwAQAAmAMAILEBAACZAwAgtgEAAF0AIAYHAACXAgAgdwEAAAABeQEAAAABekAAAAABlQFAAAAAAaoBAgAAAAEDGAAAlwMAILABAACYAwAgtgEAAF0AIAYKAAC1AgAgdwEAAAABekAAAAABjgEAAACtAQKVAUAAAAABqwEIAAAAAQIAAAAFACAYAAC0AgAgAwAAAAUAIBgAALQCACAZAACkAgAgAREAAJYDADALAwAA4AEAIAoAANcBACB0AADlAQAwdQAAAwAQdgAA5QEAMHcBAAAAAXgBAL8BACF6QADFAQAhjgEAAOYBrQEilQFAAMUBACGrAQgA1AEAIQIAAAAFACARAACkAgAgAgAAAKACACARAAChAgAgCXQAAJ8CADB1AACgAgAQdgAAnwIAMHcBAL8BACF4AQC_AQAhekAAxQEAIY4BAADmAa0BIpUBQADFAQAhqwEIANQBACEJdAAAnwIAMHUAAKACABB2AACfAgAwdwEAvwEAIXgBAL8BACF6QADFAQAhjgEAAOYBrQEilQFAAMUBACGrAQgA1AEAIQV3AQDrAQAhekAA7AEAIY4BAACjAq0BIpUBQADsAQAhqwEIAKICACEFswEIAAAAAboBCAAAAAG7AQgAAAABvAEIAAAAAb0BCAAAAAEBswEAAACtAQIGCgAApQIAIHcBAOsBACF6QADsAQAhjgEAAKMCrQEilQFAAOwBACGrAQgAogIAIQsYAACmAgAwGQAAqwIAMLABAACnAgAwsQEAAKgCADCyAQAAqQIAILMBAACqAgAwtAEAAKoCADC1AQAAqgIAMLYBAACqAgAwtwEAAKwCADC4AQAArQIAMAgHAACzAgAgdwEAAAABeQEAAAABekAAAAABhgEBAAAAAZUBQAAAAAGbAQgAAAABqgECAAAAAQIAAAAJACAYAACyAgAgAwAAAAkAIBgAALICACAZAACwAgAgAREAAJUDADANBAAA5AEAIAcAAOEBACB0AADjAQAwdQAABwAQdgAA4wEAMHcBAAAAAXkBAL8BACF6QADFAQAhhgEBAL8BACGVAUAAxQEAIZsBCADUAQAhqQEBAL8BACGqAQIA1gEAIQIAAAAJACARAACwAgAgAgAAAK4CACARAACvAgAgC3QAAK0CADB1AACuAgAQdgAArQIAMHcBAL8BACF5AQC_AQAhekAAxQEAIYYBAQC_AQAhlQFAAMUBACGbAQgA1AEAIakBAQC_AQAhqgECANYBACELdAAArQIAMHUAAK4CABB2AACtAgAwdwEAvwEAIXkBAL8BACF6QADFAQAhhgEBAL8BACGVAUAAxQEAIZsBCADUAQAhqQEBAL8BACGqAQIA1gEAIQd3AQDrAQAheQEA6wEAIXpAAOwBACGGAQEA6wEAIZUBQADsAQAhmwEIAKICACGqAQIAkwIAIQgHAACxAgAgdwEA6wEAIXkBAOsBACF6QADsAQAhhgEBAOsBACGVAUAA7AEAIZsBCACiAgAhqgECAJMCACEFGAAAkAMAIBkAAJMDACCwAQAAkQMAILEBAACSAwAgtgEAAF0AIAgHAACzAgAgdwEAAAABeQEAAAABekAAAAABhgEBAAAAAZUBQAAAAAGbAQgAAAABqgECAAAAAQMYAACQAwAgsAEAAJEDACC2AQAAXQAgBgoAALUCACB3AQAAAAF6QAAAAAGOAQAAAK0BApUBQAAAAAGrAQgAAAABBBgAAKYCADCwAQAApwIAMLIBAACpAgAgtgEAAKoCADAEGAAAmAIAMLABAACZAgAwsgEAAJsCACC2AQAAnAIAMAQYAACJAgAwsAEAAIoCADCyAQAAjAIAILYBAACNAgAwBBgAAP0BADCwAQAA_gEAMLIBAACAAgAgtgEAAIECADAAAAAAAAAAAAWzAQgAAAABugEIAAAAAbsBCAAAAAG8AQgAAAABvQEIAAAAAQKzAQEAAAAEuQEBAAAABQsYAADaAgAwGQAA3gIAMLABAADbAgAwsQEAANwCADCyAQAA3QIAILMBAACqAgAwtAEAAKoCADC1AQAAqgIAMLYBAACqAgAwtwEAAN8CADC4AQAArQIAMAsYAADPAgAwGQAA0wIAMLABAADQAgAwsQEAANECADCyAQAA0gIAILMBAACNAgAwtAEAAI0CADC1AQAAjQIAMLYBAACNAgAwtwEAANQCADC4AQAAkAIAMAsYAADGAgAwGQAAygIAMLABAADHAgAwsQEAAMgCADCyAQAAyQIAILMBAACBAgAwtAEAAIECADC1AQAAgQIAMLYBAACBAgAwtwEAAMsCADC4AQAAhAIAMAQDAADvAQAgdwEAAAABeAEAAAABekAAAAABAgAAABEAIBgAAM4CACADAAAAEQAgGAAAzgIAIBkAAM0CACABEQAAjwMAMAIAAAARACARAADNAgAgAgAAAIUCACARAADMAgAgA3cBAOsBACF4AQDrAQAhekAA7AEAIQQDAADtAQAgdwEA6wEAIXgBAOsBACF6QADsAQAhBAMAAO8BACB3AQAAAAF4AQAAAAF6QAAAAAEGAwAA2QIAIHcBAAAAAXgBAAAAAXpAAAAAAZUBQAAAAAGqAQIAAAABAgAAAAEAIBgAANgCACADAAAAAQAgGAAA2AIAIBkAANYCACABEQAAjgMAMAIAAAABACARAADWAgAgAgAAAJECACARAADVAgAgBXcBAOsBACF4AQDrAQAhekAA7AEAIZUBQADsAQAhqgECAJMCACEGAwAA1wIAIHcBAOsBACF4AQDrAQAhekAA7AEAIZUBQADsAQAhqgECAJMCACEFGAAAiQMAIBkAAIwDACCwAQAAigMAILEBAACLAwAgtgEAAHYAIAYDAADZAgAgdwEAAAABeAEAAAABekAAAAABlQFAAAAAAaoBAgAAAAEDGAAAiQMAILABAACKAwAgtgEAAHYAIAgEAADkAgAgdwEAAAABekAAAAABhgEBAAAAAZUBQAAAAAGbAQgAAAABqQEBAAAAAaoBAgAAAAECAAAACQAgGAAA4wIAIAMAAAAJACAYAADjAgAgGQAA4QIAIAERAACIAwAwAgAAAAkAIBEAAOECACACAAAArgIAIBEAAOACACAHdwEA6wEAIXpAAOwBACGGAQEA6wEAIZUBQADsAQAhmwEIAKICACGpAQEA6wEAIaoBAgCTAgAhCAQAAOICACB3AQDrAQAhekAA7AEAIYYBAQDrAQAhlQFAAOwBACGbAQgAogIAIakBAQDrAQAhqgECAJMCACEFGAAAgwMAIBkAAIYDACCwAQAAhAMAILEBAACFAwAgtgEAAAUAIAgEAADkAgAgdwEAAAABekAAAAABhgEBAAAAAZUBQAAAAAGbAQgAAAABqQEBAAAAAaoBAgAAAAEDGAAAgwMAILABAACEAwAgtgEAAAUAIAGzAQEAAAAEBBgAANoCADCwAQAA2wIAMLIBAADdAgAgtgEAAKoCADAEGAAAzwIAMLABAADQAgAwsgEAANICACC2AQAAjQIAMAQYAADGAgAwsAEAAMcCADCyAQAAyQIAILYBAACBAgAwAAAAAAAAAAAAAAAFGAAA_gIAIBkAAIEDACCwAQAA_wIAILEBAACAAwAgtgEAAHYAIAMYAAD-AgAgsAEAAP8CACC2AQAAdgAgAAAAAAAKBgAAugIAIAgAALsCACALAAC5AgAgiQEAAPEBACCKAQAA8QEAII8BAADxAQAgkAEAAPEBACCRAQAA8QEAIJIBAADxAQAglAEAAPEBACAHBQAA6QIAIAYAALoCACAIAAC7AgAgmgEAAPEBACCcAQAA8QEAIKABAADxAQAgoQEAAPEBACACAwAA-wIAIAoAAOkCACASBgAAtwIAIAgAALgCACB3AQAAAAF6QAAAAAGGAQEAAAABhwEBAAAAAYgBAQAAAAGJAQEAAAABigEBAAAAAYwBAAAAjAECjgEAAACOAQKPAQEAAAABkAEBAAAAAZEBAQAAAAGSAUAAAAABkwEgAAAAAZQBAQAAAAGVAUAAAAABAgAAAHYAIBgAAP4CACADAAAAeQAgGAAA_gIAIBkAAIIDACAUAAAAeQAgBgAA-wEAIAgAAPwBACARAACCAwAgdwEA6wEAIXpAAOwBACGGAQEA6wEAIYcBAQDrAQAhiAEBAOsBACGJAQEA9QEAIYoBAQD1AQAhjAEAAPYBjAEijgEAAPcBjgEijwEBAPUBACGQAQEA9QEAIZEBAQD1AQAhkgFAAPgBACGTASAA-QEAIZQBAQD1AQAhlQFAAOwBACESBgAA-wEAIAgAAPwBACB3AQDrAQAhekAA7AEAIYYBAQDrAQAhhwEBAOsBACGIAQEA6wEAIYkBAQD1AQAhigEBAPUBACGMAQAA9gGMASKOAQAA9wGOASKPAQEA9QEAIZABAQD1AQAhkQEBAPUBACGSAUAA-AEAIZMBIAD5AQAhlAEBAPUBACGVAUAA7AEAIQcDAAD1AgAgdwEAAAABeAEAAAABekAAAAABjgEAAACtAQKVAUAAAAABqwEIAAAAAQIAAAAFACAYAACDAwAgAwAAAAMAIBgAAIMDACAZAACHAwAgCQAAAAMAIAMAAPQCACARAACHAwAgdwEA6wEAIXgBAOsBACF6QADsAQAhjgEAAKMCrQEilQFAAOwBACGrAQgAogIAIQcDAAD0AgAgdwEA6wEAIXgBAOsBACF6QADsAQAhjgEAAKMCrQEilQFAAOwBACGrAQgAogIAIQd3AQAAAAF6QAAAAAGGAQEAAAABlQFAAAAAAZsBCAAAAAGpAQEAAAABqgECAAAAARIIAAC4AgAgCwAAtgIAIHcBAAAAAXpAAAAAAYYBAQAAAAGHAQEAAAABiAEBAAAAAYkBAQAAAAGKAQEAAAABjAEAAACMAQKOAQAAAI4BAo8BAQAAAAGQAQEAAAABkQEBAAAAAZIBQAAAAAGTASAAAAABlAEBAAAAAZUBQAAAAAECAAAAdgAgGAAAiQMAIAMAAAB5ACAYAACJAwAgGQAAjQMAIBQAAAB5ACAIAAD8AQAgCwAA-gEAIBEAAI0DACB3AQDrAQAhekAA7AEAIYYBAQDrAQAhhwEBAOsBACGIAQEA6wEAIYkBAQD1AQAhigEBAPUBACGMAQAA9gGMASKOAQAA9wGOASKPAQEA9QEAIZABAQD1AQAhkQEBAPUBACGSAUAA-AEAIZMBIAD5AQAhlAEBAPUBACGVAUAA7AEAIRIIAAD8AQAgCwAA-gEAIHcBAOsBACF6QADsAQAhhgEBAOsBACGHAQEA6wEAIYgBAQDrAQAhiQEBAPUBACGKAQEA9QEAIYwBAAD2AYwBIo4BAAD3AY4BIo8BAQD1AQAhkAEBAPUBACGRAQEA9QEAIZIBQAD4AQAhkwEgAPkBACGUAQEA9QEAIZUBQADsAQAhBXcBAAAAAXgBAAAAAXpAAAAAAZUBQAAAAAGqAQIAAAABA3cBAAAAAXgBAAAAAXpAAAAAARMGAADnAgAgCAAA6AIAIHcBAAAAAXpAAAAAAYYBAQAAAAGVAUAAAAABmQEBAAAAAZoBAQAAAAGbAQgAAAABnAEIAAAAAZ0BAgAAAAGeAQEAAAABnwEAAOUCACCgAQEAAAABoQEBAAAAAaIBCAAAAAGjAQIAAAABpAEgAAAAAaUBIAAAAAECAAAAXQAgGAAAkAMAIAMAAABgACAYAACQAwAgGQAAlAMAIBUAAABgACAGAADEAgAgCAAAxQIAIBEAAJQDACB3AQDrAQAhekAA7AEAIYYBAQDrAQAhlQFAAOwBACGZAQEA6wEAIZoBAQD1AQAhmwEIAKICACGcAQgAwQIAIZ0BAgCTAgAhngEBAOsBACGfAQAAwgIAIKABAQD1AQAhoQEBAPUBACGiAQgAogIAIaMBAgCTAgAhpAEgAPkBACGlASAA-QEAIRMGAADEAgAgCAAAxQIAIHcBAOsBACF6QADsAQAhhgEBAOsBACGVAUAA7AEAIZkBAQDrAQAhmgEBAPUBACGbAQgAogIAIZwBCADBAgAhnQECAJMCACGeAQEA6wEAIZ8BAADCAgAgoAEBAPUBACGhAQEA9QEAIaIBCACiAgAhowECAJMCACGkASAA-QEAIaUBIAD5AQAhB3cBAAAAAXkBAAAAAXpAAAAAAYYBAQAAAAGVAUAAAAABmwEIAAAAAaoBAgAAAAEFdwEAAAABekAAAAABjgEAAACtAQKVAUAAAAABqwEIAAAAARMFAADmAgAgCAAA6AIAIHcBAAAAAXpAAAAAAYYBAQAAAAGVAUAAAAABmQEBAAAAAZoBAQAAAAGbAQgAAAABnAEIAAAAAZ0BAgAAAAGeAQEAAAABnwEAAOUCACCgAQEAAAABoQEBAAAAAaIBCAAAAAGjAQIAAAABpAEgAAAAAaUBIAAAAAECAAAAXQAgGAAAlwMAIAMAAABgACAYAACXAwAgGQAAmwMAIBUAAABgACAFAADDAgAgCAAAxQIAIBEAAJsDACB3AQDrAQAhekAA7AEAIYYBAQDrAQAhlQFAAOwBACGZAQEA6wEAIZoBAQD1AQAhmwEIAKICACGcAQgAwQIAIZ0BAgCTAgAhngEBAOsBACGfAQAAwgIAIKABAQD1AQAhoQEBAPUBACGiAQgAogIAIaMBAgCTAgAhpAEgAPkBACGlASAA-QEAIRMFAADDAgAgCAAAxQIAIHcBAOsBACF6QADsAQAhhgEBAOsBACGVAUAA7AEAIZkBAQDrAQAhmgEBAPUBACGbAQgAogIAIZwBCADBAgAhnQECAJMCACGeAQEA6wEAIZ8BAADCAgAgoAEBAPUBACGhAQEA9QEAIaIBCACiAgAhowECAJMCACGkASAA-QEAIaUBIAD5AQAhBXcBAAAAAXkBAAAAAXpAAAAAAZUBQAAAAAGqAQIAAAABA3cBAAAAAXkBAAAAAXpAAAAAARMFAADmAgAgBgAA5wIAIHcBAAAAAXpAAAAAAYYBAQAAAAGVAUAAAAABmQEBAAAAAZoBAQAAAAGbAQgAAAABnAEIAAAAAZ0BAgAAAAGeAQEAAAABnwEAAOUCACCgAQEAAAABoQEBAAAAAaIBCAAAAAGjAQIAAAABpAEgAAAAAaUBIAAAAAECAAAAXQAgGAAAngMAIBIGAAC3AgAgCwAAtgIAIHcBAAAAAXpAAAAAAYYBAQAAAAGHAQEAAAABiAEBAAAAAYkBAQAAAAGKAQEAAAABjAEAAACMAQKOAQAAAI4BAo8BAQAAAAGQAQEAAAABkQEBAAAAAZIBQAAAAAGTASAAAAABlAEBAAAAAZUBQAAAAAECAAAAdgAgGAAAoAMAIAMAAABgACAYAACeAwAgGQAApAMAIBUAAABgACAFAADDAgAgBgAAxAIAIBEAAKQDACB3AQDrAQAhekAA7AEAIYYBAQDrAQAhlQFAAOwBACGZAQEA6wEAIZoBAQD1AQAhmwEIAKICACGcAQgAwQIAIZ0BAgCTAgAhngEBAOsBACGfAQAAwgIAIKABAQD1AQAhoQEBAPUBACGiAQgAogIAIaMBAgCTAgAhpAEgAPkBACGlASAA-QEAIRMFAADDAgAgBgAAxAIAIHcBAOsBACF6QADsAQAhhgEBAOsBACGVAUAA7AEAIZkBAQDrAQAhmgEBAPUBACGbAQgAogIAIZwBCADBAgAhnQECAJMCACGeAQEA6wEAIZ8BAADCAgAgoAEBAPUBACGhAQEA9QEAIaIBCACiAgAhowECAJMCACGkASAA-QEAIaUBIAD5AQAhAwAAAHkAIBgAAKADACAZAACnAwAgFAAAAHkAIAYAAPsBACALAAD6AQAgEQAApwMAIHcBAOsBACF6QADsAQAhhgEBAOsBACGHAQEA6wEAIYgBAQDrAQAhiQEBAPUBACGKAQEA9QEAIYwBAAD2AYwBIo4BAAD3AY4BIo8BAQD1AQAhkAEBAPUBACGRAQEA9QEAIZIBQAD4AQAhkwEgAPkBACGUAQEA9QEAIZUBQADsAQAhEgYAAPsBACALAAD6AQAgdwEA6wEAIXpAAOwBACGGAQEA6wEAIYcBAQDrAQAhiAEBAOsBACGJAQEA9QEAIYoBAQD1AQAhjAEAAPYBjAEijgEAAPcBjgEijwEBAPUBACGQAQEA9QEAIZEBAQD1AQAhkgFAAPgBACGTASAA-QEAIZQBAQD1AQAhlQFAAOwBACECAwACBwAFBAYXAQgYBgkACQsGAwMDAAIJAAgKCgQCBAADBwAFBAULBAYOAQgSBgkABwIDAAIHAAUDBRMABhQACBUAAQoWAAMGGgAIGwALGQAAAgMAAgcABQIDAAIHAAUFCQAOHgAPHwAQIAARIQASAAAAAAAFCQAOHgAPHwAQIAARIQASAQMAAgEDAAIFCQAXHgAYHwAZIAAaIQAbAAAAAAAFCQAXHgAYHwAZIAAaIQAbAgQAAwcABQIEAAMHAAUFCQAgHgAhHwAiIAAjIQAkAAAAAAAFCQAgHgAhHwAiIAAjIQAkAAAFCQApHgAqHwArIAAsIQAtAAAAAAAFCQApHgAqHwArIAAsIQAtAAADCQAyIAAzIQA0AAAAAwkAMiAAMyEANAIDAAIHAAUCAwACBwAFAwkAOSAAOiEAOwAAAAMJADkgADohADsMAgENHAEOHQEPHgEQHwESIQETIwoUJAsVJgEWKAoXKQwaKgEbKwEcLAoiLw0jMBMkMQMlMgMmMwMnNAMoNQMpNwMqOQorOhQsPAMtPgouPxUvQAMwQQMxQgoyRRYzRhw0RwQ1SAQ2SQQ3SgQ4SwQ5TQQ6Two7UB08UgQ9VAo-VR4_VgRAVwRBWApCWx9DXCVEXgVFXwVGYgVHYwVIZAVJZgVKaApLaSZMawVNbQpObidPbwVQcAVRcQpSdChTdS5UdwJVeAJWewJXfAJYfQJZfwJagQEKW4IBL1yEAQJdhgEKXocBMF-IAQJgiQECYYoBCmKNATFjjgE1ZI8BBmWQAQZmkQEGZ5IBBmiTAQZplQEGapcBCmuYATZsmgEGbZwBCm6dATdvngEGcJ8BBnGgAQpyowE4c6QBPA"
+  strings: JSON.parse('["where","orderBy","cursor","user","order","orderItems","carts","product","wishlist","_count","items","orders","Cart.findUnique","Cart.findUniqueOrThrow","Cart.findFirst","Cart.findFirstOrThrow","Cart.findMany","data","Cart.createOne","Cart.createMany","Cart.createManyAndReturn","Cart.updateOne","Cart.updateMany","Cart.updateManyAndReturn","create","update","Cart.upsertOne","Cart.deleteOne","Cart.deleteMany","having","_avg","_sum","_min","_max","Cart.groupBy","Cart.aggregate","Order.findUnique","Order.findUniqueOrThrow","Order.findFirst","Order.findFirstOrThrow","Order.findMany","Order.createOne","Order.createMany","Order.createManyAndReturn","Order.updateOne","Order.updateMany","Order.updateManyAndReturn","Order.upsertOne","Order.deleteOne","Order.deleteMany","Order.groupBy","Order.aggregate","OrderItem.findUnique","OrderItem.findUniqueOrThrow","OrderItem.findFirst","OrderItem.findFirstOrThrow","OrderItem.findMany","OrderItem.createOne","OrderItem.createMany","OrderItem.createManyAndReturn","OrderItem.updateOne","OrderItem.updateMany","OrderItem.updateManyAndReturn","OrderItem.upsertOne","OrderItem.deleteOne","OrderItem.deleteMany","OrderItem.groupBy","OrderItem.aggregate","Product.findUnique","Product.findUniqueOrThrow","Product.findFirst","Product.findFirstOrThrow","Product.findMany","Product.createOne","Product.createMany","Product.createManyAndReturn","Product.updateOne","Product.updateMany","Product.updateManyAndReturn","Product.upsertOne","Product.deleteOne","Product.deleteMany","Product.groupBy","Product.aggregate","User.findUnique","User.findUniqueOrThrow","User.findFirst","User.findFirstOrThrow","User.findMany","User.createOne","User.createMany","User.createManyAndReturn","User.updateOne","User.updateMany","User.updateManyAndReturn","User.upsertOne","User.deleteOne","User.deleteMany","User.groupBy","User.aggregate","Wishlist.findUnique","Wishlist.findUniqueOrThrow","Wishlist.findFirst","Wishlist.findFirstOrThrow","Wishlist.findMany","Wishlist.createOne","Wishlist.createMany","Wishlist.createManyAndReturn","Wishlist.updateOne","Wishlist.updateMany","Wishlist.updateManyAndReturn","Wishlist.upsertOne","Wishlist.deleteOne","Wishlist.deleteMany","Wishlist.groupBy","Wishlist.aggregate","AND","OR","NOT","id","userId","productId","createdAt","equals","in","notIn","lt","lte","gt","gte","not","contains","startsWith","endsWith","name","email","password","phone","avatar","Role","role","STATUS","status","address","city","country","lastLogin","emailVerified","provider","updatedAt","every","some","none","slug","description","price","discount","stock","thumbnail","images","brand","category","rating","reviewCount","isFeatured","isPublished","has","hasEvery","hasSome","orderId","quantity","total","OrderStatus","isInsideDhaka","shippingFee","userId_productId","is","isNot","connectOrCreate","upsert","createMany","set","disconnect","delete","connect","updateMany","deleteMany","push","increment","decrement","multiply","divide"]'),
+  graph: "pwM8YAwDAADgAQAgBwAA4QEAIHQAAOIBADB1AAAMABB2AADiAQAwdwEAAAABeAEAvwEAIXkBAL8BACF6QADFAQAhlQFAAMUBACGqAQIA1gEAIa8BAADnAQAgAQAAAAEAIBADAADgAQAgCgAA1wEAIHQAAOUBADB1AAADABB2AADlAQAwdwEAvwEAIXgBAL8BACF6QADFAQAhhgEBAL8BACGJAQEAvwEAIY4BAADmAa0BIo8BAQC_AQAhlQFAAMUBACGrAQgA1AEAIa0BIADEAQAhrgEIANQBACECAwAA-wIAIAoAAOkCACAQAwAA4AEAIAoAANcBACB0AADlAQAwdQAAAwAQdgAA5QEAMHcBAAAAAXgBAL8BACF6QADFAQAhhgEBAL8BACGJAQEAvwEAIY4BAADmAa0BIo8BAQC_AQAhlQFAAMUBACGrAQgA1AEAIa0BIADEAQAhrgEIANQBACEDAAAAAwAgAQAABAAwAgAABQAgDQQAAOQBACAHAADhAQAgdAAA4wEAMHUAAAcAEHYAAOMBADB3AQC_AQAheQEAvwEAIXpAAMUBACGGAQEAvwEAIZUBQADFAQAhmwEIANQBACGpAQEAvwEAIaoBAgDWAQAhAgQAAP0CACAHAAD8AgAgDQQAAOQBACAHAADhAQAgdAAA4wEAMHUAAAcAEHYAAOMBADB3AQAAAAF5AQC_AQAhekAAxQEAIYYBAQC_AQAhlQFAAMUBACGbAQgA1AEAIakBAQC_AQAhqgECANYBACEDAAAABwAgAQAACAAwAgAACQAgAwAAAAcAIAEAAAgAMAIAAAkAIAsDAADgAQAgBwAA4QEAIHQAAOIBADB1AAAMABB2AADiAQAwdwEAvwEAIXgBAL8BACF5AQC_AQAhekAAxQEAIZUBQADFAQAhqgECANYBACECAwAA-wIAIAcAAPwCACADAAAADAAgAQAADQAwAgAAAQAgCQMAAOABACAHAADhAQAgdAAA3wEAMHUAAA8AEHYAAN8BADB3AQC_AQAheAEAvwEAIXkBAL8BACF6QADFAQAhAgMAAPsCACAHAAD8AgAgCgMAAOABACAHAADhAQAgdAAA3wEAMHUAAA8AEHYAAN8BADB3AQAAAAF4AQC_AQAheQEAvwEAIXpAAMUBACGvAQAA3gEAIAMAAAAPACABAAAQADACAAARACABAAAABwAgAQAAAAwAIAEAAAAPACABAAAABwAgAwAAAAwAIAEAAA0AMAIAAAEAIAMAAAAPACABAAAQADACAAARACABAAAAAwAgAQAAAAwAIAEAAAAPACABAAAAAQAgAwAAAAwAIAEAAA0AMAIAAAEAIAMAAAAMACABAAANADACAAABACADAAAADAAgAQAADQAwAgAAAQAgCAMAANkCACAHAACXAgAgdwEAAAABeAEAAAABeQEAAAABekAAAAABlQFAAAAAAaoBAgAAAAEBEQAAIAAgBncBAAAAAXgBAAAAAXkBAAAAAXpAAAAAAZUBQAAAAAGqAQIAAAABAREAACIAMAERAAAiADAIAwAA1wIAIAcAAJUCACB3AQDrAQAheAEA6wEAIXkBAOsBACF6QADsAQAhlQFAAOwBACGqAQIAkwIAIQIAAAABACARAAAlACAGdwEA6wEAIXgBAOsBACF5AQDrAQAhekAA7AEAIZUBQADsAQAhqgECAJMCACECAAAADAAgEQAAJwAgAgAAAAwAIBEAACcAIAMAAAABACAYAAAgACAZAAAlACABAAAAAQAgAQAAAAwAIAUJAAD2AgAgHgAA9wIAIB8AAPoCACAgAAD5AgAgIQAA-AIAIAl0AADdAQAwdQAALgAQdgAA3QEAMHcBAKYBACF4AQCmAQAheQEApgEAIXpAAKcBACGVAUAApwEAIaoBAgDMAQAhAwAAAAwAIAEAAC0AMB0AAC4AIAMAAAAMACABAAANADACAAABACABAAAABQAgAQAAAAUAIAMAAAADACABAAAEADACAAAFACADAAAAAwAgAQAABAAwAgAABQAgAwAAAAMAIAEAAAQAMAIAAAUAIA0DAAD1AgAgCgAAtQIAIHcBAAAAAXgBAAAAAXpAAAAAAYYBAQAAAAGJAQEAAAABjgEAAACtAQKPAQEAAAABlQFAAAAAAasBCAAAAAGtASAAAAABrgEIAAAAAQERAAA2ACALdwEAAAABeAEAAAABekAAAAABhgEBAAAAAYkBAQAAAAGOAQAAAK0BAo8BAQAAAAGVAUAAAAABqwEIAAAAAa0BIAAAAAGuAQgAAAABAREAADgAMAERAAA4ADANAwAA9AIAIAoAAKUCACB3AQDrAQAheAEA6wEAIXpAAOwBACGGAQEA6wEAIYkBAQDrAQAhjgEAAKMCrQEijwEBAOsBACGVAUAA7AEAIasBCACiAgAhrQEgAPkBACGuAQgAogIAIQIAAAAFACARAAA7ACALdwEA6wEAIXgBAOsBACF6QADsAQAhhgEBAOsBACGJAQEA6wEAIY4BAACjAq0BIo8BAQDrAQAhlQFAAOwBACGrAQgAogIAIa0BIAD5AQAhrgEIAKICACECAAAAAwAgEQAAPQAgAgAAAAMAIBEAAD0AIAMAAAAFACAYAAA2ACAZAAA7ACABAAAABQAgAQAAAAMAIAUJAADvAgAgHgAA8AIAIB8AAPMCACAgAADyAgAgIQAA8QIAIA50AADZAQAwdQAARAAQdgAA2QEAMHcBAKYBACF4AQCmAQAhekAApwEAIYYBAQCmAQAhiQEBAKYBACGOAQAA2gGtASKPAQEApgEAIZUBQACnAQAhqwEIAMoBACGtASAAsgEAIa4BCADKAQAhAwAAAAMAIAEAAEMAMB0AAEQAIAMAAAADACABAAAEADACAAAFACABAAAACQAgAQAAAAkAIAMAAAAHACABAAAIADACAAAJACADAAAABwAgAQAACAAwAgAACQAgAwAAAAcAIAEAAAgAMAIAAAkAIAoEAADkAgAgBwAAswIAIHcBAAAAAXkBAAAAAXpAAAAAAYYBAQAAAAGVAUAAAAABmwEIAAAAAakBAQAAAAGqAQIAAAABAREAAEwAIAh3AQAAAAF5AQAAAAF6QAAAAAGGAQEAAAABlQFAAAAAAZsBCAAAAAGpAQEAAAABqgECAAAAAQERAABOADABEQAATgAwCgQAAOICACAHAACxAgAgdwEA6wEAIXkBAOsBACF6QADsAQAhhgEBAOsBACGVAUAA7AEAIZsBCACiAgAhqQEBAOsBACGqAQIAkwIAIQIAAAAJACARAABRACAIdwEA6wEAIXkBAOsBACF6QADsAQAhhgEBAOsBACGVAUAA7AEAIZsBCACiAgAhqQEBAOsBACGqAQIAkwIAIQIAAAAHACARAABTACACAAAABwAgEQAAUwAgAwAAAAkAIBgAAEwAIBkAAFEAIAEAAAAJACABAAAABwAgBQkAAOoCACAeAADrAgAgHwAA7gIAICAAAO0CACAhAADsAgAgC3QAANgBADB1AABaABB2AADYAQAwdwEApgEAIXkBAKYBACF6QACnAQAhhgEBAKYBACGVAUAApwEAIZsBCADKAQAhqQEBAKYBACGqAQIAzAEAIQMAAAAHACABAABZADAdAABaACADAAAABwAgAQAACAAwAgAACQAgFwUAANcBACAGAADHAQAgCAAAyAEAIHQAANMBADB1AABgABB2AADTAQAwdwEAAAABekAAxQEAIYYBAQC_AQAhlQFAAMUBACGZAQEAAAABmgEBAMABACGbAQgA1AEAIZwBCADVAQAhnQECANYBACGeAQEAvwEAIZ8BAADNAQAgoAEBAMABACGhAQEAwAEAIaIBCADUAQAhowECANYBACGkASAAxAEAIaUBIADEAQAhAQAAAF0AIAEAAABdACAXBQAA1wEAIAYAAMcBACAIAADIAQAgdAAA0wEAMHUAAGAAEHYAANMBADB3AQC_AQAhekAAxQEAIYYBAQC_AQAhlQFAAMUBACGZAQEAvwEAIZoBAQDAAQAhmwEIANQBACGcAQgA1QEAIZ0BAgDWAQAhngEBAL8BACGfAQAAzQEAIKABAQDAAQAhoQEBAMABACGiAQgA1AEAIaMBAgDWAQAhpAEgAMQBACGlASAAxAEAIQcFAADpAgAgBgAAugIAIAgAALsCACCaAQAA8QEAIJwBAADxAQAgoAEAAPEBACChAQAA8QEAIAMAAABgACABAABhADACAABdACADAAAAYAAgAQAAYQAwAgAAXQAgAwAAAGAAIAEAAGEAMAIAAF0AIBQFAADmAgAgBgAA5wIAIAgAAOgCACB3AQAAAAF6QAAAAAGGAQEAAAABlQFAAAAAAZkBAQAAAAGaAQEAAAABmwEIAAAAAZwBCAAAAAGdAQIAAAABngEBAAAAAZ8BAADlAgAgoAEBAAAAAaEBAQAAAAGiAQgAAAABowECAAAAAaQBIAAAAAGlASAAAAABAREAAGUAIBF3AQAAAAF6QAAAAAGGAQEAAAABlQFAAAAAAZkBAQAAAAGaAQEAAAABmwEIAAAAAZwBCAAAAAGdAQIAAAABngEBAAAAAZ8BAADlAgAgoAEBAAAAAaEBAQAAAAGiAQgAAAABowECAAAAAaQBIAAAAAGlASAAAAABAREAAGcAMAERAABnADAUBQAAwwIAIAYAAMQCACAIAADFAgAgdwEA6wEAIXpAAOwBACGGAQEA6wEAIZUBQADsAQAhmQEBAOsBACGaAQEA9QEAIZsBCACiAgAhnAEIAMECACGdAQIAkwIAIZ4BAQDrAQAhnwEAAMICACCgAQEA9QEAIaEBAQD1AQAhogEIAKICACGjAQIAkwIAIaQBIAD5AQAhpQEgAPkBACECAAAAXQAgEQAAagAgEXcBAOsBACF6QADsAQAhhgEBAOsBACGVAUAA7AEAIZkBAQDrAQAhmgEBAPUBACGbAQgAogIAIZwBCADBAgAhnQECAJMCACGeAQEA6wEAIZ8BAADCAgAgoAEBAPUBACGhAQEA9QEAIaIBCACiAgAhowECAJMCACGkASAA-QEAIaUBIAD5AQAhAgAAAGAAIBEAAGwAIAIAAABgACARAABsACADAAAAXQAgGAAAZQAgGQAAagAgAQAAAF0AIAEAAABgACAJCQAAvAIAIB4AAL0CACAfAADAAgAgIAAAvwIAICEAAL4CACCaAQAA8QEAIJwBAADxAQAgoAEAAPEBACChAQAA8QEAIBR0AADJAQAwdQAAcwAQdgAAyQEAMHcBAKYBACF6QACnAQAhhgEBAKYBACGVAUAApwEAIZkBAQCmAQAhmgEBAK4BACGbAQgAygEAIZwBCADLAQAhnQECAMwBACGeAQEApgEAIZ8BAADNAQAgoAEBAK4BACGhAQEArgEAIaIBCADKAQAhowECAMwBACGkASAAsgEAIaUBIACyAQAhAwAAAGAAIAEAAHIAMB0AAHMAIAMAAABgACABAABhADACAABdACAWBgAAxwEAIAgAAMgBACALAADGAQAgdAAAvgEAMHUAAHkAEHYAAL4BADB3AQAAAAF6QADFAQAhhgEBAL8BACGHAQEAAAABiAEBAL8BACGJAQEAAAABigEBAMABACGMAQAAwQGMASKOAQAAwgGOASKPAQEAwAEAIZABAQDAAQAhkQEBAMABACGSAUAAwwEAIZMBIADEAQAhlAEBAMABACGVAUAAxQEAIQEAAAB2ACABAAAAdgAgFgYAAMcBACAIAADIAQAgCwAAxgEAIHQAAL4BADB1AAB5ABB2AAC-AQAwdwEAvwEAIXpAAMUBACGGAQEAvwEAIYcBAQC_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-QAAAAAF_QAAAAAGAAUAAAAABgQFAAAAAAYIBQACoAQAhCHsCAAAAAXwCAAAABH0CAAAABH4CAAAAAX8CAAAAAYABAgAAAAGBAQIAAAABggECAKkBACEIe0AAAAABfEAAAAAEfUAAAAAEfkAAAAABf0AAAAABgAFAAAAAAYEBQAAAAAGCAUAAqgEAIQ4JAACpAQAgIAAArAEAICEAAKwBACB7AQAAAAF8AQAAAAR9AQAAAAR-AQAAAAF_AQAAAAGAAQEAAAABgQEBAAAAAYIBAQCrAQAhgwEBAAAAAYQBAQAAAAGFAQEAAAABC3sBAAAAAXwBAAAABH0BAAAABH4BAAAAAX8BAAAAAYABAQAAAAGBAQEAAAABggEBAKwBACGDAQEAAAABhAEBAAAAAYUBAQAAAAETdAAArQEAMHUAAIwBABB2AACtAQAwdwEApgEAIXpAAKcBACGGAQEApgEAIYcBAQCmAQAhiAEBAKYBACGJAQEArgEAIYoBAQCuAQAhjAEAAK8BjAEijgEAALABjgEijwEBAK4BACGQAQEArgEAIZEBAQCuAQAhkgFAALEBACGTASAAsgEAIZQBAQCuAQAhlQFAAKcBACEOCQAAtgEAICAAAL0BACAhAAC9AQAgewEAAAABfAEAAAAFfQEAAAAFfgEAAAABfwEAAAABgAEBAAAAAYEBAQAAAAGCAQEAvAEAIYMBAQAAAAGEAQEAAAABhQEBAAAAAQcJAACpAQAgIAAAuwEAICEAALsBACB7AAAAjAECfAAAAIwBCH0AAACMAQiCAQAAugGMASIHCQAAqQEAICAAALkBACAhAAC5AQAgewAAAI4BAnwAAACOAQh9AAAAjgEIggEAALgBjgEiCwkAALYBACAgAAC3AQAgIQAAtwEAIHtAAAAAAXxAAAAABX1AAAAABX5AAAAAAX9AAAAAAYABQAAAAAGBAUAAAAABggFAALUBACEFCQAAqQEAICAAALQBACAhAAC0AQAgeyAAAAABggEgALMBACEFCQAAqQEAICAAALQBACAhAAC0AQAgeyAAAAABggEgALMBACECeyAAAAABggEgALQBACELCQAAtgEAICAAALcBACAhAAC3AQAge0AAAAABfEAAAAAFfUAAAAAFfkAAAAABf0AAAAABgAFAAAAAAYEBQAAAAAGCAUAAtQEAIQh7AgAAAAF8AgAAAAV9AgAAAAV-AgAAAAF_AgAAAAGAAQIAAAABgQECAAAAAYIBAgC2AQAhCHtAAAAAAXxAAAAABX1AAAAABX5AAAAAAX9AAAAAAYABQAAAAAGBAUAAAAABggFAALcBACEHCQAAqQEAICAAALkBACAhAAC5AQAgewAAAI4BAnwAAACOAQh9AAAAjgEIggEAALgBjgEiBHsAAACOAQJ8AAAAjgEIfQAAAI4BCIIBAAC5AY4BIgcJAACpAQAgIAAAuwEAICEAALsBACB7AAAAjAECfAAAAIwBCH0AAACMAQiCAQAAugGMASIEewAAAIwBAnwAAACMAQh9AAAAjAEIggEAALsBjAEiDgkAALYBACAgAAC9AQAgIQAAvQEAIHsBAAAAAXwBAAAABX0BAAAABX4BAAAAAX8BAAAAAYABAQAAAAGBAQEAAAABggEBALwBACGDAQEAAAABhAEBAAAAAYUBAQAAAAELewEAAAABfAEAAAAFfQEAAAAFfgEAAAABfwEAAAABgAEBAAAAAYEBAQAAAAGCAQEAvQEAIYMBAQAAAAGEAQEAAAABhQEBAAAAARYGAADHAQAgCAAAyAEAIAsAAMYBACB0AAC-AQAwdQAAeQAQdgAAvgEAMHcBAL8BACF6QADFAQAhhgEBAL8BACGHAQEAvwEAIYgBAQC_AQAhiQEBAMABACGKAQEAwAEAIYwBAADBAYwBIo4BAADCAY4BIo8BAQDAAQAhkAEBAMABACGRAQEAwAEAIZIBQADDAQAhkwEgAMQBACGUAQEAwAEAIZUBQADFAQAhC3sBAAAAAXwBAAAABH0BAAAABH4BAAAAAX8BAAAAAYABAQAAAAGBAQEAAAABggEBAKwBACGDAQEAAAABhAEBAAAAAYUBAQAAAAELewEAAAABfAEAAAAFfQEAAAAFfgEAAAABfwEAAAABgAEBAAAAAYEBAQAAAAGCAQEAvQEAIYMBAQAAAAGEAQEAAAABhQEBAAAAAQR7AAAAjAECfAAAAIwBCH0AAACMAQiCAQAAuwGMASIEewAAAI4BAnwAAACOAQh9AAAAjgEIggEAALkBjgEiCHtAAAAAAXxAAAAABX1AAAAABX5AAAAAAX9AAAAAAYABQAAAAAGBAUAAAAABggFAALcBACECeyAAAAABggEgALQBACEIe0AAAAABfEAAAAAEfUAAAAAEfkAAAAABf0AAAAABgAFAAAAAAYEBQAAAAAGCAUAAqgEAIQOWAQAAAwAglwEAAAMAIJgBAAADACADlgEAAAwAIJcBAAAMACCYAQAADAAgA5YBAAAPACCXAQAADwAgmAEAAA8AIBR0AADJAQAwdQAAcwAQdgAAyQEAMHcBAKYBACF6QACnAQAhhgEBAKYBACGVAUAApwEAIZkBAQCmAQAhmgEBAK4BACGbAQgAygEAIZwBCADLAQAhnQECAMwBACGeAQEApgEAIZ8BAADNAQAgoAEBAK4BACGhAQEArgEAIaIBCADKAQAhowECAMwBACGkASAAsgEAIaUBIACyAQAhDQkAAKkBACAeAADPAQAgHwAAzwEAICAAAM8BACAhAADPAQAgewgAAAABfAgAAAAEfQgAAAAEfggAAAABfwgAAAABgAEIAAAAAYEBCAAAAAGCAQgA0gEAIQ0JAAC2AQAgHgAA0QEAIB8AANEBACAgAADRAQAgIQAA0QEAIHsIAAAAAXwIAAAABX0IAAAABX4IAAAAAX8IAAAAAYABCAAAAAGBAQgAAAABggEIANABACENCQAAqQEAIB4AAM8BACAfAACpAQAgIAAAqQEAICEAAKkBACB7AgAAAAF8AgAAAAR9AgAAAAR-AgAAAAF_AgAAAAGAAQIAAAABgQECAAAAAYIBAgDOAQAhBHsBAAAABaYBAQAAAAGnAQEAAAAEqAEBAAAABA0JAACpAQAgHgAAzwEAIB8AAKkBACAgAACpAQAgIQAAqQEAIHsCAAAAAXwCAAAABH0CAAAABH4CAAAAAX8CAAAAAYABAgAAAAGBAQIAAAABggECAM4BACEIewgAAAABfAgAAAAEfQgAAAAEfggAAAABfwgAAAABgAEIAAAAAYEBCAAAAAGCAQgAzwEAIQ0JAAC2AQAgHgAA0QEAIB8AANEBACAgAADRAQAgIQAA0QEAIHsIAAAAAXwIAAAABX0IAAAABX4IAAAAAX8IAAAAAYABCAAAAAGBAQgAAAABggEIANABACEIewgAAAABfAgAAAAFfQgAAAAFfggAAAABfwgAAAABgAEIAAAAAYEBCAAAAAGCAQgA0QEAIQ0JAACpAQAgHgAAzwEAIB8AAM8BACAgAADPAQAgIQAAzwEAIHsIAAAAAXwIAAAABH0IAAAABH4IAAAAAX8IAAAAAYABCAAAAAGBAQgAAAABggEIANIBACEXBQAA1wEAIAYAAMcBACAIAADIAQAgdAAA0wEAMHUAAGAAEHYAANMBADB3AQC_AQAhekAAxQEAIYYBAQC_AQAhlQFAAMUBACGZAQEAvwEAIZoBAQDAAQAhmwEIANQBACGcAQgA1QEAIZ0BAgDWAQAhngEBAL8BACGfAQAAzQEAIKABAQDAAQAhoQEBAMABACGiAQgA1AEAIaMBAgDWAQAhpAEgAMQBACGlASAAxAEAIQh7CAAAAAF8CAAAAAR9CAAAAAR-CAAAAAF_CAAAAAGAAQgAAAABgQEIAAAAAYIBCADPAQAhCHsIAAAAAXwIAAAABX0IAAAABX4IAAAAAX8IAAAAAYABCAAAAAGBAQgAAAABggEIANEBACEIewIAAAABfAIAAAAEfQIAAAAEfgIAAAABfwIAAAABgAECAAAAAYEBAgAAAAGCAQIAqQEAIQOWAQAABwAglwEAAAcAIJgBAAAHACALdAAA2AEAMHUAAFoAEHYAANgBADB3AQCmAQAheQEApgEAIXpAAKcBACGGAQEApgEAIZUBQACnAQAhmwEIAMoBACGpAQEApgEAIaoBAgDMAQAhDnQAANkBADB1AABEABB2AADZAQAwdwEApgEAIXgBAKYBACF6QACnAQAhhgEBAKYBACGJAQEApgEAIY4BAADaAa0BIo8BAQCmAQAhlQFAAKcBACGrAQgAygEAIa0BIACyAQAhrgEIAMoBACEHCQAAqQEAICAAANwBACAhAADcAQAgewAAAK0BAnwAAACtAQh9AAAArQEIggEAANsBrQEiBwkAAKkBACAgAADcAQAgIQAA3AEAIHsAAACtAQJ8AAAArQEIfQAAAK0BCIIBAADbAa0BIgR7AAAArQECfAAAAK0BCH0AAACtAQiCAQAA3AGtASIJdAAA3QEAMHUAAC4AEHYAAN0BADB3AQCmAQAheAEApgEAIXkBAKYBACF6QACnAQAhlQFAAKcBACGqAQIAzAEAIQJ4AQAAAAF5AQAAAAEJAwAA4AEAIAcAAOEBACB0AADfAQAwdQAADwAQdgAA3wEAMHcBAL8BACF4AQC_AQAheQEAvwEAIXpAAMUBACEYBgAAxwEAIAgAAMgBACALAADGAQAgdAAAvgEAMHUAAHkAEHYAAL4BADB3AQC_AQAhekAAxQEAIYYBAQC_AQAhhwEBAL8BACGIAQEAvwEAIYkBAQDAAQAhigEBAMABACGMAQAAwQGMASKOAQAAwgGOASKPAQEAwAEAIZABAQDAAQAhkQEBAMABACGSAUAAwwEAIZMBIADEAQAhlAEBAMABACGVAUAAxQEAIbABAAB5ACCxAQAAeQAgGQUAANcBACAGAADHAQAgCAAAyAEAIHQAANMBADB1AABgABB2AADTAQAwdwEAvwEAIXpAAMUBACGGAQEAvwEAIZUBQADFAQAhmQEBAL8BACGaAQEAwAEAIZsBCADUAQAhnAEIANUBACGdAQIA1gEAIZ4BAQC_AQAhnwEAAM0BACCgAQEAwAEAIaEBAQDAAQAhogEIANQBACGjAQIA1gEAIaQBIADEAQAhpQEgAMQBACGwAQAAYAAgsQEAAGAAIAsDAADgAQAgBwAA4QEAIHQAAOIBADB1AAAMABB2AADiAQAwdwEAvwEAIXgBAL8BACF5AQC_AQAhekAAxQEAIZUBQADFAQAhqgECANYBACENBAAA5AEAIAcAAOEBACB0AADjAQAwdQAABwAQdgAA4wEAMHcBAL8BACF5AQC_AQAhekAAxQEAIYYBAQC_AQAhlQFAAMUBACGbAQgA1AEAIakBAQC_AQAhqgECANYBACESAwAA4AEAIAoAANcBACB0AADlAQAwdQAAAwAQdgAA5QEAMHcBAL8BACF4AQC_AQAhekAAxQEAIYYBAQC_AQAhiQEBAL8BACGOAQAA5gGtASKPAQEAvwEAIZUBQADFAQAhqwEIANQBACGtASAAxAEAIa4BCADUAQAhsAEAAAMAILEBAAADACAQAwAA4AEAIAoAANcBACB0AADlAQAwdQAAAwAQdgAA5QEAMHcBAL8BACF4AQC_AQAhekAAxQEAIYYBAQC_AQAhiQEBAL8BACGOAQAA5gGtASKPAQEAvwEAIZUBQADFAQAhqwEIANQBACGtASAAxAEAIa4BCADUAQAhBHsAAACtAQJ8AAAArQEIfQAAAK0BCIIBAADcAa0BIgJ4AQAAAAF5AQAAAAEAAAABtQEBAAAAAQG1AUAAAAABBRgAAKADACAZAACmAwAgsgEAAKEDACCzAQAApQMAILgBAAB2ACAFGAAAngMAIBkAAKMDACCyAQAAnwMAILMBAACiAwAguAEAAF0AIAMYAACgAwAgsgEAAKEDACC4AQAAdgAgAxgAAJ4DACCyAQAAnwMAILgBAABdACAAAAAAAbUBAQAAAAEBtQEAAACMAQIBtQEAAACOAQIBtQFAAAAAAQG1ASAAAAABCxgAAJgCADAZAACdAgAwsgEAAJkCADCzAQAAmgIAMLQBAACbAgAgtQEAAJwCADC2AQAAnAIAMLcBAACcAgAwuAEAAJwCADC5AQAAngIAMLoBAACfAgAwCxgAAIkCADAZAACOAgAwsgEAAIoCADCzAQAAiwIAMLQBAACMAgAgtQEAAI0CADC2AQAAjQIAMLcBAACNAgAwuAEAAI0CADC5AQAAjwIAMLoBAACQAgAwCxgAAP0BADAZAACCAgAwsgEAAP4BADCzAQAA_wEAMLQBAACAAgAgtQEAAIECADC2AQAAgQIAMLcBAACBAgAwuAEAAIECADC5AQAAgwIAMLoBAACEAgAwBAcAAPABACB3AQAAAAF5AQAAAAF6QAAAAAECAAAAEQAgGAAAiAIAIAMAAAARACAYAACIAgAgGQAAhwIAIAERAACdAwAwCgMAAOABACAHAADhAQAgdAAA3wEAMHUAAA8AEHYAAN8BADB3AQAAAAF4AQC_AQAheQEAvwEAIXpAAMUBACGvAQAA3gEAIAIAAAARACARAACHAgAgAgAAAIUCACARAACGAgAgB3QAAIQCADB1AACFAgAQdgAAhAIAMHcBAL8BACF4AQC_AQAheQEAvwEAIXpAAMUBACEHdAAAhAIAMHUAAIUCABB2AACEAgAwdwEAvwEAIXgBAL8BACF5AQC_AQAhekAAxQEAIQN3AQDrAQAheQEA6wEAIXpAAOwBACEEBwAA7gEAIHcBAOsBACF5AQDrAQAhekAA7AEAIQQHAADwAQAgdwEAAAABeQEAAAABekAAAAABBgcAAJcCACB3AQAAAAF5AQAAAAF6QAAAAAGVAUAAAAABqgECAAAAAQIAAAABACAYAACWAgAgAwAAAAEAIBgAAJYCACAZAACUAgAgAREAAJwDADAMAwAA4AEAIAcAAOEBACB0AADiAQAwdQAADAAQdgAA4gEAMHcBAAAAAXgBAL8BACF5AQC_AQAhekAAxQEAIZUBQADFAQAhqgECANYBACGvAQAA5wEAIAIAAAABACARAACUAgAgAgAAAJECACARAACSAgAgCXQAAJACADB1AACRAgAQdgAAkAIAMHcBAL8BACF4AQC_AQAheQEAvwEAIXpAAMUBACGVAUAAxQEAIaoBAgDWAQAhCXQAAJACADB1AACRAgAQdgAAkAIAMHcBAL8BACF4AQC_AQAheQEAvwEAIXpAAMUBACGVAUAAxQEAIaoBAgDWAQAhBXcBAOsBACF5AQDrAQAhekAA7AEAIZUBQADsAQAhqgECAJMCACEFtQECAAAAAbwBAgAAAAG9AQIAAAABvgECAAAAAb8BAgAAAAEGBwAAlQIAIHcBAOsBACF5AQDrAQAhekAA7AEAIZUBQADsAQAhqgECAJMCACEFGAAAlwMAIBkAAJoDACCyAQAAmAMAILMBAACZAwAguAEAAF0AIAYHAACXAgAgdwEAAAABeQEAAAABekAAAAABlQFAAAAAAaoBAgAAAAEDGAAAlwMAILIBAACYAwAguAEAAF0AIAsKAAC1AgAgdwEAAAABekAAAAABhgEBAAAAAYkBAQAAAAGOAQAAAK0BAo8BAQAAAAGVAUAAAAABqwEIAAAAAa0BIAAAAAGuAQgAAAABAgAAAAUAIBgAALQCACADAAAABQAgGAAAtAIAIBkAAKQCACABEQAAlgMAMBADAADgAQAgCgAA1wEAIHQAAOUBADB1AAADABB2AADlAQAwdwEAAAABeAEAvwEAIXpAAMUBACGGAQEAvwEAIYkBAQC_AQAhjgEAAOYBrQEijwEBAL8BACGVAUAAxQEAIasBCADUAQAhrQEgAMQBACGuAQgA1AEAIQIAAAAFACARAACkAgAgAgAAAKACACARAAChAgAgDnQAAJ8CADB1AACgAgAQdgAAnwIAMHcBAL8BACF4AQC_AQAhekAAxQEAIYYBAQC_AQAhiQEBAL8BACGOAQAA5gGtASKPAQEAvwEAIZUBQADFAQAhqwEIANQBACGtASAAxAEAIa4BCADUAQAhDnQAAJ8CADB1AACgAgAQdgAAnwIAMHcBAL8BACF4AQC_AQAhekAAxQEAIYYBAQC_AQAhiQEBAL8BACGOAQAA5gGtASKPAQEAvwEAIZUBQADFAQAhqwEIANQBACGtASAAxAEAIa4BCADUAQAhCncBAOsBACF6QADsAQAhhgEBAOsBACGJAQEA6wEAIY4BAACjAq0BIo8BAQDrAQAhlQFAAOwBACGrAQgAogIAIa0BIAD5AQAhrgEIAKICACEFtQEIAAAAAbwBCAAAAAG9AQgAAAABvgEIAAAAAb8BCAAAAAEBtQEAAACtAQILCgAApQIAIHcBAOsBACF6QADsAQAhhgEBAOsBACGJAQEA6wEAIY4BAACjAq0BIo8BAQDrAQAhlQFAAOwBACGrAQgAogIAIa0BIAD5AQAhrgEIAKICACELGAAApgIAMBkAAKsCADCyAQAApwIAMLMBAACoAgAwtAEAAKkCACC1AQAAqgIAMLYBAACqAgAwtwEAAKoCADC4AQAAqgIAMLkBAACsAgAwugEAAK0CADAIBwAAswIAIHcBAAAAAXkBAAAAAXpAAAAAAYYBAQAAAAGVAUAAAAABmwEIAAAAAaoBAgAAAAECAAAACQAgGAAAsgIAIAMAAAAJACAYAACyAgAgGQAAsAIAIAERAACVAwAwDQQAAOQBACAHAADhAQAgdAAA4wEAMHUAAAcAEHYAAOMBADB3AQAAAAF5AQC_AQAhekAAxQEAIYYBAQC_AQAhlQFAAMUBACGbAQgA1AEAIakBAQC_AQAhqgECANYBACECAAAACQAgEQAAsAIAIAIAAACuAgAgEQAArwIAIAt0AACtAgAwdQAArgIAEHYAAK0CADB3AQC_AQAheQEAvwEAIXpAAMUBACGGAQEAvwEAIZUBQADFAQAhmwEIANQBACGpAQEAvwEAIaoBAgDWAQAhC3QAAK0CADB1AACuAgAQdgAArQIAMHcBAL8BACF5AQC_AQAhekAAxQEAIYYBAQC_AQAhlQFAAMUBACGbAQgA1AEAIakBAQC_AQAhqgECANYBACEHdwEA6wEAIXkBAOsBACF6QADsAQAhhgEBAOsBACGVAUAA7AEAIZsBCACiAgAhqgECAJMCACEIBwAAsQIAIHcBAOsBACF5AQDrAQAhekAA7AEAIYYBAQDrAQAhlQFAAOwBACGbAQgAogIAIaoBAgCTAgAhBRgAAJADACAZAACTAwAgsgEAAJEDACCzAQAAkgMAILgBAABdACAIBwAAswIAIHcBAAAAAXkBAAAAAXpAAAAAAYYBAQAAAAGVAUAAAAABmwEIAAAAAaoBAgAAAAEDGAAAkAMAILIBAACRAwAguAEAAF0AIAsKAAC1AgAgdwEAAAABekAAAAABhgEBAAAAAYkBAQAAAAGOAQAAAK0BAo8BAQAAAAGVAUAAAAABqwEIAAAAAa0BIAAAAAGuAQgAAAABBBgAAKYCADCyAQAApwIAMLQBAACpAgAguAEAAKoCADAEGAAAmAIAMLIBAACZAgAwtAEAAJsCACC4AQAAnAIAMAQYAACJAgAwsgEAAIoCADC0AQAAjAIAILgBAACNAgAwBBgAAP0BADCyAQAA_gEAMLQBAACAAgAguAEAAIECADAAAAAAAAAAAAW1AQgAAAABvAEIAAAAAb0BCAAAAAG-AQgAAAABvwEIAAAAAQK1AQEAAAAEuwEBAAAABQsYAADaAgAwGQAA3gIAMLIBAADbAgAwswEAANwCADC0AQAA3QIAILUBAACqAgAwtgEAAKoCADC3AQAAqgIAMLgBAACqAgAwuQEAAN8CADC6AQAArQIAMAsYAADPAgAwGQAA0wIAMLIBAADQAgAwswEAANECADC0AQAA0gIAILUBAACNAgAwtgEAAI0CADC3AQAAjQIAMLgBAACNAgAwuQEAANQCADC6AQAAkAIAMAsYAADGAgAwGQAAygIAMLIBAADHAgAwswEAAMgCADC0AQAAyQIAILUBAACBAgAwtgEAAIECADC3AQAAgQIAMLgBAACBAgAwuQEAAMsCADC6AQAAhAIAMAQDAADvAQAgdwEAAAABeAEAAAABekAAAAABAgAAABEAIBgAAM4CACADAAAAEQAgGAAAzgIAIBkAAM0CACABEQAAjwMAMAIAAAARACARAADNAgAgAgAAAIUCACARAADMAgAgA3cBAOsBACF4AQDrAQAhekAA7AEAIQQDAADtAQAgdwEA6wEAIXgBAOsBACF6QADsAQAhBAMAAO8BACB3AQAAAAF4AQAAAAF6QAAAAAEGAwAA2QIAIHcBAAAAAXgBAAAAAXpAAAAAAZUBQAAAAAGqAQIAAAABAgAAAAEAIBgAANgCACADAAAAAQAgGAAA2AIAIBkAANYCACABEQAAjgMAMAIAAAABACARAADWAgAgAgAAAJECACARAADVAgAgBXcBAOsBACF4AQDrAQAhekAA7AEAIZUBQADsAQAhqgECAJMCACEGAwAA1wIAIHcBAOsBACF4AQDrAQAhekAA7AEAIZUBQADsAQAhqgECAJMCACEFGAAAiQMAIBkAAIwDACCyAQAAigMAILMBAACLAwAguAEAAHYAIAYDAADZAgAgdwEAAAABeAEAAAABekAAAAABlQFAAAAAAaoBAgAAAAEDGAAAiQMAILIBAACKAwAguAEAAHYAIAgEAADkAgAgdwEAAAABekAAAAABhgEBAAAAAZUBQAAAAAGbAQgAAAABqQEBAAAAAaoBAgAAAAECAAAACQAgGAAA4wIAIAMAAAAJACAYAADjAgAgGQAA4QIAIAERAACIAwAwAgAAAAkAIBEAAOECACACAAAArgIAIBEAAOACACAHdwEA6wEAIXpAAOwBACGGAQEA6wEAIZUBQADsAQAhmwEIAKICACGpAQEA6wEAIaoBAgCTAgAhCAQAAOICACB3AQDrAQAhekAA7AEAIYYBAQDrAQAhlQFAAOwBACGbAQgAogIAIakBAQDrAQAhqgECAJMCACEFGAAAgwMAIBkAAIYDACCyAQAAhAMAILMBAACFAwAguAEAAAUAIAgEAADkAgAgdwEAAAABekAAAAABhgEBAAAAAZUBQAAAAAGbAQgAAAABqQEBAAAAAaoBAgAAAAEDGAAAgwMAILIBAACEAwAguAEAAAUAIAG1AQEAAAAEBBgAANoCADCyAQAA2wIAMLQBAADdAgAguAEAAKoCADAEGAAAzwIAMLIBAADQAgAwtAEAANICACC4AQAAjQIAMAQYAADGAgAwsgEAAMcCADC0AQAAyQIAILgBAACBAgAwAAAAAAAAAAAAAAAFGAAA_gIAIBkAAIEDACCyAQAA_wIAILMBAACAAwAguAEAAHYAIAMYAAD-AgAgsgEAAP8CACC4AQAAdgAgAAAAAAAKBgAAugIAIAgAALsCACALAAC5AgAgiQEAAPEBACCKAQAA8QEAII8BAADxAQAgkAEAAPEBACCRAQAA8QEAIJIBAADxAQAglAEAAPEBACAHBQAA6QIAIAYAALoCACAIAAC7AgAgmgEAAPEBACCcAQAA8QEAIKABAADxAQAgoQEAAPEBACACAwAA-wIAIAoAAOkCACASBgAAtwIAIAgAALgCACB3AQAAAAF6QAAAAAGGAQEAAAABhwEBAAAAAYgBAQAAAAGJAQEAAAABigEBAAAAAYwBAAAAjAECjgEAAACOAQKPAQEAAAABkAEBAAAAAZEBAQAAAAGSAUAAAAABkwEgAAAAAZQBAQAAAAGVAUAAAAABAgAAAHYAIBgAAP4CACADAAAAeQAgGAAA_gIAIBkAAIIDACAUAAAAeQAgBgAA-wEAIAgAAPwBACARAACCAwAgdwEA6wEAIXpAAOwBACGGAQEA6wEAIYcBAQDrAQAhiAEBAOsBACGJAQEA9QEAIYoBAQD1AQAhjAEAAPYBjAEijgEAAPcBjgEijwEBAPUBACGQAQEA9QEAIZEBAQD1AQAhkgFAAPgBACGTASAA-QEAIZQBAQD1AQAhlQFAAOwBACESBgAA-wEAIAgAAPwBACB3AQDrAQAhekAA7AEAIYYBAQDrAQAhhwEBAOsBACGIAQEA6wEAIYkBAQD1AQAhigEBAPUBACGMAQAA9gGMASKOAQAA9wGOASKPAQEA9QEAIZABAQD1AQAhkQEBAPUBACGSAUAA-AEAIZMBIAD5AQAhlAEBAPUBACGVAUAA7AEAIQwDAAD1AgAgdwEAAAABeAEAAAABekAAAAABhgEBAAAAAYkBAQAAAAGOAQAAAK0BAo8BAQAAAAGVAUAAAAABqwEIAAAAAa0BIAAAAAGuAQgAAAABAgAAAAUAIBgAAIMDACADAAAAAwAgGAAAgwMAIBkAAIcDACAOAAAAAwAgAwAA9AIAIBEAAIcDACB3AQDrAQAheAEA6wEAIXpAAOwBACGGAQEA6wEAIYkBAQDrAQAhjgEAAKMCrQEijwEBAOsBACGVAUAA7AEAIasBCACiAgAhrQEgAPkBACGuAQgAogIAIQwDAAD0AgAgdwEA6wEAIXgBAOsBACF6QADsAQAhhgEBAOsBACGJAQEA6wEAIY4BAACjAq0BIo8BAQDrAQAhlQFAAOwBACGrAQgAogIAIa0BIAD5AQAhrgEIAKICACEHdwEAAAABekAAAAABhgEBAAAAAZUBQAAAAAGbAQgAAAABqQEBAAAAAaoBAgAAAAESCAAAuAIAIAsAALYCACB3AQAAAAF6QAAAAAGGAQEAAAABhwEBAAAAAYgBAQAAAAGJAQEAAAABigEBAAAAAYwBAAAAjAECjgEAAACOAQKPAQEAAAABkAEBAAAAAZEBAQAAAAGSAUAAAAABkwEgAAAAAZQBAQAAAAGVAUAAAAABAgAAAHYAIBgAAIkDACADAAAAeQAgGAAAiQMAIBkAAI0DACAUAAAAeQAgCAAA_AEAIAsAAPoBACARAACNAwAgdwEA6wEAIXpAAOwBACGGAQEA6wEAIYcBAQDrAQAhiAEBAOsBACGJAQEA9QEAIYoBAQD1AQAhjAEAAPYBjAEijgEAAPcBjgEijwEBAPUBACGQAQEA9QEAIZEBAQD1AQAhkgFAAPgBACGTASAA-QEAIZQBAQD1AQAhlQFAAOwBACESCAAA_AEAIAsAAPoBACB3AQDrAQAhekAA7AEAIYYBAQDrAQAhhwEBAOsBACGIAQEA6wEAIYkBAQD1AQAhigEBAPUBACGMAQAA9gGMASKOAQAA9wGOASKPAQEA9QEAIZABAQD1AQAhkQEBAPUBACGSAUAA-AEAIZMBIAD5AQAhlAEBAPUBACGVAUAA7AEAIQV3AQAAAAF4AQAAAAF6QAAAAAGVAUAAAAABqgECAAAAAQN3AQAAAAF4AQAAAAF6QAAAAAETBgAA5wIAIAgAAOgCACB3AQAAAAF6QAAAAAGGAQEAAAABlQFAAAAAAZkBAQAAAAGaAQEAAAABmwEIAAAAAZwBCAAAAAGdAQIAAAABngEBAAAAAZ8BAADlAgAgoAEBAAAAAaEBAQAAAAGiAQgAAAABowECAAAAAaQBIAAAAAGlASAAAAABAgAAAF0AIBgAAJADACADAAAAYAAgGAAAkAMAIBkAAJQDACAVAAAAYAAgBgAAxAIAIAgAAMUCACARAACUAwAgdwEA6wEAIXpAAOwBACGGAQEA6wEAIZUBQADsAQAhmQEBAOsBACGaAQEA9QEAIZsBCACiAgAhnAEIAMECACGdAQIAkwIAIZ4BAQDrAQAhnwEAAMICACCgAQEA9QEAIaEBAQD1AQAhogEIAKICACGjAQIAkwIAIaQBIAD5AQAhpQEgAPkBACETBgAAxAIAIAgAAMUCACB3AQDrAQAhekAA7AEAIYYBAQDrAQAhlQFAAOwBACGZAQEA6wEAIZoBAQD1AQAhmwEIAKICACGcAQgAwQIAIZ0BAgCTAgAhngEBAOsBACGfAQAAwgIAIKABAQD1AQAhoQEBAPUBACGiAQgAogIAIaMBAgCTAgAhpAEgAPkBACGlASAA-QEAIQd3AQAAAAF5AQAAAAF6QAAAAAGGAQEAAAABlQFAAAAAAZsBCAAAAAGqAQIAAAABCncBAAAAAXpAAAAAAYYBAQAAAAGJAQEAAAABjgEAAACtAQKPAQEAAAABlQFAAAAAAasBCAAAAAGtASAAAAABrgEIAAAAARMFAADmAgAgCAAA6AIAIHcBAAAAAXpAAAAAAYYBAQAAAAGVAUAAAAABmQEBAAAAAZoBAQAAAAGbAQgAAAABnAEIAAAAAZ0BAgAAAAGeAQEAAAABnwEAAOUCACCgAQEAAAABoQEBAAAAAaIBCAAAAAGjAQIAAAABpAEgAAAAAaUBIAAAAAECAAAAXQAgGAAAlwMAIAMAAABgACAYAACXAwAgGQAAmwMAIBUAAABgACAFAADDAgAgCAAAxQIAIBEAAJsDACB3AQDrAQAhekAA7AEAIYYBAQDrAQAhlQFAAOwBACGZAQEA6wEAIZoBAQD1AQAhmwEIAKICACGcAQgAwQIAIZ0BAgCTAgAhngEBAOsBACGfAQAAwgIAIKABAQD1AQAhoQEBAPUBACGiAQgAogIAIaMBAgCTAgAhpAEgAPkBACGlASAA-QEAIRMFAADDAgAgCAAAxQIAIHcBAOsBACF6QADsAQAhhgEBAOsBACGVAUAA7AEAIZkBAQDrAQAhmgEBAPUBACGbAQgAogIAIZwBCADBAgAhnQECAJMCACGeAQEA6wEAIZ8BAADCAgAgoAEBAPUBACGhAQEA9QEAIaIBCACiAgAhowECAJMCACGkASAA-QEAIaUBIAD5AQAhBXcBAAAAAXkBAAAAAXpAAAAAAZUBQAAAAAGqAQIAAAABA3cBAAAAAXkBAAAAAXpAAAAAARMFAADmAgAgBgAA5wIAIHcBAAAAAXpAAAAAAYYBAQAAAAGVAUAAAAABmQEBAAAAAZoBAQAAAAGbAQgAAAABnAEIAAAAAZ0BAgAAAAGeAQEAAAABnwEAAOUCACCgAQEAAAABoQEBAAAAAaIBCAAAAAGjAQIAAAABpAEgAAAAAaUBIAAAAAECAAAAXQAgGAAAngMAIBIGAAC3AgAgCwAAtgIAIHcBAAAAAXpAAAAAAYYBAQAAAAGHAQEAAAABiAEBAAAAAYkBAQAAAAGKAQEAAAABjAEAAACMAQKOAQAAAI4BAo8BAQAAAAGQAQEAAAABkQEBAAAAAZIBQAAAAAGTASAAAAABlAEBAAAAAZUBQAAAAAECAAAAdgAgGAAAoAMAIAMAAABgACAYAACeAwAgGQAApAMAIBUAAABgACAFAADDAgAgBgAAxAIAIBEAAKQDACB3AQDrAQAhekAA7AEAIYYBAQDrAQAhlQFAAOwBACGZAQEA6wEAIZoBAQD1AQAhmwEIAKICACGcAQgAwQIAIZ0BAgCTAgAhngEBAOsBACGfAQAAwgIAIKABAQD1AQAhoQEBAPUBACGiAQgAogIAIaMBAgCTAgAhpAEgAPkBACGlASAA-QEAIRMFAADDAgAgBgAAxAIAIHcBAOsBACF6QADsAQAhhgEBAOsBACGVAUAA7AEAIZkBAQDrAQAhmgEBAPUBACGbAQgAogIAIZwBCADBAgAhnQECAJMCACGeAQEA6wEAIZ8BAADCAgAgoAEBAPUBACGhAQEA9QEAIaIBCACiAgAhowECAJMCACGkASAA-QEAIaUBIAD5AQAhAwAAAHkAIBgAAKADACAZAACnAwAgFAAAAHkAIAYAAPsBACALAAD6AQAgEQAApwMAIHcBAOsBACF6QADsAQAhhgEBAOsBACGHAQEA6wEAIYgBAQDrAQAhiQEBAPUBACGKAQEA9QEAIYwBAAD2AYwBIo4BAAD3AY4BIo8BAQD1AQAhkAEBAPUBACGRAQEA9QEAIZIBQAD4AQAhkwEgAPkBACGUAQEA9QEAIZUBQADsAQAhEgYAAPsBACALAAD6AQAgdwEA6wEAIXpAAOwBACGGAQEA6wEAIYcBAQDrAQAhiAEBAOsBACGJAQEA9QEAIYoBAQD1AQAhjAEAAPYBjAEijgEAAPcBjgEijwEBAPUBACGQAQEA9QEAIZEBAQD1AQAhkgFAAPgBACGTASAA-QEAIZQBAQD1AQAhlQFAAOwBACECAwACBwAFBAYXAQgYBgkACQsGAwMDAAIJAAgKCgQCBAADBwAFBAULBAYOAQgSBgkABwIDAAIHAAUDBRMABhQACBUAAQoWAAMGGgAIGwALGQAAAgMAAgcABQIDAAIHAAUFCQAOHgAPHwAQIAARIQASAAAAAAAFCQAOHgAPHwAQIAARIQASAQMAAgEDAAIFCQAXHgAYHwAZIAAaIQAbAAAAAAAFCQAXHgAYHwAZIAAaIQAbAgQAAwcABQIEAAMHAAUFCQAgHgAhHwAiIAAjIQAkAAAAAAAFCQAgHgAhHwAiIAAjIQAkAAAFCQApHgAqHwArIAAsIQAtAAAAAAAFCQApHgAqHwArIAAsIQAtAAADCQAyIAAzIQA0AAAAAwkAMiAAMyEANAIDAAIHAAUCAwACBwAFAwkAOSAAOiEAOwAAAAMJADkgADohADsMAgENHAEOHQEPHgEQHwESIQETIwoUJAsVJgEWKAoXKQwaKgEbKwEcLAoiLw0jMBMkMQMlMgMmMwMnNAMoNQMpNwMqOQorOhQsPAMtPgouPxUvQAMwQQMxQgoyRRYzRhw0RwQ1SAQ2SQQ3SgQ4SwQ5TQQ6Two7UB08UgQ9VAo-VR4_VgRAVwRBWApCWx9DXCVEXgVFXwVGYgVHYwVIZAVJZgVKaApLaSZMawVNbQpObidPbwVQcAVRcQpSdChTdS5UdwJVeAJWewJXfAJYfQJZfwJagQEKW4IBL1yEAQJdhgEKXocBMF-IAQJgiQECYYoBCmKNATFjjgE1ZI8BBmWQAQZmkQEGZ5IBBmiTAQZplQEGapcBCmuYATZsmgEGbZwBCm6dATdvngEGcJ8BBnGgAQpyowE4c6QBPA"
 };
 async function decodeBase64AsWasm(wasmBase64) {
   const { Buffer } = await import("buffer");
@@ -507,6 +507,7 @@ var createProduct = async (payload) => {
     });
     return result;
   } catch (error) {
+    console.log(error);
     throw new Error("Failed to create product");
   }
 };
@@ -698,7 +699,7 @@ var ProductRoutes = router2;
 import { Router as Router3 } from "express";
 
 // src/app/modules/orders/order.service.ts
-var createBuyNowOrder = async (userId, productId, quantity) => {
+var createBuyNowOrder = async (userId, productId, quantity, name, phone, address, isInsideDhaka) => {
   try {
     const product = await prisma.product.findUnique({
       where: { id: productId }
@@ -711,6 +712,10 @@ var createBuyNowOrder = async (userId, productId, quantity) => {
       data: {
         userId,
         total,
+        name,
+        phone,
+        address,
+        isInsideDhaka,
         items: {
           create: [
             {
@@ -721,26 +726,15 @@ var createBuyNowOrder = async (userId, productId, quantity) => {
             }
           ]
         }
-      },
-      include: {
-        items: true,
-        user: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            phone: true,
-            avatar: true
-          }
-        }
       }
     });
     return order;
   } catch (error) {
+    console.log(error);
     throw new Error("Failed to create buy now order");
   }
 };
-var checkoutCart = async (userId) => {
+var checkoutCart = async (userId, name, phone, address, isInsideDhaka) => {
   try {
     const cartItems = await prisma.cart.findMany({
       where: { userId },
@@ -749,16 +743,18 @@ var checkoutCart = async (userId) => {
     if (cartItems.length === 0) {
       throw new Error("Cart is empty");
     }
-    const invalidItem = cartItems.find((item) => item.userId !== userId);
-    if (invalidItem) {
-      throw new Error("Unauthorized: Cart user mismatch");
-    }
-    const total = cartItems.reduce((sum, item) => {
+    const shippingFee = isInsideDhaka ? 60 : 120;
+    const subtotal = cartItems.reduce((sum, item) => {
       return sum + item.product.price * item.quantity;
     }, 0);
+    const total = subtotal + shippingFee;
     const order = await prisma.order.create({
       data: {
         userId,
+        name,
+        phone,
+        address,
+        isInsideDhaka,
         total,
         items: {
           create: cartItems.map((item) => ({
@@ -778,8 +774,8 @@ var checkoutCart = async (userId) => {
     });
     return order;
   } catch (error) {
-    console.error(error);
-    throw new Error(error.message || "Failed to checkout cart");
+    console.log(error);
+    throw new Error(error.message);
   }
 };
 var getUserOrders = async (userId) => {
@@ -830,11 +826,15 @@ var OrderService = {
 // src/app/modules/orders/order.controller.ts
 var buyNow = catchAsync(async (req, res) => {
   const userId = req.user.id;
-  const { productId, quantity } = req.body;
+  const { productId, quantity, name, phone, address, isInsideDhaka } = req.body;
   const result = await OrderService.createBuyNowOrder(
     userId,
     productId,
-    quantity || 1
+    quantity || 1,
+    name,
+    phone,
+    address,
+    isInsideDhaka
   );
   sendResponse(res, {
     httpStatusCode: 201,
@@ -844,8 +844,15 @@ var buyNow = catchAsync(async (req, res) => {
   });
 });
 var checkout = catchAsync(async (req, res) => {
-  const userId = req.user.id;
-  const result = await OrderService.checkoutCart(userId);
+  const user = req.user;
+  const { name, phone, address, isInsideDhaka } = req.body;
+  const result = await OrderService.checkoutCart(
+    user.id,
+    name,
+    phone,
+    address,
+    isInsideDhaka
+  );
   sendResponse(res, {
     httpStatusCode: 201,
     success: true,
@@ -1027,20 +1034,322 @@ var CartController = {
 
 // src/app/modules/cart/cart.route.ts
 var router4 = Router4();
-router4.post("/", auth(Role.CUSTOMER), CartController.addToCart);
+router4.post(
+  "/",
+  auth(Role.CUSTOMER, Role.SELLER, Role.ADMIN),
+  CartController.addToCart
+);
 router4.get("/", auth(Role.CUSTOMER), CartController.getMyCart);
 router4.patch("/:id", auth(Role.CUSTOMER), CartController.updateCartItem);
 router4.delete("/:id", auth(Role.CUSTOMER), CartController.deleteCartItem);
 router4.delete("/clear/all", auth(Role.CUSTOMER), CartController.clearCart);
 var CartRoute = router4;
 
+// src/app/modules/chatbot/chatbot.route.ts
+import express from "express";
+
+// src/app/modules/chatbot/chatbot.service.ts
+import { GoogleGenerativeAI } from "@google/generative-ai";
+
+// src/app/modules/chatbot/chatbot.knowledge.ts
+var COMPANY_KNOWLEDGE = `
+## Company
+- Name: NextBuy AI
+- Type: AI-powered e-commerce platform
+- Mission: Revolutionizing online shopping with intelligent recommendations and personalized experiences
+- Contact: /contact, support@nextbuy.ai
+- Help Center: /help
+- About Us: /about
+
+## Platform Features
+
+### AI-Powered Shopping Assistant
+- Personalized product recommendations based on browsing history and preferences
+- Natural language search to find products using conversational queries
+- Size and fit recommendations for clothing items
+- Price drop alerts and smart deal notifications
+- Virtual try-on capabilities for fashion items
+
+### Smart Shopping Tools
+- Wishlist with AI-powered price tracking
+- Comparative analysis across similar products
+- Automatic coupon application at checkout
+- Smart bundle suggestions for better deals
+- Trending products in your preferred categories
+
+### Enhanced User Experience
+- One-click reorder for frequently purchased items
+- Voice search and shopping commands
+- AR product visualization for home goods
+- Real-time inventory updates
+- Multi-language support (English, Spanish, French, German)
+
+## Product Categories
+- Electronics & Gadgets
+- Fashion & Apparel
+- Home & Garden
+- Sports & Outdoors
+- Books & Media
+- Health & Beauty
+- Toys & Games
+- Automotive
+- Food & Grocery
+- Pet Supplies
+
+## Pricing & Plans
+
+### Free Plan
+- Basic shopping features
+- Standard recommendations
+- Limited wishlist (50 items)
+- Community support
+
+### Premium Plan ($9.99/month)
+- Advanced AI recommendations
+- Unlimited wishlist
+- Price drop alerts
+- Early access to sales
+- Priority customer support
+- Exclusive member deals
+
+### Business Plan ($29.99/month)
+- All Premium features
+- Bulk purchasing tools
+- Business analytics dashboard
+- Dedicated account manager
+- Custom integrations API access
+
+## Payment Methods
+- Credit/Debit Cards (Visa, MasterCard, American Express)
+- Digital Wallets (PayPal, Apple Pay, Google Pay)
+- Buy Now, Pay Later (Affirm, Klarna)
+- Cryptocurrency (Bitcoin, Ethereum)
+- Bank transfers for large orders
+
+## Shipping & Delivery
+- Standard Shipping (5-7 business days): $4.99
+- Express Shipping (2-3 business days): $12.99
+- Next Day Delivery: $24.99
+- Free shipping on orders over $50
+- International shipping available (rates vary by location)
+- Real-time tracking for all orders
+
+## Return Policy
+- 30-day return window for most items
+- Free returns for defective products
+- Restocking fee may apply for some items
+- Easy online return process
+- Refund processed within 5-7 business days
+
+## Customer Support
+- 24/7 AI chat support
+- Email support: support@nextbuy.ai
+- Phone support: 1-800-NEXTBUY (Mon-Fri, 9 AM - 6 PM EST)
+- Comprehensive help center with tutorials
+- Community forum for peer support
+
+## Security & Privacy
+- SSL encryption for all transactions
+- PCI DSS compliant payment processing
+- GDPR compliant data handling
+- Two-factor authentication available
+- Privacy-first approach to personal data
+
+## Mobile App
+- Available on iOS and Android
+- Full feature parity with web platform
+- Push notifications for deals and updates
+- Offline browsing capability
+- Biometric login support
+
+## Technology Stack
+- Frontend: Next.js, React, TypeScript, Tailwind CSS
+- Backend: Node.js, Express, GraphQL API
+- Database: PostgreSQL, Redis for caching
+- AI/ML: TensorFlow, OpenAI GPT integration
+- Search: Elasticsearch with AI enhancements
+- Payments: Stripe, PayPal APIs
+- Cloud: AWS, Vercel deployment
+- Analytics: Custom AI-powered insights
+
+## FAQ
+
+Q: How does NextBuy AI's recommendation engine work?
+A: Our AI analyzes your browsing history, purchase patterns, and preferences to suggest products you'll love. The more you shop, the smarter it gets!
+
+Q: Is my payment information secure?
+A: Absolutely! We use industry-standard SSL encryption and are PCI DSS compliant. Your payment data is tokenized and never stored on our servers.
+
+Q: Can I return items if they don't fit?
+A: Yes! We offer a 30-day return window for most items, including clothing. Return shipping is free for defective products.
+
+Q: How do I track my order?
+A: You'll receive a tracking number via email once your order ships. You can also track orders in real-time through your account dashboard.
+
+Q: Does NextBuy AI ship internationally?
+A: Yes, we ship to over 100 countries worldwide. International shipping rates and delivery times vary by location.
+
+Q: What's the difference between Free and Premium plans?
+A: Premium includes advanced AI recommendations, unlimited wishlist, price alerts, early sale access, and priority support - all for just $9.99/month.
+
+Q: How do I contact customer support?
+A: You can reach us 24/7 through our AI chat, email support@nextbuy.ai, or call 1-800-NEXTBUY during business hours.
+
+Q: Can I use NextBuy AI for my business?
+A: Yes! Our Business Plan ($29.99/month) includes bulk purchasing tools, analytics dashboard, and API access for custom integrations.
+
+Q: How do price drop alerts work?
+A: Add items to your wishlist and enable alerts. We'll notify you automatically when prices drop, so you never miss a deal.
+
+Q: Is there a mobile app?
+A: Yes! Download the NextBuy AI app from the App Store or Google Play for full shopping functionality on the go.
+
+Q: What payment methods do you accept?
+A: We accept all major credit cards, digital wallets (PayPal, Apple Pay, Google Pay), buy-now-pay-later options, and even cryptocurrency.
+
+Q: How accurate is the AI sizing recommendation?
+A: Our sizing AI has 95% accuracy based on millions of data points. You can also input your measurements for even better recommendations.
+`;
+var SYSTEM_PROMPT = `
+You are the AI shopping assistant for NextBuy AI, an intelligent e-commerce platform.
+Your role is to help customers by:
+1. Answering questions about products, features, and services
+2. Providing personalized shopping recommendations
+3. Assisting with orders, returns, and account management
+4. Guiding customers to the best solutions for their shopping needs
+
+## Your Knowledge Base
+${COMPANY_KNOWLEDGE}
+
+## Behavior Rules
+- Be friendly, helpful, and enthusiastic about shopping
+- Keep answers concise (2\u20134 sentences max unless a detailed list is needed)
+- Focus on helping customers find the best products and deals
+- Use conversational, shopping-focused language
+- When customers mention product needs, suggest relevant categories or specific features
+- Always mention available plans and benefits when discussing premium features
+- If a customer wants to make a purchase, guide them to checkout or account creation
+- If you're unsure about specific product details, suggest browsing the relevant category
+- Do NOT make up product specifications, prices, or features not in your knowledge base
+- Do NOT discuss topics unrelated to shopping, products, or NextBuy AI services
+- When recommending products or plans, explain the benefits clearly
+- End responses with helpful next steps (e.g., "Ready to shop? Browse our Electronics category!" or "Want premium features? Upgrade to our Premium plan!")
+- Use markdown formatting: **bold** for product names and prices, bullet lists for features
+- Always be customer-focused and solution-oriented
+- Emphasize AI-powered features and personalization benefits
+`.trim();
+
+// src/app/modules/chatbot/chatbot.service.ts
+var genAI = null;
+var getClient = () => {
+  if (!genAI) {
+    const apiKey = process.env.GEMINI_API_KEY;
+    if (!apiKey) throw new Error("GEMINI_API_KEY is not set in environment variables");
+    genAI = new GoogleGenerativeAI(apiKey);
+  }
+  return genAI;
+};
+var chat = async ({ messages, leadData }) => {
+  if (!messages || messages.length === 0) {
+    throw new Error("messages array cannot be empty");
+  }
+  const lastMessage = messages[messages.length - 1];
+  if (lastMessage.role !== "user") {
+    throw new Error('The last message must have role "user"');
+  }
+  const history = messages.slice(0, -1).map((m) => ({
+    role: m.role,
+    parts: [{ text: m.content }]
+  }));
+  const attemptChat = async (modelName) => {
+    const model = getClient().getGenerativeModel({
+      model: modelName
+    });
+    const chatSession = model.startChat({
+      history: [
+        { role: "user", parts: [{ text: SYSTEM_PROMPT }] },
+        {
+          role: "model",
+          parts: [
+            {
+              text: "I understand. I am the DeltA Digivast AI assistant. I will help visitors according to your instructions. How can I help you today?"
+            }
+          ]
+        },
+        ...history
+      ],
+      generationConfig: {
+        maxOutputTokens: 512,
+        temperature: 0.7
+      }
+    });
+    return await chatSession.sendMessage(lastMessage.content);
+  };
+  let result;
+  try {
+    result = await attemptChat("gemini-2.5-flash");
+  } catch (err) {
+    const message = err.message || "";
+    if (message.includes("404")) {
+      try {
+        result = await attemptChat("gemini-flash-latest");
+      } catch (fallbackErr) {
+        throw new Error(
+          `AI Model Error: ${fallbackErr.message || "Models not found."}`
+        );
+      }
+    } else if (message.includes("429") || message.includes("quota")) {
+      throw new Error(
+        "Our AI assistant is temporarily busy (Quota exceeded). Please try again in a moment."
+      );
+    } else {
+      throw err;
+    }
+  }
+  const reply = result.response.text();
+  let leadSaved = false;
+  if (leadData?.email && leadData?.name) {
+    await prisma.lead.create({
+      data: {
+        name: leadData.name,
+        email: leadData.email,
+        from: "chatbot",
+        company: leadData.message ?? void 0,
+        date: /* @__PURE__ */ new Date()
+      }
+    });
+    leadSaved = true;
+  }
+  return { reply, leadSaved };
+};
+var ChatbotService = { chat };
+
+// src/app/modules/chatbot/chatbot.controller.ts
+var chat2 = catchAsync(async (req, res) => {
+  const { messages, leadData } = req.body;
+  const result = await ChatbotService.chat({ messages, leadData });
+  sendResponse(res, {
+    httpStatusCode: 200,
+    success: true,
+    message: "Chatbot reply generated successfully",
+    data: result
+  });
+});
+var ChatbotController = { chat: chat2 };
+
+// src/app/modules/chatbot/chatbot.route.ts
+var router5 = express.Router();
+router5.post("/chat", ChatbotController.chat);
+var ChatbotRoutes = router5;
+
 // src/app/routes/index.ts
-var router5 = Router5();
-router5.use("/users", UserRoute);
-router5.use("/products", ProductRoutes);
-router5.use("/orders", OrderRoutes);
-router5.use("/cart", CartRoute);
-var routes_default = router5;
+var router6 = Router5();
+router6.use("/users", UserRoute);
+router6.use("/products", ProductRoutes);
+router6.use("/orders", OrderRoutes);
+router6.use("/cart", CartRoute);
+router6.use("/chatbot", ChatbotRoutes);
+var routes_default = router6;
 
 // src/app/modules/payment/payment.webhook.ts
 import Stripe from "stripe";
@@ -1071,14 +1380,9 @@ var handleWebhook = async (req, res) => {
 };
 
 // src/app.ts
-var app = express();
+var app = express2();
 var corsOptions = {
-  origin: [
-    "http://localhost:3000",
-    "https://delt-a-digivast-frontend.vercel.app",
-    "https://deltadigivast.vercel.app",
-    "https://www.deltadigivast.com"
-  ],
+  origin: ["http://localhost:3000", "http://localhost:3001"],
   credentials: true,
   methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
   allowedHeaders: [
@@ -1091,9 +1395,9 @@ var corsOptions = {
   optionsSuccessStatus: 204
 };
 app.use(cors(corsOptions));
-app.use(express.urlencoded({ extended: true }));
-app.post("/webhook", express.raw({ type: "application/json" }), handleWebhook);
-app.use(express.json());
+app.use(express2.urlencoded({ extended: true }));
+app.post("/webhook", express2.raw({ type: "application/json" }), handleWebhook);
+app.use(express2.json());
 app.use("/api/v1", routes_default);
 app.get("/", (req, res) => {
   res.status(200).json({
