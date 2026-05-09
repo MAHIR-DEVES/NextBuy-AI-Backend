@@ -1039,7 +1039,7 @@ router4.post(
   auth(Role.CUSTOMER, Role.SELLER, Role.ADMIN),
   CartController.addToCart
 );
-router4.get("/", auth(Role.CUSTOMER), CartController.getMyCart);
+router4.get("/", auth(Role.CUSTOMER, Role.ADMIN), CartController.getMyCart);
 router4.patch("/:id", auth(Role.CUSTOMER), CartController.updateCartItem);
 router4.delete("/:id", auth(Role.CUSTOMER), CartController.deleteCartItem);
 router4.delete("/clear/all", auth(Role.CUSTOMER), CartController.clearCart);
@@ -1382,7 +1382,11 @@ var handleWebhook = async (req, res) => {
 // src/app.ts
 var app = express2();
 var corsOptions = {
-  origin: ["http://localhost:3000", "http://localhost:3001"],
+  origin: [
+    "http://localhost:3000",
+    "http://localhost:3001",
+    "https://next-buy-ai-frontend.vercel.app"
+  ],
   credentials: true,
   methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
   allowedHeaders: [
