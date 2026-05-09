@@ -11,7 +11,7 @@ router.post(
   CartController.addToCart,
 );
 
-router.get('/', auth(Role.CUSTOMER), CartController.getMyCart);
+router.get('/', auth(Role.CUSTOMER, Role.ADMIN), CartController.getMyCart);
 
 router.patch('/:id', auth(Role.CUSTOMER), CartController.updateCartItem);
 

@@ -8,7 +8,11 @@ import { handleWebhook } from './app/modules/payment/payment.webhook';
 const app: Application = express();
 // FIRST: CORS
 const corsOptions = {
-  origin: ['http://localhost:3000', 'http://localhost:3001'],
+  origin: [
+    'http://localhost:3000',
+    'http://localhost:3001',
+    'https://next-buy-ai-frontend.vercel.app',
+  ],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   allowedHeaders: [
