@@ -11,3 +11,4 @@ model Wishlist {
 
   @@unique([userId, productId]) // duplicate wishlist prevent
 }
+
