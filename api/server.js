@@ -783,7 +783,16 @@ var getUserOrders = async (userId) => {
     return prisma.order.findMany({
       where: { userId },
       include: {
-        items: true
+        items: true,
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            phone: true,
+            avatar: true
+          }
+        }
       },
       orderBy: {
         createdAt: "desc"
@@ -1040,8 +1049,16 @@ router4.post(
   CartController.addToCart
 );
 router4.get("/", auth(Role.CUSTOMER, Role.ADMIN), CartController.getMyCart);
-router4.patch("/:id", auth(Role.CUSTOMER), CartController.updateCartItem);
-router4.delete("/:id", auth(Role.CUSTOMER), CartController.deleteCartItem);
+router4.patch(
+  "/:id",
+  auth(Role.CUSTOMER, Role.ADMIN, Role.SELLER),
+  CartController.updateCartItem
+);
+router4.delete(
+  "/:id",
+  auth(Role.CUSTOMER, Role.ADMIN, Role.SELLER),
+  CartController.deleteCartItem
+);
 router4.delete("/clear/all", auth(Role.CUSTOMER), CartController.clearCart);
 var CartRoute = router4;
 

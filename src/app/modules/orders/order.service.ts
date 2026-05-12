@@ -125,6 +125,15 @@ const getUserOrders = async (userId: string) => {
       where: { userId },
       include: {
         items: true,
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            phone: true,
+            avatar: true,
+          },
+        },
       },
       orderBy: {
         createdAt: 'desc',

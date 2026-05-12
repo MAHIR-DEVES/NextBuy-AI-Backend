@@ -23,7 +23,6 @@ const addToCart = catchAsync(async (req: Request, res: Response) => {
 
 const getMyCart = catchAsync(async (req: Request, res: Response) => {
   const userId = req.user?.id;
-
   const result = await CartService.getMyCart(userId as string);
 
   sendResponse(res, {
