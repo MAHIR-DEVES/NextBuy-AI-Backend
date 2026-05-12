@@ -1,5 +1,5 @@
 // src/app.ts
-import express2 from "express";
+import express3 from "express";
 
 // src/app/config/env.ts
 import dotenv from "dotenv";
@@ -1359,14 +1359,115 @@ var router5 = express.Router();
 router5.post("/chat", ChatbotController.chat);
 var ChatbotRoutes = router5;
 
+// src/app/modules/wishlist/wishlist.route.ts
+import express2 from "express";
+
+// src/app/modules/wishlist/wishlist.service.ts
+var createWishlist = async (userId, productId) => {
+  const existing = await prisma.wishlist.findFirst({
+    where: { userId, productId }
+  });
+  if (existing) {
+    throw new Error("Product already in wishlist");
+  }
+  const result = await prisma.wishlist.create({
+    data: {
+      userId,
+      productId
+    }
+  });
+  return result;
+};
+var getWishlistByUser = async (userId) => {
+  const result = await prisma.wishlist.findMany({
+    where: { userId },
+    include: {
+      product: true
+    },
+    orderBy: {
+      createdAt: "desc"
+    }
+  });
+  return result;
+};
+var deleteWishlistItem = async (id) => {
+  const result = await prisma.wishlist.delete({
+    where: { id }
+  });
+  return result;
+};
+var WishlistService = {
+  createWishlist,
+  getWishlistByUser,
+  deleteWishlistItem
+};
+
+// src/app/modules/wishlist/wishlist.controller.ts
+var createWishlist2 = catchAsync(async (req, res) => {
+  const userId = req.user.id;
+  const { productId } = req.body;
+  const result = await WishlistService.createWishlist(userId, productId);
+  sendResponse(res, {
+    httpStatusCode: 201,
+    success: true,
+    message: "Added to wishlist",
+    data: result
+  });
+});
+var getWishlistByUser2 = catchAsync(async (req, res) => {
+  const userId = req.user.id;
+  const result = await WishlistService.getWishlistByUser(userId);
+  sendResponse(res, {
+    httpStatusCode: 200,
+    success: true,
+    message: "Wishlist fetched successfully",
+    data: result
+  });
+});
+var deleteWishlistItem2 = catchAsync(async (req, res) => {
+  const { id } = req.params;
+  const result = await WishlistService.deleteWishlistItem(id);
+  sendResponse(res, {
+    httpStatusCode: 200,
+    success: true,
+    message: "Removed from wishlist",
+    data: result
+  });
+});
+var WishlistController = {
+  createWishlist: createWishlist2,
+  getWishlistByUser: getWishlistByUser2,
+  deleteWishlistItem: deleteWishlistItem2
+};
+
+// src/app/modules/wishlist/wishlist.route.ts
+var router6 = express2.Router();
+router6.post(
+  "/",
+  auth(Role.ADMIN, Role.SELLER, Role.CUSTOMER),
+  WishlistController.createWishlist
+);
+router6.get(
+  "/",
+  auth(Role.ADMIN, Role.SELLER, Role.CUSTOMER),
+  WishlistController.getWishlistByUser
+);
+router6.delete(
+  "/:id",
+  auth(Role.ADMIN, Role.SELLER, Role.CUSTOMER),
+  WishlistController.deleteWishlistItem
+);
+var WishlistRoutes = router6;
+
 // src/app/routes/index.ts
-var router6 = Router5();
-router6.use("/users", UserRoute);
-router6.use("/products", ProductRoutes);
-router6.use("/orders", OrderRoutes);
-router6.use("/cart", CartRoute);
-router6.use("/chatbot", ChatbotRoutes);
-var routes_default = router6;
+var router7 = Router5();
+router7.use("/users", UserRoute);
+router7.use("/products", ProductRoutes);
+router7.use("/orders", OrderRoutes);
+router7.use("/cart", CartRoute);
+router7.use("/chatbot", ChatbotRoutes);
+router7.use("/wishlist", WishlistRoutes);
+var routes_default = router7;
 
 // src/app/modules/payment/payment.webhook.ts
 import Stripe from "stripe";
@@ -1397,7 +1498,7 @@ var handleWebhook = async (req, res) => {
 };
 
 // src/app.ts
-var app = express2();
+var app = express3();
 var corsOptions = {
   origin: [
     "http://localhost:3000",
@@ -1416,9 +1517,9 @@ var corsOptions = {
   optionsSuccessStatus: 204
 };
 app.use(cors(corsOptions));
-app.use(express2.urlencoded({ extended: true }));
-app.post("/webhook", express2.raw({ type: "application/json" }), handleWebhook);
-app.use(express2.json());
+app.use(express3.urlencoded({ extended: true }));
+app.post("/webhook", express3.raw({ type: "application/json" }), handleWebhook);
+app.use(express3.json());
 app.use("/api/v1", routes_default);
 app.get("/", (req, res) => {
   res.status(200).json({
