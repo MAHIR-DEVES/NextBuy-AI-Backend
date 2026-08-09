@@ -1,6 +1,6 @@
 export const COMPANY_KNOWLEDGE = `
 ## Company
-- Name: NextBuy AI
+- Name: Jonoprio AI
 - Type: AI-powered e-commerce platform
 - Mission: Revolutionizing online shopping with intelligent recommendations and personalized experiences
 - Contact: /contact, support@nextbuy.ai

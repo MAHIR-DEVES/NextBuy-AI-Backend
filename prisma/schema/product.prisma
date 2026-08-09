@@ -12,7 +12,8 @@ model Product {
   images        String[]
 
   brand         String?
-  category      String?
+  categoryId    String?
+  category      Category? @relation(fields: [categoryId], references: [id])
 
   rating        Float       @default(0)
   reviewCount   Int         @default(0)

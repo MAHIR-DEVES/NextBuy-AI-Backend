@@ -5,6 +5,8 @@ import { OrderRoutes } from '../modules/orders/order.route';
 import { CartRoute } from '../modules/cart/cart.route';
 import { ChatbotRoutes } from '../modules/chatbot/chatbot.route';
 import { WishlistRoutes } from '../modules/wishlist/wishlist.route';
+import { categoryRoutes } from '../modules/category/category.route';
+import { HeroRoutes } from '../modules/hero-management/hero.route';
 
 const router = Router();
 
@@ -14,5 +16,7 @@ router.use('/orders', OrderRoutes);
 router.use('/cart', CartRoute);
 router.use('/chatbot', ChatbotRoutes);
 router.use('/wishlist', WishlistRoutes);
+router.use('/categories', categoryRoutes);
+router.use('/heroes', HeroRoutes);
 
 export default router;
