@@ -1,5 +1,9 @@
 import { Router } from 'express';
-import { OrderController } from './order.controller';
+import {
+  deleteOrderController,
+  OrderController,
+  updateOrderStatusController,
+} from './order.controller';
 import { Role } from '../../../generated/prisma/enums';
 import { auth } from '../../middleware/auth';
 
@@ -31,3 +35,9 @@ router.get('/', auth(Role.CUSTOMER, Role.ADMIN), OrderController.getOrders);
 // get all orders( admin only)
 router.get('/all', auth(Role.ADMIN), OrderController.getAllOrders);
 export const OrderRoutes = router;
+
+// Update order status
+router.patch('/:id/status', auth(Role.ADMIN), updateOrderStatusController);
+
+// Delete order
+router.delete('/:id', auth(Role.ADMIN), deleteOrderController);

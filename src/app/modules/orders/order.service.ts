@@ -1,4 +1,12 @@
+import { Prisma } from '../../../generated/prisma/client';
 import { prisma } from '../../lib/prisma';
+
+type GetAllOrdersParams = {
+  page?: number;
+  limit?: number;
+  search?: string;
+  status?: string;
+};
 
 /**
  * BUY NOW (single product order)
@@ -144,11 +152,270 @@ const getUserOrders = async (userId: string) => {
   }
 };
 
-const getAllOrders = async () => {
+const getAllOrders = async ({
+  page = 1,
+  limit = 10,
+  search = '',
+  status,
+}: GetAllOrdersParams = {}) => {
   try {
-    return prisma.order.findMany({
+    // ==============================
+    // PAGINATION
+    // ==============================
+
+    const currentPage = Math.max(Number(page) || 1, 1);
+
+    const perPage = Math.min(Math.max(Number(limit) || 10, 1), 100);
+
+    const skip = (currentPage - 1) * perPage;
+
+    // ==============================
+    // WHERE
+    // ==============================
+
+    const where: Prisma.OrderWhereInput = {};
+
+    const searchValue = search.trim();
+
+    // ==============================
+    // SEARCH
+    // ==============================
+
+    if (searchValue) {
+      where.OR = [
+        // Order name
+        {
+          name: {
+            contains: searchValue,
+            mode: 'insensitive',
+          },
+        },
+
+        // Order phone
+        {
+          phone: {
+            contains: searchValue,
+          },
+        },
+
+        // User name
+        {
+          user: {
+            name: {
+              contains: searchValue,
+              mode: 'insensitive',
+            },
+          },
+        },
+
+        // User email
+        {
+          user: {
+            email: {
+              contains: searchValue,
+              mode: 'insensitive',
+            },
+          },
+        },
+
+        // User phone
+        {
+          user: {
+            phone: {
+              contains: searchValue,
+            },
+          },
+        },
+      ];
+    }
+
+    // ==============================
+    // STATUS FILTER
+    // ==============================
+
+    if (status) {
+      const validStatuses = [
+        'PENDING',
+        'SHIPPED',
+        'DELIVERED',
+        'CANCELLED',
+        'PARTIAL',
+      ];
+
+      if (!validStatuses.includes(status)) {
+        throw new Error('Invalid order status');
+      }
+
+      where.status = status as Prisma.OrderWhereInput['status'];
+    }
+
+    // ==============================
+    // DATABASE QUERIES
+    // ==============================
+
+    const [orders, total, statusCounts] = await prisma.$transaction([
+      // --------------------------
+      // Orders
+      // --------------------------
+
+      prisma.order.findMany({
+        where,
+
+        skip,
+        take: perPage,
+
+        include: {
+          items: true,
+
+          user: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              phone: true,
+              avatar: true,
+            },
+          },
+        },
+
+        orderBy: {
+          createdAt: 'desc',
+        },
+      }),
+
+      // --------------------------
+      // Total matching orders
+      // --------------------------
+
+      prisma.order.count({
+        where,
+      }),
+
+      // --------------------------
+      // Status counts
+      // --------------------------
+
+      prisma.order.groupBy({
+        by: ['status'],
+
+        _count: {
+          _all: true,
+        },
+      }),
+    ]);
+
+    // ==============================
+    // STATUS COUNTS
+    // ==============================
+
+    const totalPending =
+      statusCounts.find(item => item.status === 'PENDING')?._count._all ?? 0;
+
+    const totalShipped =
+      statusCounts.find(item => item.status === 'SHIPPED')?._count._all ?? 0;
+
+    const totalDelivered =
+      statusCounts.find(item => item.status === 'DELIVERED')?._count._all ?? 0;
+
+    const totalCancelled =
+      statusCounts.find(item => item.status === 'CANCELLED')?._count._all ?? 0;
+
+    const totalPartial =
+      statusCounts.find(item => item.status === 'PARTIAL')?._count._all ?? 0;
+
+    // ==============================
+    // PAGINATION META
+    // ==============================
+
+    const totalPages = Math.ceil(total / perPage);
+
+    // ==============================
+    // RESPONSE
+    // ==============================
+
+    return {
+      orders,
+
+      meta: {
+        page: currentPage,
+        limit: perPage,
+        total,
+        totalPages,
+        hasNextPage: currentPage < totalPages,
+        hasPreviousPage: currentPage > 1,
+      },
+
+      summary: {
+        totalOrders: total,
+
+        totalPending,
+
+        totalShipped,
+
+        totalDelivered,
+
+        totalCancelled,
+
+        totalPartial,
+      },
+    };
+  } catch (error) {
+    console.error('Get all orders error:', error);
+
+    throw new Error('Failed to get all orders');
+  }
+};
+
+const VALID_ORDER_STATUSES = [
+  'PENDING',
+  'SHIPPED',
+  'DELIVERED',
+  'CANCELLED',
+  'PARTIAL',
+] as const;
+
+type OrderStatus = (typeof VALID_ORDER_STATUSES)[number];
+
+// ============================================
+// UPDATE ORDER STATUS
+// ============================================
+
+export const updateOrderStatus = async (
+  orderId: string,
+  status: OrderStatus,
+) => {
+  try {
+    if (!orderId) {
+      throw new Error('Order ID is required');
+    }
+
+    if (!VALID_ORDER_STATUSES.includes(status)) {
+      throw new Error('Invalid order status');
+    }
+
+    // Check order exists
+    const existingOrder = await prisma.order.findUnique({
+      where: {
+        id: orderId,
+      },
+    });
+
+    if (!existingOrder) {
+      throw new Error('Order not found');
+    }
+
+    const updatedOrder = await prisma.order.update({
+      where: {
+        id: orderId,
+      },
+
+      data: {
+        status,
+      },
+
       include: {
         items: true,
+
         user: {
           select: {
             id: true,
@@ -159,12 +426,68 @@ const getAllOrders = async () => {
           },
         },
       },
-      orderBy: {
-        createdAt: 'desc',
+    });
+
+    return updatedOrder;
+  } catch (error) {
+    console.error('Update order status error:', error);
+
+    if (
+      error instanceof Error &&
+      [
+        'Order ID is required',
+        'Invalid order status',
+        'Order not found',
+      ].includes(error.message)
+    ) {
+      throw error;
+    }
+
+    throw new Error('Failed to update order status');
+  }
+};
+
+// ============================================
+// DELETE ORDER
+// ============================================
+
+export const deleteOrder = async (orderId: string) => {
+  try {
+    if (!orderId) {
+      throw new Error('Order ID is required');
+    }
+
+    // Check order exists
+    const existingOrder = await prisma.order.findUnique({
+      where: {
+        id: orderId,
       },
     });
+
+    if (!existingOrder) {
+      throw new Error('Order not found');
+    }
+
+    await prisma.order.delete({
+      where: {
+        id: orderId,
+      },
+    });
+
+    return {
+      id: orderId,
+    };
   } catch (error) {
-    throw new Error('Failed to get all orders');
+    console.error('Delete order error:', error);
+
+    if (
+      error instanceof Error &&
+      ['Order ID is required', 'Order not found'].includes(error.message)
+    ) {
+      throw error;
+    }
+
+    throw new Error('Failed to delete order');
   }
 };
 

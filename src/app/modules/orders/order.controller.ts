@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { OrderService } from './order.service';
+import { deleteOrder, OrderService, updateOrderStatus } from './order.service';
 import { get } from 'node:http';
 import { catchAsync } from '../../shared/catchAsync';
 import { sendResponse } from '../../shared/sendResponse';
@@ -68,14 +68,138 @@ const getOrders = catchAsync(async (req: Request, res: Response) => {
 });
 
 const getAllOrders = catchAsync(async (req: Request, res: Response) => {
-  const result = await OrderService.getAllOrders();
-  sendResponse(res, {
-    httpStatusCode: 200,
+  const page = Number(req.query.page) || 1;
+  const limit = Number(req.query.limit) || 10;
+  const search = String(req.query.search || '');
+  const status = req.query.status ? String(req.query.status) : undefined;
+
+  const result = await OrderService.getAllOrders({
+    page,
+    limit,
+    search,
+    status,
+  });
+
+  return res.status(200).json({
     success: true,
     message: 'Orders fetched successfully',
-    data: result,
+    data: result.orders,
+    meta: result.meta,
+    summary: result.summary,
   });
 });
+
+// ============================================
+// UPDATE ORDER STATUS
+// ============================================
+
+export const updateOrderStatusController = async (
+  req: Request,
+  res: Response,
+) => {
+  try {
+    const { id } = req.params;
+    const { status } = req.body;
+
+    if (!id) {
+      return sendResponse(res, {
+        httpStatusCode: 400,
+        success: false,
+        message: 'Order ID is required',
+      });
+    }
+
+    if (!status) {
+      return sendResponse(res, {
+        httpStatusCode: 400,
+        success: false,
+        message: 'Order status is required',
+      });
+    }
+
+    const order = await updateOrderStatus(id as string, status);
+
+    return sendResponse(res, {
+      httpStatusCode: 200,
+      success: true,
+      message: 'Order status updated successfully',
+      data: order,
+    });
+  } catch (error) {
+    console.error('Update order status controller error:', error);
+
+    const message =
+      error instanceof Error ? error.message : 'Failed to update order status';
+
+    if (message === 'Order not found') {
+      return sendResponse(res, {
+        httpStatusCode: 404,
+        success: false,
+        message,
+      });
+    }
+
+    if (message === 'Invalid order status') {
+      return sendResponse(res, {
+        httpStatusCode: 400,
+        success: false,
+        message,
+      });
+    }
+
+    return sendResponse(res, {
+      httpStatusCode: 500,
+      success: false,
+      message: 'Failed to update order status',
+    });
+  }
+};
+
+// ============================================
+// DELETE ORDER
+// ============================================
+
+export const deleteOrderController = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+
+    if (!id) {
+      return sendResponse(res, {
+        httpStatusCode: 400,
+        success: false,
+        message: 'Order ID is required',
+      });
+    }
+
+    const result = await deleteOrder(id as string);
+
+    return sendResponse(res, {
+      httpStatusCode: 200,
+      success: true,
+      message: 'Order deleted successfully',
+      data: result,
+    });
+  } catch (error) {
+    console.error('Delete order controller error:', error);
+
+    const message =
+      error instanceof Error ? error.message : 'Failed to delete order';
+
+    if (message === 'Order not found') {
+      return sendResponse(res, {
+        httpStatusCode: 404,
+        success: false,
+        message,
+      });
+    }
+
+    return sendResponse(res, {
+      httpStatusCode: 500,
+      success: false,
+      message: 'Failed to delete order',
+    });
+  }
+};
 
 export const OrderController = {
   buyNow,

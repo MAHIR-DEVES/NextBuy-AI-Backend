@@ -1,17 +1,19 @@
 import { Router } from 'express';
 
 import { HeroController } from './hero.controller';
+import { auth } from '../../middleware/auth';
+import { Role } from '../../../generated/prisma/enums';
 
 const router = Router();
 
-router.post('/', HeroController.createHero);
+router.post('/', auth(Role.ADMIN), HeroController.createHero);
 
-router.get('/', HeroController.getAllHeroes);
+router.get('/', auth(Role.ADMIN), HeroController.getAllHeroes);
 
-router.get('/:id', HeroController.getHeroById);
+router.get('/:id', auth(Role.ADMIN), HeroController.getHeroById);
 
-router.patch('/:id', HeroController.updateHero);
+router.patch('/:id', auth(Role.ADMIN), HeroController.updateHero);
 
-router.delete('/:id', HeroController.deleteHero);
+router.delete('/:id', auth(Role.ADMIN), HeroController.deleteHero);
 
 export const HeroRoutes = router;
