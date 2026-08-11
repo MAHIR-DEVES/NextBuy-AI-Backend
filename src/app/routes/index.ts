@@ -7,6 +7,7 @@ import { ChatbotRoutes } from '../modules/chatbot/chatbot.route';
 import { WishlistRoutes } from '../modules/wishlist/wishlist.route';
 import { categoryRoutes } from '../modules/category/category.route';
 import { HeroRoutes } from '../modules/hero-management/hero.route';
+import { PersonalEntryRoutes } from '../modules/accounts/personal/personalEntry.route';
 
 const router = Router();
 
@@ -18,5 +19,6 @@ router.use('/chatbot', ChatbotRoutes);
 router.use('/wishlist', WishlistRoutes);
 router.use('/categories', categoryRoutes);
 router.use('/heroes', HeroRoutes);
+router.use('/personal-entries', PersonalEntryRoutes);
 
 export default router;
