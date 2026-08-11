@@ -106,6 +106,7 @@ const getAllProducts = async (query: ProductQuery) => {
       },
     };
   } catch (error) {
+    console.error('GET ALL PRODUCTS ERROR:', error);
     throw new Error('Failed to fetch products');
   }
 };
