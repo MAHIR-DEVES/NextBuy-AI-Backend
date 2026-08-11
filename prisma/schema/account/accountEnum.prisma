@@ -30,3 +30,13 @@ enum SteadfastWithdrawalClearanceStatus {
   COMPLETED
   PENDING
 }
+
+enum InvestorPaymentStatus {
+  PAID
+  UNPAID
+}
+
+enum InvestmentStatus {
+  RUNNING
+  COMPLETED
+}
