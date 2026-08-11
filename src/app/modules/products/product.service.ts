@@ -1,17 +1,30 @@
-// product.service.ts
-
 import { prisma } from '../../lib/prisma';
 import { IProduct, ProductQuery } from './product.interface';
 
 const createProduct = async (payload: IProduct) => {
   try {
+    const { category, ...rest } = payload;
+
     const result = await prisma.product.create({
-      data: payload,
+      data: {
+        ...rest,
+
+        ...(category
+          ? {
+              category: {
+                connect: {
+                  id: category,
+                },
+              },
+            }
+          : {}),
+      },
     });
 
     return result;
   } catch (error) {
-    console.log(error);
+    console.error('CREATE PRODUCT ERROR:', error);
+
     throw new Error('Failed to create product');
   }
 };
@@ -106,7 +119,6 @@ const getAllProducts = async (query: ProductQuery) => {
       },
     };
   } catch (error) {
-    console.error('GET ALL PRODUCTS ERROR:', error);
     throw new Error('Failed to fetch products');
   }
 };
@@ -125,17 +137,30 @@ const getSingleProduct = async (id: string) => {
 
 const updateProduct = async (id: string, payload: Partial<IProduct>) => {
   try {
+    const { category, ...rest } = payload;
+
     const result = await prisma.product.update({
       where: { id },
-      data: payload,
+      data: {
+        ...rest,
+        ...(category
+          ? {
+              category: {
+                connect: {
+                  id: category,
+                },
+              },
+            }
+          : {}),
+      },
     });
 
     return result;
   } catch (error) {
+    console.error('UPDATE PRODUCT ERROR:', error);
     throw new Error('Failed to update product');
   }
 };
-
 const deleteProduct = async (id: string) => {
   try {
     const result = await prisma.product.delete({
