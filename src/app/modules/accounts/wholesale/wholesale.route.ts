@@ -1,5 +1,6 @@
 import { Router } from 'express';
-import { SteadfastWithdrawalController } from './steadfast-withdrawal.controller';
+
+import { wholesaleController } from './wholesale.controller';
 import { auth } from '../../../middleware/auth';
 import { Role } from '../../../../generated/prisma/enums';
 
@@ -8,31 +9,31 @@ const router = Router();
 router.post(
   '/',
   auth(Role.ADMIN, Role.SELLER),
-  SteadfastWithdrawalController.createWithdrawal,
+  wholesaleController.createWholesale,
 );
 
 router.get(
   '/',
   auth(Role.ADMIN, Role.SELLER),
-  SteadfastWithdrawalController.getAllWithdrawals,
+  wholesaleController.getAllWholesales,
 );
 
 router.get(
   '/:id',
   auth(Role.ADMIN, Role.SELLER),
-  SteadfastWithdrawalController.getSingleWithdrawal,
+  wholesaleController.getSingleWholesale,
 );
 
 router.patch(
   '/:id',
   auth(Role.ADMIN, Role.SELLER),
-  SteadfastWithdrawalController.updateWithdrawal,
+  wholesaleController.updateWholesale,
 );
 
 router.delete(
   '/:id',
   auth(Role.ADMIN, Role.SELLER),
-  SteadfastWithdrawalController.deleteWithdrawal,
+  wholesaleController.deleteWholesale,
 );
 
-export const SteadfastWithdrawalRoutes = router;
+export const WholesaleRoutes = router;

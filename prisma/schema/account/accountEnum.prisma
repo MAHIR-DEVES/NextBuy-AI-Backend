@@ -40,3 +40,9 @@ enum InvestmentStatus {
   RUNNING
   COMPLETED
 }
+
+
+enum WholesaleStatus {
+  PAID
+  UNPAID
+}

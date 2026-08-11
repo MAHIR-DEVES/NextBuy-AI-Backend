@@ -11,6 +11,7 @@ import { PersonalEntryRoutes } from '../modules/accounts/personal/personalEntry.
 import { SteadfastWithdrawalRoutes } from '../modules/accounts/steadfast-withdrawal/steadfast-withdrawal.route';
 import { InvestorPaymentRoutes } from '../modules/accounts/investor-payment/investor-payment.route';
 import { ShipmentRoutes } from '../modules/accounts/shipment/shipment.route';
+import { WholesaleRoutes } from '../modules/accounts/wholesale/wholesale.route';
 
 const router = Router();
 
@@ -22,9 +23,12 @@ router.use('/chatbot', ChatbotRoutes);
 router.use('/wishlist', WishlistRoutes);
 router.use('/categories', categoryRoutes);
 router.use('/heroes', HeroRoutes);
+
+// account api
 router.use('/personal-entries', PersonalEntryRoutes);
 router.use('/steadfast-withdrawals', SteadfastWithdrawalRoutes);
 router.use('/investor-payments', InvestorPaymentRoutes);
 router.use('/shipments', ShipmentRoutes);
+router.use('/wholesales', WholesaleRoutes);
 
 export default router;
