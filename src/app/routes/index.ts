@@ -8,6 +8,7 @@ import { WishlistRoutes } from '../modules/wishlist/wishlist.route';
 import { categoryRoutes } from '../modules/category/category.route';
 import { HeroRoutes } from '../modules/hero-management/hero.route';
 import { PersonalEntryRoutes } from '../modules/accounts/personal/personalEntry.route';
+import { SteadfastWithdrawalRoutes } from '../modules/accounts/steadfast-withdrawal/steadfast-withdrawal.route';
 
 const router = Router();
 
@@ -20,5 +21,6 @@ router.use('/wishlist', WishlistRoutes);
 router.use('/categories', categoryRoutes);
 router.use('/heroes', HeroRoutes);
 router.use('/personal-entries', PersonalEntryRoutes);
+router.use('/steadfast-withdrawals', SteadfastWithdrawalRoutes);
 
 export default router;

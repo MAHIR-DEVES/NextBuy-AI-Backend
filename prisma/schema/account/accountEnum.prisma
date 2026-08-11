@@ -1,0 +1,32 @@
+// account
+enum PersonalEntryStatus {
+  PAID
+  UNPAID
+  RECEIVED
+}
+
+enum PersonalEntryType {
+  COST
+  RECEIVED
+}
+
+enum ClearanceStatus {
+  COMPLETED
+  PENDING
+}
+
+enum AccountType {
+  PERSONAL
+  CENTRAL
+}
+
+
+enum SteadfastWithdrawalStatus {
+  PAID
+  UNPAID
+}
+
+enum SteadfastWithdrawalClearanceStatus {
+  COMPLETED
+  PENDING
+}
