@@ -10,6 +10,7 @@ import { HeroRoutes } from '../modules/hero-management/hero.route';
 import { PersonalEntryRoutes } from '../modules/accounts/personal/personalEntry.route';
 import { SteadfastWithdrawalRoutes } from '../modules/accounts/steadfast-withdrawal/steadfast-withdrawal.route';
 import { InvestorPaymentRoutes } from '../modules/accounts/investor-payment/investor-payment.route';
+import { ShipmentRoutes } from '../modules/accounts/shipment/shipment.route';
 
 const router = Router();
 
@@ -24,5 +25,6 @@ router.use('/heroes', HeroRoutes);
 router.use('/personal-entries', PersonalEntryRoutes);
 router.use('/steadfast-withdrawals', SteadfastWithdrawalRoutes);
 router.use('/investor-payments', InvestorPaymentRoutes);
+router.use('/shipments', ShipmentRoutes);
 
 export default router;
