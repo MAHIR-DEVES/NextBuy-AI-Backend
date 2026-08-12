@@ -12,6 +12,7 @@ import { SteadfastWithdrawalRoutes } from '../modules/accounts/steadfast-withdra
 import { InvestorPaymentRoutes } from '../modules/accounts/investor-payment/investor-payment.route';
 import { ShipmentRoutes } from '../modules/accounts/shipment/shipment.route';
 import { WholesaleRoutes } from '../modules/accounts/wholesale/wholesale.route';
+import { MonthlyCostRoutes } from '../modules/accounts/monthly-cost/monthly-cost.route';
 
 const router = Router();
 
@@ -30,5 +31,6 @@ router.use('/steadfast-withdrawals', SteadfastWithdrawalRoutes);
 router.use('/investor-payments', InvestorPaymentRoutes);
 router.use('/shipments', ShipmentRoutes);
 router.use('/wholesales', WholesaleRoutes);
+router.use('/monthly-costs', MonthlyCostRoutes);
 
 export default router;

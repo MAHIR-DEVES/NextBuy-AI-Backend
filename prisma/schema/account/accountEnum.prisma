@@ -46,3 +46,8 @@ enum WholesaleStatus {
   PAID
   UNPAID
 }
+
+enum FixedMonthlyCostStatus {
+  PAID
+  UNPAID
+}

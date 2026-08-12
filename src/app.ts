@@ -10,7 +10,8 @@ const app: Application = express();
 const corsOptions = {
   origin: [
     'http://localhost:3000',
-    'http://localhost:3001',
+    'https://www.seraplace.com',
+    'www.seraplace.com'
     'https://next-buy-ai-frontend.vercel.app',
   ],
   credentials: true,
