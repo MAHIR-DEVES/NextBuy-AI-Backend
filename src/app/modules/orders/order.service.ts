@@ -17,7 +17,10 @@ const createBuyNowOrder = async (
   quantity: number,
   name: string,
   phone: string,
+  district: string,
+  thana: string,
   address: string,
+  note: string | undefined,
   isInsideDhaka: boolean,
 ) => {
   try {
@@ -31,15 +34,21 @@ const createBuyNowOrder = async (
 
     const total = product.price * quantity;
 
+    const shippingFee = isInsideDhaka ? 90 : 130;
+
     const order = await prisma.order.create({
       data: {
         userId,
-        total,
+        total: total + shippingFee,
 
         name,
         phone,
+        district,
+        thana,
         address,
+        note: note || null,
         isInsideDhaka,
+        shippingFee,
 
         items: {
           create: [
@@ -53,9 +62,11 @@ const createBuyNowOrder = async (
         },
       },
     });
+
     return order;
   } catch (error) {
     console.log(error);
+
     throw new Error('Failed to create buy now order');
   }
 };
@@ -67,7 +78,10 @@ const checkoutCart = async (
   userId: string,
   name: string,
   phone: string,
+  district: string,
+  thana: string,
   address: string,
+  note: string | undefined,
   isInsideDhaka: boolean,
 ) => {
   try {
@@ -80,7 +94,7 @@ const checkoutCart = async (
       throw new Error('Cart is empty');
     }
 
-    const shippingFee = isInsideDhaka ? 60 : 120;
+    const shippingFee = isInsideDhaka ? 90 : 130;
 
     const subtotal = cartItems.reduce((sum, item) => {
       return sum + item.product.price * item.quantity;
@@ -91,10 +105,16 @@ const checkoutCart = async (
     const order = await prisma.order.create({
       data: {
         userId,
+
         name,
         phone,
+        district,
+        thana,
         address,
+        note: note || null,
+
         isInsideDhaka,
+        shippingFee,
         total,
 
         items: {
@@ -124,6 +144,7 @@ const checkoutCart = async (
     throw new Error(error.message);
   }
 };
+
 /**
  * GET USER ORDERS
  */
@@ -131,8 +152,10 @@ const getUserOrders = async (userId: string) => {
   try {
     return prisma.order.findMany({
       where: { userId },
+
       include: {
         items: true,
+
         user: {
           select: {
             id: true,
@@ -143,6 +166,7 @@ const getUserOrders = async (userId: string) => {
           },
         },
       },
+
       orderBy: {
         createdAt: 'desc',
       },
@@ -152,6 +176,9 @@ const getUserOrders = async (userId: string) => {
   }
 };
 
+/**
+ * GET ALL ORDERS
+ */
 const getAllOrders = async ({
   page = 1,
   limit = 10,
@@ -195,6 +222,31 @@ const getAllOrders = async ({
         {
           phone: {
             contains: searchValue,
+            mode: 'insensitive',
+          },
+        },
+
+        // District
+        {
+          district: {
+            contains: searchValue,
+            mode: 'insensitive',
+          },
+        },
+
+        // Thana
+        {
+          thana: {
+            contains: searchValue,
+            mode: 'insensitive',
+          },
+        },
+
+        // Address
+        {
+          address: {
+            contains: searchValue,
+            mode: 'insensitive',
           },
         },
 
@@ -254,10 +306,7 @@ const getAllOrders = async ({
     // ==============================
 
     const [orders, total, statusCounts] = await prisma.$transaction([
-      // --------------------------
       // Orders
-      // --------------------------
-
       prisma.order.findMany({
         where,
 
@@ -265,7 +314,17 @@ const getAllOrders = async ({
         take: perPage,
 
         include: {
-          items: true,
+          items: {
+            include: {
+              product: {
+                select: {
+                  id: true,
+                  name: true,
+                  thumbnail: true,
+                },
+              },
+            },
+          },
 
           user: {
             select: {
@@ -283,18 +342,12 @@ const getAllOrders = async ({
         },
       }),
 
-      // --------------------------
       // Total matching orders
-      // --------------------------
-
       prisma.order.count({
         where,
       }),
 
-      // --------------------------
       // Status counts
-      // --------------------------
-
       prisma.order.groupBy({
         by: ['status'],
 
@@ -347,15 +400,10 @@ const getAllOrders = async ({
 
       summary: {
         totalOrders: total,
-
         totalPending,
-
         totalShipped,
-
         totalDelivered,
-
         totalCancelled,
-
         totalPartial,
       },
     };
@@ -393,7 +441,6 @@ export const updateOrderStatus = async (
       throw new Error('Invalid order status');
     }
 
-    // Check order exists
     const existingOrder = await prisma.order.findUnique({
       where: {
         id: orderId,
@@ -457,7 +504,6 @@ export const deleteOrder = async (orderId: string) => {
       throw new Error('Order ID is required');
     }
 
-    // Check order exists
     const existingOrder = await prisma.order.findUnique({
       where: {
         id: orderId,

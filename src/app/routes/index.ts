@@ -13,6 +13,7 @@ import { InvestorPaymentRoutes } from '../modules/accounts/investor-payment/inve
 import { ShipmentRoutes } from '../modules/accounts/shipment/shipment.route';
 import { WholesaleRoutes } from '../modules/accounts/wholesale/wholesale.route';
 import { MonthlyCostRoutes } from '../modules/accounts/monthly-cost/monthly-cost.route';
+import { AnalyticsRoutes } from '../modules/analytics/analytics.route';
 
 const router = Router();
 
@@ -24,6 +25,7 @@ router.use('/chatbot', ChatbotRoutes);
 router.use('/wishlist', WishlistRoutes);
 router.use('/categories', categoryRoutes);
 router.use('/heroes', HeroRoutes);
+router.use('/analytics', AnalyticsRoutes);
 
 // account api
 router.use('/personal-entries', PersonalEntryRoutes);

@@ -1,20 +1,28 @@
 model Order {
-  id         String      @id @default(uuid())
+  id              String      @id @default(uuid())
 
-  userId     String
-  user       User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId          String
+  user            User        @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  total      Float
-  status     OrderStatus @default(PENDING)
+  total           Float
+  status          OrderStatus @default(PENDING)
 
-  name      String
-  phone     String
-  address   String
-  isInsideDhaka Boolean
-  shippingFee Float @default(0)
+  // Customer Information
+  name            String
+  phone           String
+  district        String
+  thana           String
+  address         String
+  note            String?
 
-  items      OrderItem[]
+  // Shipping
+  isInsideDhaka   Boolean
+  shippingFee     Float       @default(0)
 
-  createdAt  DateTime    @default(now())
-  updatedAt  DateTime    @updatedAt
+  // Relations
+  items           OrderItem[]
+
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
 }
+
