@@ -11,7 +11,7 @@ const corsOptions = {
   origin: [
     'http://localhost:3000',
     'https://www.seraplace.com',
-    'www.seraplace.com'
+    'www.seraplace.com',
     'https://next-buy-ai-frontend.vercel.app',
   ],
   credentials: true,
