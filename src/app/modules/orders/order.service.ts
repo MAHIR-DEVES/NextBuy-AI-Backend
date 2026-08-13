@@ -186,71 +186,48 @@ const getAllOrders = async ({
   status,
 }: GetAllOrdersParams = {}) => {
   try {
-    // ==============================
-    // PAGINATION
-    // ==============================
-
     const currentPage = Math.max(Number(page) || 1, 1);
 
     const perPage = Math.min(Math.max(Number(limit) || 10, 1), 100);
 
     const skip = (currentPage - 1) * perPage;
 
-    // ==============================
-    // WHERE
-    // ==============================
-
     const where: Prisma.OrderWhereInput = {};
 
     const searchValue = search.trim();
 
-    // ==============================
-    // SEARCH
-    // ==============================
-
     if (searchValue) {
       where.OR = [
-        // Order name
         {
           name: {
             contains: searchValue,
             mode: 'insensitive',
           },
         },
-
-        // Order phone
         {
           phone: {
             contains: searchValue,
             mode: 'insensitive',
           },
         },
-
-        // District
         {
           district: {
             contains: searchValue,
             mode: 'insensitive',
           },
         },
-
-        // Thana
         {
           thana: {
             contains: searchValue,
             mode: 'insensitive',
           },
         },
-
-        // Address
         {
           address: {
             contains: searchValue,
             mode: 'insensitive',
           },
         },
-
-        // User name
         {
           user: {
             name: {
@@ -259,8 +236,6 @@ const getAllOrders = async ({
             },
           },
         },
-
-        // User email
         {
           user: {
             email: {
@@ -269,8 +244,6 @@ const getAllOrders = async ({
             },
           },
         },
-
-        // User phone
         {
           user: {
             phone: {
@@ -280,10 +253,6 @@ const getAllOrders = async ({
         },
       ];
     }
-
-    // ==============================
-    // STATUS FILTER
-    // ==============================
 
     if (status) {
       const validStatuses = [
@@ -301,12 +270,9 @@ const getAllOrders = async ({
       where.status = status as Prisma.OrderWhereInput['status'];
     }
 
-    // ==============================
     // DATABASE QUERIES
-    // ==============================
 
-    const [orders, total, statusCounts] = await prisma.$transaction([
-      // Orders
+    const [orders, total, statusCounts] = await Promise.all([
       prisma.order.findMany({
         where,
 
@@ -314,17 +280,7 @@ const getAllOrders = async ({
         take: perPage,
 
         include: {
-          items: {
-            include: {
-              product: {
-                select: {
-                  id: true,
-                  name: true,
-                  thumbnail: true,
-                },
-              },
-            },
-          },
+          items: true,
 
           user: {
             select: {
@@ -342,12 +298,10 @@ const getAllOrders = async ({
         },
       }),
 
-      // Total matching orders
       prisma.order.count({
         where,
       }),
 
-      // Status counts
       prisma.order.groupBy({
         by: ['status'],
 
@@ -357,9 +311,7 @@ const getAllOrders = async ({
       }),
     ]);
 
-    // ==============================
     // STATUS COUNTS
-    // ==============================
 
     const totalPending =
       statusCounts.find(item => item.status === 'PENDING')?._count._all ?? 0;
@@ -376,15 +328,9 @@ const getAllOrders = async ({
     const totalPartial =
       statusCounts.find(item => item.status === 'PARTIAL')?._count._all ?? 0;
 
-    // ==============================
-    // PAGINATION META
-    // ==============================
+    // PAGINATION
 
     const totalPages = Math.ceil(total / perPage);
-
-    // ==============================
-    // RESPONSE
-    // ==============================
 
     return {
       orders,
@@ -424,9 +370,7 @@ const VALID_ORDER_STATUSES = [
 
 type OrderStatus = (typeof VALID_ORDER_STATUSES)[number];
 
-// ============================================
 // UPDATE ORDER STATUS
-// ============================================
 
 export const updateOrderStatus = async (
   orderId: string,
@@ -494,9 +438,7 @@ export const updateOrderStatus = async (
   }
 };
 
-// ============================================
 // DELETE ORDER
-// ============================================
 
 export const deleteOrder = async (orderId: string) => {
   try {
