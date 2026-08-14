@@ -27,6 +27,9 @@ router.post(
   OrderController.checkout,
 );
 
+// get all orders( admin only)
+router.get('/all', auth(Role.ADMIN), OrderController.getAllOrders);
+
 // get single order
 router.get('/:orderId', OrderController.getSingleOrder);
 
@@ -35,12 +38,9 @@ router.get('/:orderId', OrderController.getSingleOrder);
  */
 router.get('/', auth(Role.CUSTOMER, Role.ADMIN), OrderController.getOrders);
 
-// get all orders( admin only)
-router.get('/all', auth(Role.ADMIN), OrderController.getAllOrders);
-export const OrderRoutes = router;
-
 // Update order status
 router.patch('/:id/status', auth(Role.ADMIN), updateOrderStatusController);
 
 // Delete order
 router.delete('/:id', auth(Role.ADMIN), deleteOrderController);
+export const OrderRoutes = router;

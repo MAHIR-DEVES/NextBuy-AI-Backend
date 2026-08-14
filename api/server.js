@@ -1811,12 +1811,12 @@ router3.post(
   auth(Role.CUSTOMER, Role.ADMIN),
   OrderController.checkout
 );
+router3.get("/all", auth(Role.ADMIN), OrderController.getAllOrders);
 router3.get("/:orderId", OrderController.getSingleOrder);
 router3.get("/", auth(Role.CUSTOMER, Role.ADMIN), OrderController.getOrders);
-router3.get("/all", auth(Role.ADMIN), OrderController.getAllOrders);
-var OrderRoutes = router3;
 router3.patch("/:id/status", auth(Role.ADMIN), updateOrderStatusController);
 router3.delete("/:id", auth(Role.ADMIN), deleteOrderController);
+var OrderRoutes = router3;
 
 // src/app/modules/cart/cart.route.ts
 import { Router as Router4 } from "express";
