@@ -9,7 +9,7 @@ import { sendResponse } from '../../shared/sendResponse';
  * BUY NOW CONTROLLER
  */
 const buyNow = catchAsync(async (req: Request, res: Response) => {
-  const userId = req.user!.id;
+  const userId = req.user?.id;
 
   const {
     productId,
@@ -39,7 +39,7 @@ const buyNow = catchAsync(async (req: Request, res: Response) => {
   sendResponse(res, {
     httpStatusCode: 201,
     success: true,
-    message: 'Order placed successfully (Buy Now)',
+    message: 'Order placed successfully',
     data: result,
   });
 });
@@ -111,6 +111,22 @@ const getAllOrders = catchAsync(async (req: Request, res: Response) => {
     httpStatusCode: 200,
     success: true,
     message: 'Orders fetched successfully',
+    data: result,
+  });
+});
+
+/**
+ * GET SINGLE ORDER
+ */
+const getSingleOrder = catchAsync(async (req: Request, res: Response) => {
+  const { orderId } = req.params;
+
+  const result = await OrderService.getSingleOrder(orderId as string);
+
+  sendResponse(res, {
+    httpStatusCode: 200,
+    success: true,
+    message: 'Order fetched successfully',
     data: result,
   });
 });
@@ -232,4 +248,5 @@ export const OrderController = {
   checkout,
   getOrders,
   getAllOrders,
+  getSingleOrder,
 };

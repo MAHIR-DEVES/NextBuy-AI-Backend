@@ -14,7 +14,7 @@ const router = Router();
  */
 router.post(
   '/buy-now',
-  auth(Role.CUSTOMER, Role.ADMIN),
+
   OrderController.buyNow,
 );
 
@@ -26,6 +26,9 @@ router.post(
   auth(Role.CUSTOMER, Role.ADMIN),
   OrderController.checkout,
 );
+
+// get single order
+router.get('/:orderId', OrderController.getSingleOrder);
 
 /**
  * GET USER ORDERS

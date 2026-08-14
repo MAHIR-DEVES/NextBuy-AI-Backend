@@ -12,7 +12,7 @@ type GetAllOrdersParams = {
  * BUY NOW (single product order)
  */
 const createBuyNowOrder = async (
-  userId: string,
+  userId: string | undefined,
   productId: string,
   quantity: number,
   name: string,
@@ -38,7 +38,8 @@ const createBuyNowOrder = async (
 
     const order = await prisma.order.create({
       data: {
-        userId,
+        ...(userId ? { userId } : {}),
+
         total: total + shippingFee,
 
         name,
@@ -60,6 +61,10 @@ const createBuyNowOrder = async (
             },
           ],
         },
+      },
+
+      include: {
+        items: true,
       },
     });
 
@@ -360,6 +365,62 @@ const getAllOrders = async ({
   }
 };
 
+/**
+ * GET SINGLE ORDER
+ */
+const getSingleOrder = async (orderId: string) => {
+  try {
+    if (!orderId) {
+      throw new Error('Order ID is required');
+    }
+
+    const order = await prisma.order.findUnique({
+      where: {
+        id: orderId,
+      },
+
+      include: {
+        items: {
+          include: {
+            product: {
+              select: {
+                thumbnail: true,
+              },
+            },
+          },
+        },
+
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            phone: true,
+            avatar: true,
+          },
+        },
+      },
+    });
+
+    if (!order) {
+      throw new Error('Order not found');
+    }
+
+    return order;
+  } catch (error) {
+    console.error('Get single order error:', error);
+
+    if (
+      error instanceof Error &&
+      ['Order ID is required', 'Order not found'].includes(error.message)
+    ) {
+      throw error;
+    }
+
+    throw new Error('Failed to get single order');
+  }
+};
+
 const VALID_ORDER_STATUSES = [
   'PENDING',
   'SHIPPED',
@@ -484,4 +545,6 @@ export const OrderService = {
   checkoutCart,
   getUserOrders,
   getAllOrders,
+
+  getSingleOrder,
 };
