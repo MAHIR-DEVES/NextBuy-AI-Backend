@@ -12,7 +12,7 @@ router.post(
   ProductController.createProduct,
 );
 router.get('/', ProductController.getAllProducts);
-router.get('/:id', ProductController.getSingleProduct);
+router.get('/:slug', ProductController.getSingleProduct);
 router.patch(
   '/:id',
   auth(Role.ADMIN, Role.SELLER),

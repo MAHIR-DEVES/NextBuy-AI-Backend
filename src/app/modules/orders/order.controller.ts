@@ -20,6 +20,7 @@ const buyNow = catchAsync(async (req: Request, res: Response) => {
     thana,
     address,
     note,
+    size,
     isInsideDhaka,
   } = req.body;
 
@@ -34,6 +35,7 @@ const buyNow = catchAsync(async (req: Request, res: Response) => {
     address,
     note,
     isInsideDhaka,
+    size,
   );
 
   sendResponse(res, {

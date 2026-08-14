@@ -228,11 +228,11 @@ const getAllProducts = async (query: ProductQuery) => {
 
 // GET SINGLE PRODUCT
 
-const getSingleProduct = async (id: string) => {
+const getSingleProduct = async (slug: string) => {
   try {
     const result = await prisma.product.findUnique({
       where: {
-        id,
+        slug,
       },
 
       include: {

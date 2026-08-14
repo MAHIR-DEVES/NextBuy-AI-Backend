@@ -23,8 +23,8 @@ const getAllProducts = async (req: Request, res: Response) => {
 };
 
 const getSingleProduct = async (req: Request, res: Response) => {
-  const { id } = req.params;
-  const result = await ProductService.getSingleProduct(id as string);
+  const { slug } = req.params;
+  const result = await ProductService.getSingleProduct(slug as string);
 
   res.status(200).json({
     success: true,
