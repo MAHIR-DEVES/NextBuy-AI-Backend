@@ -7,7 +7,7 @@ const router = Router();
 
 router.post('/', auth(Role.ADMIN), CategoryController.createCategory);
 
-router.get('/', auth(Role.ADMIN), CategoryController.getAllCategories);
+router.get('/', CategoryController.getAllCategories);
 
 router.get('/:id', auth(Role.ADMIN), CategoryController.getSingleCategory);
 

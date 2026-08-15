@@ -72,7 +72,7 @@ export interface IProduct {
 export interface ProductQuery {
   search?: string;
 
-  category?: string;
+  categoryId?: string;
 
   brand?: string;
 

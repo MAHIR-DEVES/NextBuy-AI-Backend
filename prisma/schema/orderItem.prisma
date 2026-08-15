@@ -11,7 +11,7 @@ model OrderItem {
   price      Float    // snapshot
   quantity   Int
   
-   size      String?
+  size      String?
    
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt

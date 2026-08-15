@@ -73,7 +73,7 @@ const getAllProducts = async (query: ProductQuery) => {
   try {
     const {
       search,
-      category,
+      categoryId,
       brand,
       minPrice,
       maxPrice,
@@ -121,8 +121,8 @@ const getAllProducts = async (query: ProductQuery) => {
 
     // CATEGORY
 
-    if (category) {
-      filters.categoryId = category;
+    if (categoryId) {
+      filters.categoryId = categoryId;
     }
 
     // BRAND
