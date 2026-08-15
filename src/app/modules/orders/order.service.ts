@@ -23,6 +23,7 @@ const createBuyNowOrder = async (
   note: string | undefined,
   isInsideDhaka: boolean,
   size?: string | null,
+  color?: string | null,
 ) => {
   try {
     const product = await prisma.product.findUnique({
@@ -60,6 +61,7 @@ const createBuyNowOrder = async (
               price: product.price,
               quantity,
               size: size || null,
+              color: color || null,
             },
           ],
         },

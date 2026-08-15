@@ -22,6 +22,7 @@ const buyNow = catchAsync(async (req: Request, res: Response) => {
     note,
     size,
     isInsideDhaka,
+    color,
   } = req.body;
 
   const result = await OrderService.createBuyNowOrder(
@@ -36,6 +37,7 @@ const buyNow = catchAsync(async (req: Request, res: Response) => {
     note,
     isInsideDhaka,
     size,
+    color,
   );
 
   sendResponse(res, {

@@ -12,7 +12,8 @@ model OrderItem {
   quantity   Int
   
   size      String?
-   
+  color      String?
+
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 }
