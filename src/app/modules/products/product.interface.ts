@@ -64,6 +64,7 @@ export interface IProduct {
   // Status
   rating?: number;
   reviewCount?: number;
+  viewCount?: number;
 
   isFeatured?: boolean;
   isPublished?: boolean;

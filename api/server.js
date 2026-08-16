@@ -1017,9 +1017,25 @@ var getAllProducts = async (query) => {
 };
 var getSingleProduct = async (slug) => {
   try {
-    const result = await prisma.product.findUnique({
+    const product = await prisma.product.findUnique({
       where: {
         slug
+      },
+      select: {
+        id: true
+      }
+    });
+    if (!product) {
+      return null;
+    }
+    const result = await prisma.product.update({
+      where: {
+        id: product.id
+      },
+      data: {
+        viewCount: {
+          increment: 1
+        }
       },
       include: {
         category: true,

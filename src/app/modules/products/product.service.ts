@@ -230,11 +230,30 @@ const getAllProducts = async (query: ProductQuery) => {
 
 const getSingleProduct = async (slug: string) => {
   try {
-    const result = await prisma.product.findUnique({
+    // First find the product
+    const product = await prisma.product.findUnique({
       where: {
         slug,
       },
+      select: {
+        id: true,
+      },
+    });
 
+    if (!product) {
+      return null;
+    }
+
+    // Increment view count atomically
+    const result = await prisma.product.update({
+      where: {
+        id: product.id,
+      },
+      data: {
+        viewCount: {
+          increment: 1,
+        },
+      },
       include: {
         category: true,
         reviews: true,
