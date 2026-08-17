@@ -503,6 +503,107 @@ export const updateOrderStatus = async (
   }
 };
 
+// order update
+const updateOrder = async (
+  orderId: string,
+  payload: Partial<{
+    name: string;
+    phone: string;
+    district: string;
+    thana: string;
+    address: string;
+    note: string | null;
+    status: OrderStatus;
+  }>,
+) => {
+  try {
+    if (!orderId) {
+      throw new Error('Order ID is required');
+    }
+
+    const existingOrder = await prisma.order.findUnique({
+      where: {
+        id: orderId,
+      },
+    });
+
+    if (!existingOrder) {
+      throw new Error('Order not found');
+    }
+
+    if (payload.status && !VALID_ORDER_STATUSES.includes(payload.status)) {
+      throw new Error('Invalid order status');
+    }
+
+    const updatedOrder = await prisma.order.update({
+      where: {
+        id: orderId,
+      },
+
+      data: {
+        ...(payload.name !== undefined && {
+          name: payload.name,
+        }),
+
+        ...(payload.phone !== undefined && {
+          phone: payload.phone,
+        }),
+
+        ...(payload.district !== undefined && {
+          district: payload.district,
+        }),
+
+        ...(payload.thana !== undefined && {
+          thana: payload.thana,
+        }),
+
+        ...(payload.address !== undefined && {
+          address: payload.address,
+        }),
+
+        ...(payload.note !== undefined && {
+          note: payload.note,
+        }),
+
+        ...(payload.status !== undefined && {
+          status: payload.status,
+        }),
+      },
+
+      include: {
+        items: true,
+
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            phone: true,
+            avatar: true,
+          },
+        },
+      },
+    });
+
+    return updatedOrder;
+  } catch (error) {
+    console.error('Update order error:', error);
+
+    if (
+      error instanceof Error &&
+      [
+        'Order ID is required',
+        'Order not found',
+        'Invalid order status',
+      ].includes(error.message)
+    ) {
+      throw error;
+    }
+
+    throw new Error('Failed to update order');
+  }
+};
+
 // DELETE ORDER
 
 export const deleteOrder = async (orderId: string) => {
@@ -549,6 +650,6 @@ export const OrderService = {
   checkoutCart,
   getUserOrders,
   getAllOrders,
-
+  updateOrder,
   getSingleOrder,
 };

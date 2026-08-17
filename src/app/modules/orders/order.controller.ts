@@ -202,6 +202,33 @@ export const updateOrderStatusController = async (
 };
 
 // ============================================
+// UPDATE ORDER
+// ============================================
+
+const updateOrderController = catchAsync(
+  async (req: Request, res: Response) => {
+    const { id } = req.params;
+
+    if (!id) {
+      return sendResponse(res, {
+        httpStatusCode: 400,
+        success: false,
+        message: 'Order ID is required',
+      });
+    }
+
+    const result = await OrderService.updateOrder(id as string, req.body);
+
+    sendResponse(res, {
+      httpStatusCode: 200,
+      success: true,
+      message: 'Order updated successfully',
+      data: result,
+    });
+  },
+);
+
+// ============================================
 // DELETE ORDER
 // ============================================
 
@@ -253,4 +280,5 @@ export const OrderController = {
   getOrders,
   getAllOrders,
   getSingleOrder,
+  updateOrderController,
 };

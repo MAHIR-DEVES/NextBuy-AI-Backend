@@ -1601,6 +1601,75 @@ var updateOrderStatus = async (orderId, status3) => {
     throw new Error("Failed to update order status");
   }
 };
+var updateOrder = async (orderId, payload) => {
+  try {
+    if (!orderId) {
+      throw new Error("Order ID is required");
+    }
+    const existingOrder = await prisma.order.findUnique({
+      where: {
+        id: orderId
+      }
+    });
+    if (!existingOrder) {
+      throw new Error("Order not found");
+    }
+    if (payload.status && !VALID_ORDER_STATUSES.includes(payload.status)) {
+      throw new Error("Invalid order status");
+    }
+    const updatedOrder = await prisma.order.update({
+      where: {
+        id: orderId
+      },
+      data: {
+        ...payload.name !== void 0 && {
+          name: payload.name
+        },
+        ...payload.phone !== void 0 && {
+          phone: payload.phone
+        },
+        ...payload.district !== void 0 && {
+          district: payload.district
+        },
+        ...payload.thana !== void 0 && {
+          thana: payload.thana
+        },
+        ...payload.address !== void 0 && {
+          address: payload.address
+        },
+        ...payload.note !== void 0 && {
+          note: payload.note
+        },
+        ...payload.status !== void 0 && {
+          status: payload.status
+        }
+      },
+      include: {
+        items: true,
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            phone: true,
+            avatar: true
+          }
+        }
+      }
+    });
+    return updatedOrder;
+  } catch (error) {
+    console.error("Update order error:", error);
+    if (error instanceof Error && [
+      "Order ID is required",
+      "Order not found",
+      "Invalid order status"
+    ].includes(error.message)) {
+      throw error;
+    }
+    throw new Error("Failed to update order");
+  }
+};
 var deleteOrder = async (orderId) => {
   try {
     if (!orderId) {
@@ -1635,6 +1704,7 @@ var OrderService = {
   checkoutCart,
   getUserOrders,
   getAllOrders,
+  updateOrder,
   getSingleOrder
 };
 
@@ -1782,6 +1852,25 @@ var updateOrderStatusController = async (req, res) => {
     });
   }
 };
+var updateOrderController = catchAsync(
+  async (req, res) => {
+    const { id } = req.params;
+    if (!id) {
+      return sendResponse(res, {
+        httpStatusCode: 400,
+        success: false,
+        message: "Order ID is required"
+      });
+    }
+    const result = await OrderService.updateOrder(id, req.body);
+    sendResponse(res, {
+      httpStatusCode: 200,
+      success: true,
+      message: "Order updated successfully",
+      data: result
+    });
+  }
+);
 var deleteOrderController = async (req, res) => {
   try {
     const { id } = req.params;
@@ -1821,7 +1910,8 @@ var OrderController = {
   checkout,
   getOrders,
   getAllOrders: getAllOrders2,
-  getSingleOrder: getSingleOrder2
+  getSingleOrder: getSingleOrder2,
+  updateOrderController
 };
 
 // src/app/modules/orders/order.route.ts
@@ -1839,6 +1929,7 @@ router3.get("/all", auth(Role.ADMIN), OrderController.getAllOrders);
 router3.get("/:orderId", OrderController.getSingleOrder);
 router3.get("/", auth(Role.CUSTOMER, Role.ADMIN), OrderController.getOrders);
 router3.patch("/:id/status", auth(Role.ADMIN), updateOrderStatusController);
+router3.patch("/:id", OrderController.updateOrderController);
 router3.delete("/:id", auth(Role.ADMIN), deleteOrderController);
 var OrderRoutes = router3;
 

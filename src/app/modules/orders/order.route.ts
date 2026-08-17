@@ -40,6 +40,7 @@ router.get('/', auth(Role.CUSTOMER, Role.ADMIN), OrderController.getOrders);
 
 // Update order status
 router.patch('/:id/status', auth(Role.ADMIN), updateOrderStatusController);
+router.patch('/:id', OrderController.updateOrderController);
 
 // Delete order
 router.delete('/:id', auth(Role.ADMIN), deleteOrderController);
