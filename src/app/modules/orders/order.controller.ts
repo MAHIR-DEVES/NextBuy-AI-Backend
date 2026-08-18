@@ -135,9 +135,7 @@ const getSingleOrder = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
-// ============================================
 // UPDATE ORDER STATUS
-// ============================================
 
 export const updateOrderStatusController = async (
   req: Request,
@@ -201,9 +199,7 @@ export const updateOrderStatusController = async (
   }
 };
 
-// ============================================
 // UPDATE ORDER
-// ============================================
 
 const updateOrderController = catchAsync(
   async (req: Request, res: Response) => {
@@ -228,9 +224,34 @@ const updateOrderController = catchAsync(
   },
 );
 
-// ============================================
+//   GET CUSTOMER ORDER HISTORY BY PHONE
+
+const getCustomerOrderHistoryByPhone = catchAsync(
+  async (req: Request, res: Response) => {
+    const { phone } = req.query;
+
+    if (!phone) {
+      return sendResponse(res, {
+        httpStatusCode: 400,
+        success: false,
+        message: 'Phone number is required',
+      });
+    }
+
+    const result = await OrderService.getCustomerOrderHistoryByPhone(
+      String(phone),
+    );
+
+    sendResponse(res, {
+      httpStatusCode: 200,
+      success: true,
+      message: 'Customer order history fetched successfully',
+      data: result,
+    });
+  },
+);
+
 // DELETE ORDER
-// ============================================
 
 export const deleteOrderController = async (req: Request, res: Response) => {
   try {
@@ -281,4 +302,5 @@ export const OrderController = {
   getAllOrders,
   getSingleOrder,
   updateOrderController,
+  getCustomerOrderHistoryByPhone,
 };

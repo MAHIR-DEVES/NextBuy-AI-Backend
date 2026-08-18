@@ -9,18 +9,16 @@ import { auth } from '../../middleware/auth';
 
 const router = Router();
 
-/**
- * BUY NOW (single product)
- */
+//  BUY NOW (single product)
+
 router.post(
   '/buy-now',
 
   OrderController.buyNow,
 );
 
-/**
- * CART CHECKOUT
- */
+//  CART CHECKOUT
+
 router.post(
   '/checkout',
   auth(Role.CUSTOMER, Role.ADMIN),
@@ -30,12 +28,14 @@ router.post(
 // get all orders( admin only)
 router.get('/all', auth(Role.ADMIN), OrderController.getAllOrders);
 
+// get customer order history
+router.get('/customer-history', OrderController.getCustomerOrderHistoryByPhone);
+
 // get single order
 router.get('/:orderId', OrderController.getSingleOrder);
 
-/**
- * GET USER ORDERS
- */
+// GET USER ORDERS
+
 router.get('/', auth(Role.CUSTOMER, Role.ADMIN), OrderController.getOrders);
 
 // Update order status

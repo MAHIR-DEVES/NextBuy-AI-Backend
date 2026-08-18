@@ -386,11 +386,7 @@ const getSingleOrder = async (orderId: string) => {
       include: {
         items: {
           include: {
-            product: {
-              select: {
-                thumbnail: true,
-              },
-            },
+            product: true,
           },
         },
 
@@ -604,6 +600,101 @@ const updateOrder = async (
   }
 };
 
+// GET CUSTOMER ORDER HISTORY BY PHONE
+
+const getCustomerOrderHistoryByPhone = async (phone: string) => {
+  try {
+    if (!phone) {
+      throw new Error('Phone number is required');
+    }
+
+    const orders = await prisma.order.findMany({
+      where: {
+        phone,
+      },
+
+      include: {
+        items: true,
+
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            phone: true,
+            avatar: true,
+          },
+        },
+      },
+
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
+
+    if (orders.length === 0) {
+      throw new Error('No orders found for this phone number');
+    }
+
+    const totalOrders = orders.length;
+
+    const totalDelivered = orders.filter(
+      order => order.status === 'DELIVERED',
+    ).length;
+
+    const totalCancelled = orders.filter(
+      order => order.status === 'CANCELLED',
+    ).length;
+
+    const totalPending = orders.filter(
+      order => order.status === 'PENDING',
+    ).length;
+
+    const totalShipped = orders.filter(
+      order => order.status === 'SHIPPED',
+    ).length;
+
+    const totalPartial = orders.filter(
+      order => order.status === 'PARTIAL',
+    ).length;
+
+    return {
+      customer: {
+        name: orders[0].name,
+        phone: orders[0].phone,
+        district: orders[0].district,
+        thana: orders[0].thana,
+        address: orders[0].address,
+      },
+
+      summary: {
+        totalOrders,
+        totalDelivered,
+        totalCancelled,
+        totalPending,
+        totalShipped,
+        totalPartial,
+      },
+
+      orders,
+    };
+  } catch (error) {
+    console.error('Get customer order history error:', error);
+
+    if (
+      error instanceof Error &&
+      [
+        'Phone number is required',
+        'No orders found for this phone number',
+      ].includes(error.message)
+    ) {
+      throw error;
+    }
+
+    throw new Error('Failed to get customer order history');
+  }
+};
+
 // DELETE ORDER
 
 export const deleteOrder = async (orderId: string) => {
@@ -652,4 +743,5 @@ export const OrderService = {
   getAllOrders,
   updateOrder,
   getSingleOrder,
+  getCustomerOrderHistoryByPhone,
 };
