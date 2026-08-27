@@ -76,7 +76,7 @@ var config = {
   "clientVersion": "7.4.2",
   "engineVersion": "94a226be1cf2967af2541cca5529f0f7ba866919",
   "activeProvider": "postgresql",
-  "inlineSchema": 'model InvestorPayment {\n  id String @id @default(cuid())\n\n  date        DateTime\n  description String\n\n  amount Decimal @db.Decimal(12, 2)\n\n  status InvestorPaymentStatus @default(PAID)\n\n  investorName String\n\n  investedAmount Decimal @db.Decimal(12, 2)\n  receivedAmount Decimal @db.Decimal(12, 2)\n\n  paymentBy   String\n  referenceBy String\n  platform    String\n\n  investmentStatus InvestmentStatus @default(RUNNING)\n\n  monthsPaid Int @default(0)\n\n  buyProducts String?\n\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n\n  @@map("investor_payments")\n}\n\n// account\nenum PersonalEntryStatus {\n  PAID\n  UNPAID\n  RECEIVED\n}\n\nenum PersonalEntryType {\n  COST\n  RECEIVED\n}\n\nenum ClearanceStatus {\n  COMPLETED\n  PENDING\n}\n\nenum AccountType {\n  PERSONAL\n  CENTRAL\n}\n\nenum SteadfastWithdrawalStatus {\n  PAID\n  UNPAID\n}\n\nenum SteadfastWithdrawalClearanceStatus {\n  COMPLETED\n  PENDING\n}\n\nenum InvestorPaymentStatus {\n  PAID\n  UNPAID\n}\n\nenum InvestmentStatus {\n  RUNNING\n  COMPLETED\n}\n\nenum WholesaleStatus {\n  PAID\n  UNPAID\n}\n\nenum FixedMonthlyCostStatus {\n  PAID\n  UNPAID\n}\n\nmodel FixedMonthlyCost {\n  id          String                 @id @default(uuid())\n  date        DateTime\n  description String\n  amount      Decimal                @db.Decimal(12, 2)\n  status      FixedMonthlyCostStatus @default(UNPAID)\n\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n\n  @@map("fixed_monthly_costs")\n}\n\nmodel PersonalEntry {\n  id String @id @default(cuid())\n\n  date        DateTime\n  description String\n  amount      Decimal  @db.Decimal(12, 2)\n\n  status PersonalEntryStatus\n  type   PersonalEntryType\n\n  quantity       Int?\n  priceRmb       Decimal? @db.Decimal(12, 2)\n  shippingCharge Decimal? @db.Decimal(12, 2)\n\n  paidReceivedBy String?\n  platform       String?\n\n  clearanceStatus ClearanceStatus @default(PENDING)\n\n  accountType AccountType @default(PERSONAL)\n\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n\n  @@map("personal_entries")\n}\n\nenum ShipmentStatus {\n  PAID\n  UNPAID\n}\n\nenum ShippingStatus {\n  PROCESSING\n  COMPLETED\n}\n\nmodel Shipment {\n  id String @id @default(uuid())\n\n  date        DateTime\n  description String?\n  amount      Decimal        @db.Decimal(12, 2)\n  status      ShipmentStatus\n\n  productName String\n  quantity    Int\n\n  shippingCompany String\n  weight          Decimal @db.Decimal(10, 2)\n  perKgRate       Decimal @db.Decimal(10, 2)\n  shippingCharge  Decimal @db.Decimal(12, 2)\n\n  billingStatus  ShipmentStatus\n  shippingStatus ShippingStatus\n\n  receivingDate DateTime?\n\n  investorName String?\n\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n\n  @@map("shipment-records")\n}\n\nmodel SteadfastWithdrawal {\n  id              String                             @id @default(cuid())\n  date            DateTime\n  description     String\n  amount          Decimal                            @db.Decimal(12, 2)\n  status          SteadfastWithdrawalStatus          @default(PAID)\n  withdrawBy      String\n  paymentMethod   String\n  clearanceStatus SteadfastWithdrawalClearanceStatus @default(PENDING)\n  createdAt       DateTime                           @default(now())\n  updatedAt       DateTime                           @updatedAt\n\n  @@map("steadfast_withdrawals")\n}\n\nmodel Wholesale {\n  id String @id @default(uuid())\n\n  date        DateTime\n  description String?\n  amount      Decimal         @db.Decimal(12, 2)\n  status      WholesaleStatus @default(UNPAID)\n\n  productName String\n  quantity    Int\n\n  priceRmb  Decimal @db.Decimal(12, 2)\n  priceTaka Decimal @db.Decimal(12, 2)\n\n  weight    Decimal @db.Decimal(12, 2)\n  costPerKg Decimal @db.Decimal(12, 2)\n\n  shipping     Decimal @db.Decimal(12, 2)\n  courierChina String?\n\n  note String?\n\n  onePairPrice Decimal @db.Decimal(12, 2)\n  salePrice    Decimal @db.Decimal(12, 2)\n\n  loss   Decimal @default(0) @db.Decimal(12, 2)\n  profit Decimal @default(0) @db.Decimal(12, 2)\n\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n\n  @@map("wholesale-records")\n}\n\nmodel Cart {\n  id String @id @default(uuid())\n\n  userId String\n  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)\n\n  productId String\n  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)\n\n  quantity Int @default(1)\n\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n\n  @@unique([userId, productId]) // same product duplicate \u09A8\u09BE \u09B9\u09DF\n}\n\nmodel Category {\n  id          String  @id @default(uuid())\n  name        String\n  slug        String  @unique\n  description String?\n  image       String?\n\n  isActive Boolean @default(true)\n\n  products Product[]\n\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n}\n\nenum Role {\n  CUSTOMER\n  ADMIN\n  SELLER\n}\n\nenum STATUS {\n  ACTIVE\n  INACTIVE\n  BLOCKED\n}\n\nenum OrderStatus {\n  PENDING\n  SHIPPED\n  DELIVERED\n  CANCELLED\n  PARTIAL\n}\n\nmodel Hero {\n  id String @id @default(uuid())\n\n  offer  Json\n  banner Json\n\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n}\n\nmodel Order {\n  id String @id @default(uuid())\n\n  userId String?\n  user   User?   @relation(fields: [userId], references: [id], onDelete: Cascade)\n\n  total  Float\n  status OrderStatus @default(PENDING)\n\n  // Customer Information\n  name     String\n  phone    String\n  district String\n  thana    String\n  address  String\n  note     String?\n\n  // Shipping\n  isInsideDhaka Boolean\n  shippingFee   Float   @default(0)\n\n  // Relations\n  items OrderItem[]\n\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n}\n\nmodel OrderItem {\n  id String @id @default(uuid())\n\n  orderId String\n  order   Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)\n\n  productId String\n  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)\n\n  name     String // snapshot\n  price    Float // snapshot\n  quantity Int\n\n  size  String?\n  color String?\n\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n}\n\nmodel Product {\n  id          String  @id @default(uuid())\n  name        String\n  slug        String  @unique\n  description String?\n\n  // BASIC INFORMATION\n\n  brand      String?\n  categoryId String\n\n  category Category @relation(fields: [categoryId], references: [id])\n\n  tags String[] @default([])\n\n  // MEDIA\n\n  thumbnail String\n  images    String[] @default([])\n  videoUrl  String?\n\n  // SPECIFICATION\n\n  model    String?\n  material String?\n\n  // PRICING & STOCK\n\n  price        Float\n  specialPrice Float?\n  discount     Float?\n  stock        Int    @default(0)\n\n  // SHIPPING\n\n  weight Float?\n\n  // Example:\n  // {\n  //   "length": 30,\n  //   "width": 20,\n  //   "height": 10\n  // }\n  dimensions Json?\n\n  dangerousGoods Boolean @default(false)\n\n  // WARRANTY\n\n  warrantyType   String?\n  warrantyPeriod String?\n\n  // PRODUCT HIGHLIGHTS\n\n  highlights String[] @default([])\n\n  // PRODUCT RATING & REVIEWS\n  // Review data will be managed from Review module\n\n  rating      Float @default(0)\n  reviewCount Int   @default(0)\n\n  // PRODUCT ENGAGEMENT\n\n  viewCount Int @default(0)\n  likeCount Int @default(0)\n\n  // PRODUCT STATUS\n\n  isFeatured  Boolean @default(false)\n  isPublished Boolean @default(true)\n\n  // COLOR VARIANTS\n\n  colorVariants ProductColorVariant[]\n\n  // REVIEWS\n  // Relation with separate Review model/module\n\n  reviews Review[]\n\n  // EXISTING RELATIONS\n\n  orderItems OrderItem[]\n  carts      Cart[]\n  wishlist   Wishlist[]\n\n  // TIMESTAMPS\n\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n}\n\nmodel ProductColorVariant {\n  id        String @id @default(uuid())\n  productId String\n\n  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)\n\n  // Example:\n  // Green\n  // Black\n  // Red\n\n  color String\n\n  // Color-specific image\n\n  image String?\n\n  // Sizes of this color\n\n  sizes ProductSizeVariant[]\n\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n}\n\nmodel ProductSizeVariant {\n  id             String @id @default(uuid())\n  colorVariantId String\n\n  colorVariant ProductColorVariant @relation(fields: [colorVariantId], references: [id], onDelete: Cascade)\n\n  // Example:\n  // 36\n  // 38\n  // 40\n  // XL\n  // XXL\n\n  size String\n\n  price        Float\n  specialPrice Float?\n  stock        Int    @default(0)\n\n  // Example:\n  // GREEN-36\n  // BLACK-40\n\n  sku String @unique\n\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n\n  @@unique([colorVariantId, size])\n}\n\nmodel Review {\n  id String @id @default(uuid())\n\n  // PRODUCT RELATION\n\n  productId String\n\n  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)\n\n  // REVIEWER INFORMATION\n\n  userId String?\n\n  userName String?\n\n  userAvatar String?\n\n  // REVIEW CONTENT\n\n  rating  Int\n  comment String?\n\n  // REVIEW ENGAGEMENT\n\n  likeCount Int @default(0)\n\n  // REVIEW STATUS\n\n  isPublished Boolean @default(true)\n\n  // TIMESTAMPS\n\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n\n  // INDEXES\n\n  @@index([productId])\n  @@index([rating])\n  @@index([createdAt])\n}\n\n// This is your Prisma schema file,\n// learn more about it in the docs: https://pris.ly/d/prisma-schema\n\n// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?\n// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init\n\ngenerator client {\n  provider = "prisma-client"\n  output   = "../../src/generated/prisma"\n}\n\ndatasource db {\n  provider = "postgresql"\n}\n\nmodel User {\n  id       String  @id @default(uuid())\n  name     String\n  email    String  @unique\n  password String\n  phone    String? @unique\n  avatar   String?\n\n  role   Role   @default(CUSTOMER)\n  status STATUS @default(ACTIVE)\n\n  address String?\n  city    String?\n  country String?\n\n  lastLogin     DateTime?\n  emailVerified Boolean   @default(false)\n  provider      String? // google, email\n\n  // Relations\n  orders   Order[]\n  carts    Cart[]\n  wishlist Wishlist[]\n\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n}\n\nmodel Wishlist {\n  id String @id @default(uuid())\n\n  userId String\n  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)\n\n  productId String\n  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)\n\n  createdAt DateTime @default(now())\n\n  @@unique([userId, productId]) // duplicate wishlist prevent\n}\n',
+  "inlineSchema": 'model InvestorPayment {\n  id String @id @default(cuid())\n\n  date        DateTime\n  description String\n\n  amount Decimal @db.Decimal(12, 2)\n\n  status InvestorPaymentStatus @default(PAID)\n\n  investorName String\n\n  investedAmount Decimal @db.Decimal(12, 2)\n  receivedAmount Decimal @db.Decimal(12, 2)\n\n  paymentBy   String\n  referenceBy String\n  platform    String\n\n  investmentStatus InvestmentStatus @default(RUNNING)\n\n  monthsPaid Int @default(0)\n\n  buyProducts String?\n\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n\n  @@map("investor_payments")\n}\n\n// account\nenum PersonalEntryStatus {\n  PAID\n  UNPAID\n  RECEIVED\n}\n\nenum PersonalEntryType {\n  COST\n  RECEIVED\n}\n\nenum ClearanceStatus {\n  COMPLETED\n  PENDING\n}\n\nenum AccountType {\n  PERSONAL\n  CENTRAL\n}\n\nenum SteadfastWithdrawalStatus {\n  PAID\n  UNPAID\n}\n\nenum SteadfastWithdrawalClearanceStatus {\n  COMPLETED\n  PENDING\n}\n\nenum InvestorPaymentStatus {\n  PAID\n  UNPAID\n}\n\nenum InvestmentStatus {\n  RUNNING\n  COMPLETED\n}\n\nenum WholesaleStatus {\n  PAID\n  UNPAID\n}\n\nenum FixedMonthlyCostStatus {\n  PAID\n  UNPAID\n}\n\nmodel FixedMonthlyCost {\n  id          String                 @id @default(uuid())\n  date        DateTime\n  description String\n  amount      Decimal                @db.Decimal(12, 2)\n  status      FixedMonthlyCostStatus @default(UNPAID)\n\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n\n  @@map("fixed_monthly_costs")\n}\n\nmodel PersonalEntry {\n  id String @id @default(cuid())\n\n  date        DateTime\n  description String\n  amount      Decimal  @db.Decimal(12, 2)\n\n  status PersonalEntryStatus\n  type   PersonalEntryType\n\n  quantity       Int?\n  priceRmb       Decimal? @db.Decimal(12, 2)\n  shippingCharge Decimal? @db.Decimal(12, 2)\n\n  paidReceivedBy String?\n  platform       String?\n\n  clearanceStatus ClearanceStatus @default(PENDING)\n\n  accountType AccountType @default(PERSONAL)\n\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n\n  @@map("personal_entries")\n}\n\nenum ShipmentStatus {\n  PAID\n  UNPAID\n}\n\nenum ShippingStatus {\n  PROCESSING\n  COMPLETED\n}\n\nmodel Shipment {\n  id String @id @default(uuid())\n\n  date        DateTime\n  description String?\n  amount      Decimal        @db.Decimal(12, 2)\n  status      ShipmentStatus\n\n  productName String\n  quantity    Int\n\n  shippingCompany String\n  weight          Decimal @db.Decimal(10, 2)\n  perKgRate       Decimal @db.Decimal(10, 2)\n  shippingCharge  Decimal @db.Decimal(12, 2)\n\n  billingStatus  ShipmentStatus\n  shippingStatus ShippingStatus\n\n  receivingDate DateTime?\n\n  investorName String?\n\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n\n  @@map("shipment-records")\n}\n\nmodel SteadfastWithdrawal {\n  id              String                             @id @default(cuid())\n  date            DateTime\n  description     String\n  amount          Decimal                            @db.Decimal(12, 2)\n  status          SteadfastWithdrawalStatus          @default(PAID)\n  withdrawBy      String\n  paymentMethod   String\n  clearanceStatus SteadfastWithdrawalClearanceStatus @default(PENDING)\n  createdAt       DateTime                           @default(now())\n  updatedAt       DateTime                           @updatedAt\n\n  @@map("steadfast_withdrawals")\n}\n\nmodel Wholesale {\n  id String @id @default(uuid())\n\n  date        DateTime\n  description String?\n  amount      Decimal         @db.Decimal(12, 2)\n  status      WholesaleStatus @default(UNPAID)\n\n  productName String\n  quantity    Int\n\n  priceRmb  Decimal @db.Decimal(12, 2)\n  priceTaka Decimal @db.Decimal(12, 2)\n\n  weight    Decimal @db.Decimal(12, 2)\n  costPerKg Decimal @db.Decimal(12, 2)\n\n  shipping     Decimal @db.Decimal(12, 2)\n  courierChina String?\n\n  note String?\n\n  onePairPrice Decimal @db.Decimal(12, 2)\n  salePrice    Decimal @db.Decimal(12, 2)\n\n  loss   Decimal @default(0) @db.Decimal(12, 2)\n  profit Decimal @default(0) @db.Decimal(12, 2)\n\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n\n  @@map("wholesale-records")\n}\n\nmodel Cart {\n  id String @id @default(uuid())\n\n  userId String\n  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)\n\n  productId String\n  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)\n\n  quantity Int @default(1)\n\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n\n  @@unique([userId, productId]) // same product duplicate \u09A8\u09BE \u09B9\u09DF\n}\n\nmodel Category {\n  id          String  @id @default(uuid())\n  name        String\n  slug        String  @unique\n  description String?\n  image       String?\n\n  isActive Boolean @default(true)\n\n  products Product[]\n\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n}\n\nenum Role {\n  CUSTOMER\n  ADMIN\n  SELLER\n  SUPER_ADMIN\n}\n\nenum STATUS {\n  ACTIVE\n  INACTIVE\n  BLOCKED\n}\n\nenum OrderStatus {\n  PENDING\n  SHIPPED\n  DELIVERED\n  CANCELLED\n  PARTIAL\n}\n\nmodel Hero {\n  id String @id @default(uuid())\n\n  offer  Json\n  banner Json\n\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n}\n\nmodel Order {\n  id String @id @default(uuid())\n\n  userId String?\n  user   User?   @relation(fields: [userId], references: [id], onDelete: Cascade)\n\n  total  Float\n  status OrderStatus @default(PENDING)\n\n  // Customer Information\n  name     String\n  phone    String\n  district String\n  thana    String\n  address  String\n  note     String?\n\n  // Shipping\n  isInsideDhaka Boolean\n  shippingFee   Float   @default(0)\n\n  // Relations\n  items OrderItem[]\n\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n}\n\nmodel OrderItem {\n  id String @id @default(uuid())\n\n  orderId String\n  order   Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)\n\n  productId String\n  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)\n\n  name     String // snapshot\n  price    Float // snapshot\n  quantity Int\n\n  size  String?\n  color String?\n\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n}\n\nmodel Product {\n  id          String  @id @default(uuid())\n  name        String\n  slug        String  @unique\n  description String?\n\n  // BASIC INFORMATION\n\n  brand      String?\n  categoryId String\n\n  category Category @relation(fields: [categoryId], references: [id])\n\n  tags String[] @default([])\n\n  // MEDIA\n\n  thumbnail String\n  images    String[] @default([])\n  videoUrl  String?\n\n  // SPECIFICATION\n\n  model    String?\n  material String?\n\n  // PRICING & STOCK\n\n  price        Float\n  specialPrice Float?\n  discount     Float?\n  stock        Int    @default(0)\n\n  // SHIPPING\n\n  weight Float?\n\n  // Example:\n  // {\n  //   "length": 30,\n  //   "width": 20,\n  //   "height": 10\n  // }\n  dimensions Json?\n\n  dangerousGoods Boolean @default(false)\n\n  // WARRANTY\n\n  warrantyType   String?\n  warrantyPeriod String?\n\n  // PRODUCT HIGHLIGHTS\n\n  highlights String[] @default([])\n\n  // PRODUCT RATING & REVIEWS\n  // Review data will be managed from Review module\n\n  rating      Float @default(0)\n  reviewCount Int   @default(0)\n\n  // PRODUCT ENGAGEMENT\n\n  viewCount Int @default(0)\n  likeCount Int @default(0)\n\n  // PRODUCT STATUS\n\n  isFeatured  Boolean @default(false)\n  isPublished Boolean @default(true)\n\n  // COLOR VARIANTS\n\n  colorVariants ProductColorVariant[]\n\n  // REVIEWS\n  // Relation with separate Review model/module\n\n  reviews Review[]\n\n  // EXISTING RELATIONS\n\n  orderItems OrderItem[]\n  carts      Cart[]\n  wishlist   Wishlist[]\n\n  // TIMESTAMPS\n\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n}\n\nmodel ProductColorVariant {\n  id        String @id @default(uuid())\n  productId String\n\n  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)\n\n  // Example:\n  // Green\n  // Black\n  // Red\n\n  color String\n\n  // Color-specific image\n\n  image String?\n\n  // Sizes of this color\n\n  sizes ProductSizeVariant[]\n\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n}\n\nmodel ProductSizeVariant {\n  id             String @id @default(uuid())\n  colorVariantId String\n\n  colorVariant ProductColorVariant @relation(fields: [colorVariantId], references: [id], onDelete: Cascade)\n\n  // Example:\n  // 36\n  // 38\n  // 40\n  // XL\n  // XXL\n\n  size String\n\n  price        Float\n  specialPrice Float?\n  stock        Int    @default(0)\n\n  // Example:\n  // GREEN-36\n  // BLACK-40\n\n  sku String @unique\n\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n\n  @@unique([colorVariantId, size])\n}\n\nmodel Review {\n  id String @id @default(uuid())\n\n  // PRODUCT RELATION\n\n  productId String\n\n  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)\n\n  // REVIEWER INFORMATION\n\n  userId String?\n\n  userName String?\n\n  userAvatar String?\n\n  // REVIEW CONTENT\n\n  rating  Int\n  comment String?\n\n  // REVIEW ENGAGEMENT\n\n  likeCount Int @default(0)\n\n  // REVIEW STATUS\n\n  isPublished Boolean @default(true)\n\n  // TIMESTAMPS\n\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n\n  // INDEXES\n\n  @@index([productId])\n  @@index([rating])\n  @@index([createdAt])\n}\n\n// This is your Prisma schema file,\n// learn more about it in the docs: https://pris.ly/d/prisma-schema\n\n// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?\n// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init\n\ngenerator client {\n  provider = "prisma-client"\n  output   = "../../src/generated/prisma"\n}\n\ndatasource db {\n  provider = "postgresql"\n}\n\nmodel User {\n  id       String  @id @default(uuid())\n  name     String\n  email    String  @unique\n  password String\n  phone    String? @unique\n  avatar   String?\n\n  role   Role   @default(CUSTOMER)\n  status STATUS @default(ACTIVE)\n\n  address String?\n  city    String?\n  country String?\n\n  lastLogin     DateTime?\n  emailVerified Boolean   @default(false)\n  provider      String? // google, email\n\n  // Relations\n  orders   Order[]\n  carts    Cart[]\n  wishlist Wishlist[]\n\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n}\n\nmodel Wishlist {\n  id String @id @default(uuid())\n\n  userId String\n  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)\n\n  productId String\n  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)\n\n  createdAt DateTime @default(now())\n\n  @@unique([userId, productId]) // duplicate wishlist prevent\n}\n',
   "runtimeDataModel": {
     "models": {},
     "enums": {},
@@ -474,7 +474,8 @@ var defineExtension = runtime2.Extensions.defineExtension;
 var Role = {
   CUSTOMER: "CUSTOMER",
   ADMIN: "ADMIN",
-  SELLER: "SELLER"
+  SELLER: "SELLER",
+  SUPER_ADMIN: "SUPER_ADMIN"
 };
 var OrderStatus = {
   PENDING: "PENDING",
@@ -843,7 +844,7 @@ router.get(
 );
 router.put(
   "/:id",
-  auth(Role.SELLER, Role.CUSTOMER, Role.ADMIN),
+  auth(Role.SELLER, Role.CUSTOMER, Role.ADMIN, Role.SUPER_ADMIN),
   UserController.updateUser
 );
 router.put(
@@ -1515,11 +1516,7 @@ var getSingleOrder = async (orderId) => {
       include: {
         items: {
           include: {
-            product: {
-              select: {
-                thumbnail: true
-              }
-            }
+            product: true
           }
         },
         user: {
@@ -1670,6 +1667,79 @@ var updateOrder = async (orderId, payload) => {
     throw new Error("Failed to update order");
   }
 };
+var getCustomerOrderHistoryByPhone = async (phone) => {
+  try {
+    if (!phone) {
+      throw new Error("Phone number is required");
+    }
+    const orders = await prisma.order.findMany({
+      where: {
+        phone
+      },
+      include: {
+        items: true,
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            phone: true,
+            avatar: true
+          }
+        }
+      },
+      orderBy: {
+        createdAt: "desc"
+      }
+    });
+    if (orders.length === 0) {
+      throw new Error("No orders found for this phone number");
+    }
+    const totalOrders = orders.length;
+    const totalDelivered = orders.filter(
+      (order) => order.status === "DELIVERED"
+    ).length;
+    const totalCancelled = orders.filter(
+      (order) => order.status === "CANCELLED"
+    ).length;
+    const totalPending = orders.filter(
+      (order) => order.status === "PENDING"
+    ).length;
+    const totalShipped = orders.filter(
+      (order) => order.status === "SHIPPED"
+    ).length;
+    const totalPartial = orders.filter(
+      (order) => order.status === "PARTIAL"
+    ).length;
+    return {
+      customer: {
+        name: orders[0].name,
+        phone: orders[0].phone,
+        district: orders[0].district,
+        thana: orders[0].thana,
+        address: orders[0].address
+      },
+      summary: {
+        totalOrders,
+        totalDelivered,
+        totalCancelled,
+        totalPending,
+        totalShipped,
+        totalPartial
+      },
+      orders
+    };
+  } catch (error) {
+    console.error("Get customer order history error:", error);
+    if (error instanceof Error && [
+      "Phone number is required",
+      "No orders found for this phone number"
+    ].includes(error.message)) {
+      throw error;
+    }
+    throw new Error("Failed to get customer order history");
+  }
+};
 var deleteOrder = async (orderId) => {
   try {
     if (!orderId) {
@@ -1705,7 +1775,8 @@ var OrderService = {
   getUserOrders,
   getAllOrders,
   updateOrder,
-  getSingleOrder
+  getSingleOrder,
+  getCustomerOrderHistoryByPhone
 };
 
 // src/app/modules/orders/order.controller.ts
@@ -1871,6 +1942,27 @@ var updateOrderController = catchAsync(
     });
   }
 );
+var getCustomerOrderHistoryByPhone2 = catchAsync(
+  async (req, res) => {
+    const { phone } = req.query;
+    if (!phone) {
+      return sendResponse(res, {
+        httpStatusCode: 400,
+        success: false,
+        message: "Phone number is required"
+      });
+    }
+    const result = await OrderService.getCustomerOrderHistoryByPhone(
+      String(phone)
+    );
+    sendResponse(res, {
+      httpStatusCode: 200,
+      success: true,
+      message: "Customer order history fetched successfully",
+      data: result
+    });
+  }
+);
 var deleteOrderController = async (req, res) => {
   try {
     const { id } = req.params;
@@ -1911,7 +2003,8 @@ var OrderController = {
   getOrders,
   getAllOrders: getAllOrders2,
   getSingleOrder: getSingleOrder2,
-  updateOrderController
+  updateOrderController,
+  getCustomerOrderHistoryByPhone: getCustomerOrderHistoryByPhone2
 };
 
 // src/app/modules/orders/order.route.ts
@@ -1926,6 +2019,7 @@ router3.post(
   OrderController.checkout
 );
 router3.get("/all", auth(Role.ADMIN), OrderController.getAllOrders);
+router3.get("/customer-history", OrderController.getCustomerOrderHistoryByPhone);
 router3.get("/:orderId", OrderController.getSingleOrder);
 router3.get("/", auth(Role.CUSTOMER, Role.ADMIN), OrderController.getOrders);
 router3.patch("/:id/status", auth(Role.ADMIN), updateOrderStatusController);

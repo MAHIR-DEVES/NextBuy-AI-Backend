@@ -2,6 +2,7 @@ enum Role {
   CUSTOMER
   ADMIN
   SELLER
+  SUPER_ADMIN
 }
 
 enum STATUS {

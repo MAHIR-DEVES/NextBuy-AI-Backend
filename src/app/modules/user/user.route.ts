@@ -21,7 +21,7 @@ router.get(
 ); // Single user
 router.put(
   '/:id',
-  auth(Role.SELLER, Role.CUSTOMER, Role.ADMIN),
+  auth(Role.SELLER, Role.CUSTOMER, Role.ADMIN, Role.SUPER_ADMIN),
   UserController.updateUser,
 ); // Update user
 router.put(
