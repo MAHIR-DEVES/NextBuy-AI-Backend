@@ -829,30 +829,20 @@ var auth = (...requiredRoles) => {
 
 // src/app/modules/user/user.route.ts
 var router = Router();
+var accessRole = auth(
+  Role.ADMIN,
+  Role.SELLER,
+  Role.CUSTOMER,
+  Role.SUPER_ADMIN
+);
 router.post("/", UserController.registerUser);
 router.post("/login", UserController.loginUser);
-router.get("/", UserController.getAllUsers);
-router.get(
-  "/me",
-  auth(Role.ADMIN, Role.SELLER, Role.CUSTOMER),
-  UserController.getCurrentUser
-);
-router.get(
-  "/:id",
-  auth(Role.ADMIN, Role.SELLER, Role.CUSTOMER),
-  UserController.getSingleUser
-);
-router.put(
-  "/:id",
-  auth(Role.SELLER, Role.CUSTOMER, Role.ADMIN, Role.SUPER_ADMIN),
-  UserController.updateUser
-);
-router.put(
-  "/:id/password",
-  auth(Role.SELLER, Role.CUSTOMER, Role.ADMIN),
-  UserController.changePassword
-);
-router.delete("/:id", auth(Role.ADMIN), UserController.deleteUser);
+router.get("/", accessRole, UserController.getAllUsers);
+router.get("/me", accessRole, UserController.getCurrentUser);
+router.get("/:id", accessRole, UserController.getSingleUser);
+router.put("/:id", accessRole, UserController.updateUser);
+router.put("/:id/password", accessRole, UserController.changePassword);
+router.delete("/:id", accessRole, UserController.deleteUser);
 var UserRoute = router;
 
 // src/app/modules/products/product.route.ts
@@ -1221,23 +1211,12 @@ var ProductController = {
 
 // src/app/modules/products/product.route.ts
 var router2 = Router2();
-router2.post(
-  "/",
-  auth(Role.ADMIN, Role.SELLER),
-  ProductController.createProduct
-);
+var accessRole2 = auth(Role.ADMIN, Role.SELLER, Role.SUPER_ADMIN);
+router2.post("/", accessRole2, ProductController.createProduct);
 router2.get("/", ProductController.getAllProducts);
 router2.get("/:slug", ProductController.getSingleProduct);
-router2.patch(
-  "/:id",
-  auth(Role.ADMIN, Role.SELLER),
-  ProductController.updateProduct
-);
-router2.delete(
-  "/:id",
-  auth(Role.ADMIN, Role.SELLER),
-  ProductController.deleteProduct
-);
+router2.patch("/:id", accessRole2, ProductController.updateProduct);
+router2.delete("/:id", accessRole2, ProductController.deleteProduct);
 var ProductRoutes = router2;
 
 // src/app/modules/orders/order.route.ts
@@ -2009,6 +1988,7 @@ var OrderController = {
 
 // src/app/modules/orders/order.route.ts
 var router3 = Router3();
+var accessRole3 = auth(Role.ADMIN, Role.SUPER_ADMIN);
 router3.post(
   "/buy-now",
   OrderController.buyNow
@@ -2018,13 +1998,17 @@ router3.post(
   auth(Role.CUSTOMER, Role.ADMIN),
   OrderController.checkout
 );
-router3.get("/all", auth(Role.ADMIN), OrderController.getAllOrders);
+router3.get("/all", accessRole3, OrderController.getAllOrders);
 router3.get("/customer-history", OrderController.getCustomerOrderHistoryByPhone);
 router3.get("/:orderId", OrderController.getSingleOrder);
-router3.get("/", auth(Role.CUSTOMER, Role.ADMIN), OrderController.getOrders);
-router3.patch("/:id/status", auth(Role.ADMIN), updateOrderStatusController);
+router3.get(
+  "/",
+  auth(Role.CUSTOMER, Role.ADMIN, Role.SUPER_ADMIN),
+  OrderController.getOrders
+);
+router3.patch("/:id/status", accessRole3, updateOrderStatusController);
 router3.patch("/:id", OrderController.updateOrderController);
-router3.delete("/:id", auth(Role.ADMIN), deleteOrderController);
+router3.delete("/:id", accessRole3, deleteOrderController);
 var OrderRoutes = router3;
 
 // src/app/modules/cart/cart.route.ts
@@ -2159,23 +2143,17 @@ var CartController = {
 
 // src/app/modules/cart/cart.route.ts
 var router4 = Router4();
-router4.post(
-  "/",
-  auth(Role.CUSTOMER, Role.SELLER, Role.ADMIN),
-  CartController.addToCart
+var accessRole4 = auth(
+  Role.ADMIN,
+  Role.SELLER,
+  Role.CUSTOMER,
+  Role.SUPER_ADMIN
 );
-router4.get("/", auth(Role.CUSTOMER, Role.ADMIN), CartController.getMyCart);
-router4.patch(
-  "/:id",
-  auth(Role.CUSTOMER, Role.ADMIN, Role.SELLER),
-  CartController.updateCartItem
-);
-router4.delete(
-  "/:id",
-  auth(Role.CUSTOMER, Role.ADMIN, Role.SELLER),
-  CartController.deleteCartItem
-);
-router4.delete("/clear/all", auth(Role.CUSTOMER), CartController.clearCart);
+router4.post("/", accessRole4, CartController.addToCart);
+router4.get("/", accessRole4, CartController.getMyCart);
+router4.patch("/:id", accessRole4, CartController.updateCartItem);
+router4.delete("/:id", accessRole4, CartController.deleteCartItem);
+router4.delete("/clear/all", accessRole4, CartController.clearCart);
 var CartRoute = router4;
 
 // src/app/modules/chatbot/chatbot.route.ts
@@ -2558,21 +2536,15 @@ var WishlistController = {
 
 // src/app/modules/wishlist/wishlist.route.ts
 var router6 = express2.Router();
-router6.post(
-  "/",
-  auth(Role.ADMIN, Role.SELLER, Role.CUSTOMER),
-  WishlistController.createWishlist
+var accessRole5 = auth(
+  Role.ADMIN,
+  Role.SELLER,
+  Role.CUSTOMER,
+  Role.SUPER_ADMIN
 );
-router6.get(
-  "/",
-  auth(Role.ADMIN, Role.SELLER, Role.CUSTOMER),
-  WishlistController.getWishlistByUser
-);
-router6.delete(
-  "/:id",
-  auth(Role.ADMIN, Role.SELLER, Role.CUSTOMER),
-  WishlistController.deleteWishlistItem
-);
+router6.post("/", accessRole5, WishlistController.createWishlist);
+router6.get("/", accessRole5, WishlistController.getWishlistByUser);
+router6.delete("/:id", accessRole5, WishlistController.deleteWishlistItem);
 var WishlistRoutes = router6;
 
 // src/app/modules/category/category.route.ts
@@ -2890,11 +2862,12 @@ var HeroController = {
 
 // src/app/modules/hero-management/hero.route.ts
 var router8 = Router6();
-router8.post("/", auth(Role.ADMIN), HeroController.createHero);
-router8.get("/", auth(Role.ADMIN), HeroController.getAllHeroes);
-router8.get("/:id", auth(Role.ADMIN), HeroController.getHeroById);
-router8.patch("/:id", auth(Role.ADMIN), HeroController.updateHero);
-router8.delete("/:id", auth(Role.ADMIN), HeroController.deleteHero);
+var accessRole6 = auth(Role.ADMIN, Role.SUPER_ADMIN);
+router8.post("/", accessRole6, HeroController.createHero);
+router8.get("/", accessRole6, HeroController.getAllHeroes);
+router8.get("/:id", accessRole6, HeroController.getHeroById);
+router8.patch("/:id", accessRole6, HeroController.updateHero);
+router8.delete("/:id", accessRole6, HeroController.deleteHero);
 var HeroRoutes = router8;
 
 // src/app/modules/accounts/personal/personalEntry.route.ts
@@ -3103,27 +3076,12 @@ var PersonalEntryController = {
 
 // src/app/modules/accounts/personal/personalEntry.route.ts
 var router9 = express3.Router();
+var accessRole7 = auth(Role.ADMIN, Role.SUPER_ADMIN);
 router9.post("/", auth(Role.ADMIN), PersonalEntryController.createPersonalEntry);
-router9.get(
-  "/",
-  auth(Role.ADMIN),
-  PersonalEntryController.getAllPersonalEntries
-);
-router9.get(
-  "/:id",
-  auth(Role.ADMIN),
-  PersonalEntryController.getSinglePersonalEntry
-);
-router9.patch(
-  "/:id",
-  auth(Role.ADMIN),
-  PersonalEntryController.updatePersonalEntry
-);
-router9.delete(
-  "/:id",
-  auth(Role.ADMIN),
-  PersonalEntryController.deletePersonalEntry
-);
+router9.get("/", accessRole7, PersonalEntryController.getAllPersonalEntries);
+router9.get("/:id", accessRole7, PersonalEntryController.getSinglePersonalEntry);
+router9.patch("/:id", accessRole7, PersonalEntryController.updatePersonalEntry);
+router9.delete("/:id", accessRole7, PersonalEntryController.deletePersonalEntry);
 var PersonalEntryRoutes = router9;
 
 // src/app/modules/accounts/steadfast-withdrawal/steadfast-withdrawal.route.ts
@@ -3377,29 +3335,22 @@ var SteadfastWithdrawalController = {
 
 // src/app/modules/accounts/steadfast-withdrawal/steadfast-withdrawal.route.ts
 var router10 = Router7();
-router10.post(
-  "/",
-  auth(Role.ADMIN, Role.SELLER),
-  SteadfastWithdrawalController.createWithdrawal
-);
-router10.get(
-  "/",
-  auth(Role.ADMIN, Role.SELLER),
-  SteadfastWithdrawalController.getAllWithdrawals
-);
+var accessRole8 = auth(Role.ADMIN, Role.SELLER, Role.SUPER_ADMIN);
+router10.post("/", accessRole8, SteadfastWithdrawalController.createWithdrawal);
+router10.get("/", accessRole8, SteadfastWithdrawalController.getAllWithdrawals);
 router10.get(
   "/:id",
-  auth(Role.ADMIN, Role.SELLER),
+  accessRole8,
   SteadfastWithdrawalController.getSingleWithdrawal
 );
 router10.patch(
   "/:id",
-  auth(Role.ADMIN, Role.SELLER),
+  accessRole8,
   SteadfastWithdrawalController.updateWithdrawal
 );
 router10.delete(
   "/:id",
-  auth(Role.ADMIN, Role.SELLER),
+  accessRole8,
   SteadfastWithdrawalController.deleteWithdrawal
 );
 var SteadfastWithdrawalRoutes = router10;
@@ -3718,29 +3669,22 @@ var investorPaymentController = {
 
 // src/app/modules/accounts/investor-payment/investor-payment.route.ts
 var router11 = Router8();
-router11.post(
-  "/",
-  auth(Role.ADMIN, Role.SELLER),
-  investorPaymentController.createInvestorPayment
-);
-router11.get(
-  "/",
-  auth(Role.ADMIN, Role.SELLER),
-  investorPaymentController.getAllInvestorPayments
-);
+var accessRole9 = auth(Role.ADMIN, Role.SELLER, Role.SUPER_ADMIN);
+router11.post("/", accessRole9, investorPaymentController.createInvestorPayment);
+router11.get("/", accessRole9, investorPaymentController.getAllInvestorPayments);
 router11.get(
   "/:id",
-  auth(Role.ADMIN, Role.SELLER),
+  accessRole9,
   investorPaymentController.getSingleInvestorPayment
 );
 router11.patch(
   "/:id",
-  auth(Role.ADMIN, Role.SELLER),
+  accessRole9,
   investorPaymentController.updateInvestorPayment
 );
 router11.delete(
   "/:id",
-  auth(Role.ADMIN, Role.SELLER),
+  accessRole9,
   investorPaymentController.deleteInvestorPayment
 );
 var InvestorPaymentRoutes = router11;
@@ -4061,23 +4005,12 @@ var shipmentController = {
 
 // src/app/modules/accounts/shipment/shipment.route.ts
 var router12 = Router9();
-router12.post(
-  "/",
-  auth(Role.ADMIN, Role.SELLER),
-  shipmentController.createShipment
-);
+var accessRole10 = auth(Role.ADMIN, Role.SELLER, Role.SUPER_ADMIN);
+router12.post("/", accessRole10, shipmentController.createShipment);
 router12.get("/", shipmentController.getAllShipments);
 router12.get("/:id", shipmentController.getSingleShipment);
-router12.patch(
-  "/:id",
-  auth(Role.ADMIN, Role.SELLER),
-  shipmentController.updateShipment
-);
-router12.delete(
-  "/:id",
-  auth(Role.ADMIN, Role.SELLER),
-  shipmentController.deleteShipment
-);
+router12.patch("/:id", accessRole10, shipmentController.updateShipment);
+router12.delete("/:id", accessRole10, shipmentController.deleteShipment);
 var ShipmentRoutes = router12;
 
 // src/app/modules/accounts/wholesale/wholesale.route.ts
@@ -4384,31 +4317,12 @@ var wholesaleController = {
 
 // src/app/modules/accounts/wholesale/wholesale.route.ts
 var router13 = Router10();
-router13.post(
-  "/",
-  auth(Role.ADMIN, Role.SELLER),
-  wholesaleController.createWholesale
-);
-router13.get(
-  "/",
-  auth(Role.ADMIN, Role.SELLER),
-  wholesaleController.getAllWholesales
-);
-router13.get(
-  "/:id",
-  auth(Role.ADMIN, Role.SELLER),
-  wholesaleController.getSingleWholesale
-);
-router13.patch(
-  "/:id",
-  auth(Role.ADMIN, Role.SELLER),
-  wholesaleController.updateWholesale
-);
-router13.delete(
-  "/:id",
-  auth(Role.ADMIN, Role.SELLER),
-  wholesaleController.deleteWholesale
-);
+var accessRole11 = auth(Role.ADMIN, Role.SELLER, Role.SUPER_ADMIN);
+router13.post("/", accessRole11, wholesaleController.createWholesale);
+router13.get("/", accessRole11, wholesaleController.getAllWholesales);
+router13.get("/:id", accessRole11, wholesaleController.getSingleWholesale);
+router13.patch("/:id", accessRole11, wholesaleController.updateWholesale);
+router13.delete("/:id", accessRole11, wholesaleController.deleteWholesale);
 var WholesaleRoutes = router13;
 
 // src/app/modules/accounts/monthly-cost/monthly-cost.route.ts
@@ -4622,31 +4536,12 @@ var MonthlyCostController = {
 
 // src/app/modules/accounts/monthly-cost/monthly-cost.route.ts
 var router14 = Router11();
-router14.post(
-  "/",
-  auth(Role.ADMIN, Role.SELLER),
-  MonthlyCostController.createMonthlyCost
-);
-router14.get(
-  "/",
-  auth(Role.ADMIN, Role.SELLER),
-  MonthlyCostController.getAllMonthlyCosts
-);
-router14.get(
-  "/:id",
-  auth(Role.ADMIN, Role.SELLER),
-  MonthlyCostController.getSingleMonthlyCost
-);
-router14.patch(
-  "/:id",
-  auth(Role.ADMIN, Role.SELLER),
-  MonthlyCostController.updateMonthlyCost
-);
-router14.delete(
-  "/:id",
-  auth(Role.ADMIN, Role.SELLER),
-  MonthlyCostController.deleteMonthlyCost
-);
+var accessRole12 = auth(Role.ADMIN, Role.SELLER, Role.SUPER_ADMIN);
+router14.post("/", accessRole12, MonthlyCostController.createMonthlyCost);
+router14.get("/", accessRole12, MonthlyCostController.getAllMonthlyCosts);
+router14.get("/:id", accessRole12, MonthlyCostController.getSingleMonthlyCost);
+router14.patch("/:id", accessRole12, MonthlyCostController.updateMonthlyCost);
+router14.delete("/:id", accessRole12, MonthlyCostController.deleteMonthlyCost);
 var MonthlyCostRoutes = router14;
 
 // src/app/modules/analytics/analytics.route.ts
@@ -4909,7 +4804,8 @@ var analyticsController = {
 
 // src/app/modules/analytics/analytics.route.ts
 var router15 = Router12();
-router15.get("/", auth(Role.ADMIN), analyticsController.getAnalytics);
+var accessRole13 = auth(Role.ADMIN, Role.SUPER_ADMIN);
+router15.get("/", accessRole13, analyticsController.getAnalytics);
 var AnalyticsRoutes = router15;
 
 // src/app/modules/dashboard-analytics/dashboard.route.ts
@@ -5466,15 +5362,16 @@ var ReviewController = {
 
 // src/app/modules/reviews/review.route.ts
 var router17 = Router14();
+var accessRole14 = auth(Role.ADMIN, Role.SUPER_ADMIN);
 router17.post("/", ReviewController.createReview);
 router17.get(
   "/product/:productId",
-  auth(Role.ADMIN),
+  accessRole14,
   ReviewController.getProductReviews
 );
-router17.get("/:id", auth(Role.ADMIN), ReviewController.getSingleReview);
-router17.patch("/:id", auth(Role.ADMIN), ReviewController.updateReview);
-router17.delete("/:id", auth(Role.ADMIN), ReviewController.deleteReview);
+router17.get("/:id", accessRole14, ReviewController.getSingleReview);
+router17.patch("/:id", accessRole14, ReviewController.updateReview);
+router17.delete("/:id", accessRole14, ReviewController.deleteReview);
 var ReviewRoutes = router17;
 
 // src/app/routes/index.ts
@@ -5561,6 +5458,7 @@ app.use(notFound);
 var app_default = app;
 
 // src/server.ts
+import "dotenv/config";
 var bootstrap = () => {
   try {
     app_default.listen(envVars.PORT, () => {

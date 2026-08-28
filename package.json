@@ -31,7 +31,6 @@
     "express": "^5.2.1",
     "http-status": "^2.1.0",
     "jsonwebtoken": "^9.0.3",
-    "node-fetch": "^3.3.2",
     "pg": "^8.19.0",
     "prisma": "^7.4.2",
     "stripe": "^22.0.1",

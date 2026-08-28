@@ -5,31 +5,16 @@ import { auth } from '../../../middleware/auth';
 import { Role } from '../../../../generated/prisma/enums';
 
 const router = express.Router();
+const accessRole = auth(Role.ADMIN, Role.SUPER_ADMIN);
 
 router.post('/', auth(Role.ADMIN), PersonalEntryController.createPersonalEntry);
 
-router.get(
-  '/',
-  auth(Role.ADMIN),
-  PersonalEntryController.getAllPersonalEntries,
-);
+router.get('/', accessRole, PersonalEntryController.getAllPersonalEntries);
 
-router.get(
-  '/:id',
-  auth(Role.ADMIN),
-  PersonalEntryController.getSinglePersonalEntry,
-);
+router.get('/:id', accessRole, PersonalEntryController.getSinglePersonalEntry);
 
-router.patch(
-  '/:id',
-  auth(Role.ADMIN),
-  PersonalEntryController.updatePersonalEntry,
-);
+router.patch('/:id', accessRole, PersonalEntryController.updatePersonalEntry);
 
-router.delete(
-  '/:id',
-  auth(Role.ADMIN),
-  PersonalEntryController.deletePersonalEntry,
-);
+router.delete('/:id', accessRole, PersonalEntryController.deletePersonalEntry);
 
 export const PersonalEntryRoutes = router;

@@ -4,27 +4,21 @@ import { auth } from '../../middleware/auth';
 import { Role } from '../../../generated/prisma/enums';
 
 const router = Router();
-
-router.post(
-  '/',
-  auth(Role.CUSTOMER, Role.SELLER, Role.ADMIN),
-  CartController.addToCart,
+const accessRole = auth(
+  Role.ADMIN,
+  Role.SELLER,
+  Role.CUSTOMER,
+  Role.SUPER_ADMIN,
 );
 
-router.get('/', auth(Role.CUSTOMER, Role.ADMIN), CartController.getMyCart);
+router.post('/', accessRole, CartController.addToCart);
 
-router.patch(
-  '/:id',
-  auth(Role.CUSTOMER, Role.ADMIN, Role.SELLER),
-  CartController.updateCartItem,
-);
+router.get('/', accessRole, CartController.getMyCart);
 
-router.delete(
-  '/:id',
-  auth(Role.CUSTOMER, Role.ADMIN, Role.SELLER),
-  CartController.deleteCartItem,
-);
+router.patch('/:id', accessRole, CartController.updateCartItem);
 
-router.delete('/clear/all', auth(Role.CUSTOMER), CartController.clearCart);
+router.delete('/:id', accessRole, CartController.deleteCartItem);
+
+router.delete('/clear/all', accessRole, CartController.clearCart);
 
 export const CartRoute = router;

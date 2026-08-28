@@ -5,35 +5,16 @@ import { auth } from '../../../middleware/auth';
 import { Role } from '../../../../generated/prisma/enums';
 
 const router = Router();
+const accessRole = auth(Role.ADMIN, Role.SELLER, Role.SUPER_ADMIN);
 
-router.post(
-  '/',
-  auth(Role.ADMIN, Role.SELLER),
-  wholesaleController.createWholesale,
-);
+router.post('/', accessRole, wholesaleController.createWholesale);
 
-router.get(
-  '/',
-  auth(Role.ADMIN, Role.SELLER),
-  wholesaleController.getAllWholesales,
-);
+router.get('/', accessRole, wholesaleController.getAllWholesales);
 
-router.get(
-  '/:id',
-  auth(Role.ADMIN, Role.SELLER),
-  wholesaleController.getSingleWholesale,
-);
+router.get('/:id', accessRole, wholesaleController.getSingleWholesale);
 
-router.patch(
-  '/:id',
-  auth(Role.ADMIN, Role.SELLER),
-  wholesaleController.updateWholesale,
-);
+router.patch('/:id', accessRole, wholesaleController.updateWholesale);
 
-router.delete(
-  '/:id',
-  auth(Role.ADMIN, Role.SELLER),
-  wholesaleController.deleteWholesale,
-);
+router.delete('/:id', accessRole, wholesaleController.deleteWholesale);
 
 export const WholesaleRoutes = router;

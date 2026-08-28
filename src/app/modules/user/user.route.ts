@@ -4,31 +4,21 @@ import { auth } from '../../middleware/auth';
 import { Role } from '../../../generated/prisma/enums';
 
 const router = Router();
+const accessRole = auth(
+  Role.ADMIN,
+  Role.SELLER,
+  Role.CUSTOMER,
+  Role.SUPER_ADMIN,
+);
 
 router.post('/', UserController.registerUser);
 router.post('/login', UserController.loginUser);
-router.get('/', UserController.getAllUsers);
-router.get(
-  '/me',
-  auth(Role.ADMIN, Role.SELLER, Role.CUSTOMER),
-  UserController.getCurrentUser,
-); // Current user
+router.get('/', accessRole, UserController.getAllUsers);
+router.get('/me', accessRole, UserController.getCurrentUser); // Current user
 
-router.get(
-  '/:id',
-  auth(Role.ADMIN, Role.SELLER, Role.CUSTOMER),
-  UserController.getSingleUser,
-); // Single user
-router.put(
-  '/:id',
-  auth(Role.SELLER, Role.CUSTOMER, Role.ADMIN, Role.SUPER_ADMIN),
-  UserController.updateUser,
-); // Update user
-router.put(
-  '/:id/password',
-  auth(Role.SELLER, Role.CUSTOMER, Role.ADMIN),
-  UserController.changePassword,
-);
-router.delete('/:id', auth(Role.ADMIN), UserController.deleteUser);
+router.get('/:id', accessRole, UserController.getSingleUser); // Single user
+router.put('/:id', accessRole, UserController.updateUser); // Update user
+router.put('/:id/password', accessRole, UserController.changePassword);
+router.delete('/:id', accessRole, UserController.deleteUser);
 
 export const UserRoute = router;

@@ -5,34 +5,27 @@ import { Role } from '../../../../generated/prisma/enums';
 import { auth } from '../../../middleware/auth';
 
 const router = Router();
+const accessRole = auth(Role.ADMIN, Role.SELLER, Role.SUPER_ADMIN);
 
-router.post(
-  '/',
-  auth(Role.ADMIN, Role.SELLER),
-  investorPaymentController.createInvestorPayment,
-);
+router.post('/', accessRole, investorPaymentController.createInvestorPayment);
 
-router.get(
-  '/',
-  auth(Role.ADMIN, Role.SELLER),
-  investorPaymentController.getAllInvestorPayments,
-);
+router.get('/', accessRole, investorPaymentController.getAllInvestorPayments);
 
 router.get(
   '/:id',
-  auth(Role.ADMIN, Role.SELLER),
+  accessRole,
   investorPaymentController.getSingleInvestorPayment,
 );
 
 router.patch(
   '/:id',
-  auth(Role.ADMIN, Role.SELLER),
+  accessRole,
   investorPaymentController.updateInvestorPayment,
 );
 
 router.delete(
   '/:id',
-  auth(Role.ADMIN, Role.SELLER),
+  accessRole,
   investorPaymentController.deleteInvestorPayment,
 );
 

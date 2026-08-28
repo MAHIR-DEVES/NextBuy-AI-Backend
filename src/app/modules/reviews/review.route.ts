@@ -5,19 +5,20 @@ import { auth } from '../../middleware/auth';
 import { Role } from '../../../generated/prisma/enums';
 
 const router = Router();
+const accessRole = auth(Role.ADMIN, Role.SUPER_ADMIN);
 
 router.post('/', ReviewController.createReview);
 
 router.get(
   '/product/:productId',
-  auth(Role.ADMIN),
+  accessRole,
   ReviewController.getProductReviews,
 );
 
-router.get('/:id', auth(Role.ADMIN), ReviewController.getSingleReview);
+router.get('/:id', accessRole, ReviewController.getSingleReview);
 
-router.patch('/:id', auth(Role.ADMIN), ReviewController.updateReview);
+router.patch('/:id', accessRole, ReviewController.updateReview);
 
-router.delete('/:id', auth(Role.ADMIN), ReviewController.deleteReview);
+router.delete('/:id', accessRole, ReviewController.deleteReview);
 
 export const ReviewRoutes = router;

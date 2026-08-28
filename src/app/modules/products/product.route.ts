@@ -6,22 +6,12 @@ import { Role } from '../../../generated/prisma/enums';
 
 const router = Router();
 
-router.post(
-  '/',
-  auth(Role.ADMIN, Role.SELLER),
-  ProductController.createProduct,
-);
+const accessRole = auth(Role.ADMIN, Role.SELLER, Role.SUPER_ADMIN);
+
+router.post('/', accessRole, ProductController.createProduct);
 router.get('/', ProductController.getAllProducts);
 router.get('/:slug', ProductController.getSingleProduct);
-router.patch(
-  '/:id',
-  auth(Role.ADMIN, Role.SELLER),
-  ProductController.updateProduct,
-);
-router.delete(
-  '/:id',
-  auth(Role.ADMIN, Role.SELLER),
-  ProductController.deleteProduct,
-);
+router.patch('/:id', accessRole, ProductController.updateProduct);
+router.delete('/:id', accessRole, ProductController.deleteProduct);
 
 export const ProductRoutes = router;

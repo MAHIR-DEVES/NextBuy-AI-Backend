@@ -6,27 +6,16 @@ import { Role } from '../../../../generated/prisma/enums';
 import { shipmentController } from './shipment.controller';
 
 const router = Router();
+const accessRole = auth(Role.ADMIN, Role.SELLER, Role.SUPER_ADMIN);
 
-router.post(
-  '/',
-  auth(Role.ADMIN, Role.SELLER),
-  shipmentController.createShipment,
-);
+router.post('/', accessRole, shipmentController.createShipment);
 
 router.get('/', shipmentController.getAllShipments);
 
 router.get('/:id', shipmentController.getSingleShipment);
 
-router.patch(
-  '/:id',
-  auth(Role.ADMIN, Role.SELLER),
-  shipmentController.updateShipment,
-);
+router.patch('/:id', accessRole, shipmentController.updateShipment);
 
-router.delete(
-  '/:id',
-  auth(Role.ADMIN, Role.SELLER),
-  shipmentController.deleteShipment,
-);
+router.delete('/:id', accessRole, shipmentController.deleteShipment);
 
 export const ShipmentRoutes = router;
