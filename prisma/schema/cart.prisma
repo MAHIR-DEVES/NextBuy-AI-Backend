@@ -1,8 +1,8 @@
 model Cart {
   id         String   @id @default(uuid())
 
-  userId     String
-  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId     String?
+  user       User?     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   productId  String
   product    Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
@@ -12,5 +12,5 @@ model Cart {
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 
-  @@unique([userId, productId]) // same product duplicate না হয়
+  @@unique([ productId]) // same product duplicate না হয়
 }
