@@ -2045,7 +2045,11 @@ var getMyCart = async (userId) => {
   return await prisma.cart.findMany({
     where: { userId },
     include: {
-      product: true
+      product: {
+        include: {
+          category: true
+        }
+      }
     }
   });
 };
@@ -2149,10 +2153,10 @@ var accessRole4 = auth(
   Role.CUSTOMER,
   Role.SUPER_ADMIN
 );
-router4.post("/", accessRole4, CartController.addToCart);
-router4.get("/", accessRole4, CartController.getMyCart);
-router4.patch("/:id", accessRole4, CartController.updateCartItem);
-router4.delete("/:id", accessRole4, CartController.deleteCartItem);
+router4.post("/", CartController.addToCart);
+router4.get("/", CartController.getMyCart);
+router4.patch("/:id", CartController.updateCartItem);
+router4.delete("/:id", CartController.deleteCartItem);
 router4.delete("/clear/all", accessRole4, CartController.clearCart);
 var CartRoute = router4;
 

@@ -39,7 +39,11 @@ const getMyCart = async (userId: string) => {
   return await prisma.cart.findMany({
     where: { userId },
     include: {
-      product: true,
+      product: {
+        include: {
+          category: true,
+        },
+      },
     },
   });
 };
