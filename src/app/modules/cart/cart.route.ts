@@ -11,13 +11,13 @@ const accessRole = auth(
   Role.SUPER_ADMIN,
 );
 
-router.post('/', CartController.addToCart);
+router.post('/', accessRole, CartController.addToCart);
 
-router.get('/', CartController.getMyCart);
+router.get('/', accessRole, CartController.getMyCart);
 
-router.patch('/:id', CartController.updateCartItem);
+router.patch('/:id', accessRole, CartController.updateCartItem);
 
-router.delete('/:id', CartController.deleteCartItem);
+router.delete('/:id', accessRole, CartController.deleteCartItem);
 
 router.delete('/clear/all', accessRole, CartController.clearCart);
 
