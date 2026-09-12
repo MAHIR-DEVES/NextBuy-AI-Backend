@@ -1231,12 +1231,13 @@ var createBuyNowOrder = async (userId, productId, quantity, name, phone, distric
     if (!product) {
       throw new Error("Product not found");
     }
-    const total = product.price * quantity;
+    const unitPrice = product.specialPrice ?? product.price;
+    const subtotal = unitPrice * quantity;
     const shippingFee = isInsideDhaka ? 90 : 130;
     const order = await prisma.order.create({
       data: {
         ...userId ? { userId } : {},
-        total: total + shippingFee,
+        total: subtotal + shippingFee,
         name,
         phone,
         district,
