@@ -86,6 +86,15 @@ const createBuyNowOrder = async (
 /**
  * CART CHECKOUT (multiple product order)
  */
+interface ICheckoutItem {
+  productId: string;
+  name: string;
+  price: number;
+  quantity: number;
+  size?: string | null;
+  color?: string | null;
+}
+
 const checkoutCart = async (
   userId: string,
   name: string,
@@ -95,21 +104,17 @@ const checkoutCart = async (
   address: string,
   note: string | undefined,
   isInsideDhaka: boolean,
+  items: ICheckoutItem[],
 ) => {
   try {
-    const cartItems = await prisma.cart.findMany({
-      where: { userId },
-      include: { product: true },
-    });
-
-    if (cartItems.length === 0) {
-      throw new Error('Cart is empty');
+    if (!items || items.length === 0) {
+      throw new Error('No products selected');
     }
 
     const shippingFee = isInsideDhaka ? 90 : 130;
 
-    const subtotal = cartItems.reduce((sum, item) => {
-      return sum + item.product.price * item.quantity;
+    const subtotal = items.reduce((sum, item) => {
+      return sum + item.price * item.quantity;
     }, 0);
 
     const total = subtotal + shippingFee;
@@ -130,11 +135,13 @@ const checkoutCart = async (
         total,
 
         items: {
-          create: cartItems.map(item => ({
-            productId: item.product.id,
-            name: item.product.name,
-            price: item.product.price,
+          create: items.map(item => ({
+            productId: item.productId,
+            name: item.name,
+            price: item.price,
             quantity: item.quantity,
+            size: item.size || null,
+            color: item.color || null,
           })),
         },
       },
@@ -142,11 +149,6 @@ const checkoutCart = async (
       include: {
         items: true,
       },
-    });
-
-    // clear cart
-    await prisma.cart.deleteMany({
-      where: { userId },
     });
 
     return order;
