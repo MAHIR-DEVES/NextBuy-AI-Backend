@@ -29,7 +29,7 @@ export const getQuickReply = (message: string): string | null => {
       text,
     )
   ) {
-    return 'হ্যালো! 👋 Chasma Express BD-তে আপনাকে স্বাগতম। কীভাবে সাহায্য করতে পারি?';
+    return 'হ্যালো! 👋 Sera Place -তে আপনাকে স্বাগতম। কীভাবে সাহায্য করতে পারি?';
   }
 
   // Greeting + question
@@ -39,7 +39,7 @@ export const getQuickReply = (message: string): string | null => {
     ) &&
     text.length < 35
   ) {
-    return 'হ্যালো! 👋 Chasma Express BD-তে আপনাকে স্বাগতম। কীভাবে সাহায্য করতে পারি?';
+    return 'হ্যালো! 👋 Sera Place -তে আপনাকে স্বাগতম। কীভাবে সাহায্য করতে পারি?';
   }
 
   // ============================================================
@@ -87,7 +87,7 @@ export const getQuickReply = (message: string): string | null => {
       text,
     )
   ) {
-    return 'আমি Chasma Express BD-এর AI Assistant 🤖। চশমা, প্রোডাক্ট, অর্ডার ও ডেলিভারি সম্পর্কিত তথ্য দিতে পারি।';
+    return 'আমি Sera Place-এর AI Assistant 🤖। চশমা, প্রোডাক্ট, অর্ডার ও ডেলিভারি সম্পর্কিত তথ্য দিতে পারি।';
   }
 
   // ============================================================

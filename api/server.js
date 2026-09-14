@@ -909,12 +909,12 @@ var getAllProducts = async (query) => {
       sortBy = "createdAt",
       sortOrder = "desc",
       page = "1",
-      limit = "10",
+      limit = "12",
       isFeatured,
       isPublished
     } = query;
     const pageNumber = Math.max(Number(page) || 1, 1);
-    const limitNumber = Math.max(Number(limit) || 10, 1);
+    const limitNumber = Math.max(Number(limit) || 12, 1);
     const skip = (pageNumber - 1) * limitNumber;
     const filters = {};
     if (search) {
@@ -2444,12 +2444,12 @@ var getQuickReply = (message) => {
   if (/^(হ্যালো|হেলো|হাই|হেই|হাইই|হ্যালোও|hello|helo|hi|hey|heyy|hii|assalamualaikum|assalamu alaikum|আসসালামু আলাইকুম|আসসালামুয়ালাইকুম|সালাম|সালাম আলাইকুম)$/.test(
     text
   )) {
-    return "\u09B9\u09CD\u09AF\u09BE\u09B2\u09CB! \u{1F44B} Chasma Express BD-\u09A4\u09C7 \u0986\u09AA\u09A8\u09BE\u0995\u09C7 \u09B8\u09CD\u09AC\u09BE\u0997\u09A4\u09AE\u0964 \u0995\u09C0\u09AD\u09BE\u09AC\u09C7 \u09B8\u09BE\u09B9\u09BE\u09AF\u09CD\u09AF \u0995\u09B0\u09A4\u09C7 \u09AA\u09BE\u09B0\u09BF?";
+    return "\u09B9\u09CD\u09AF\u09BE\u09B2\u09CB! \u{1F44B} Sera Place -\u09A4\u09C7 \u0986\u09AA\u09A8\u09BE\u0995\u09C7 \u09B8\u09CD\u09AC\u09BE\u0997\u09A4\u09AE\u0964 \u0995\u09C0\u09AD\u09BE\u09AC\u09C7 \u09B8\u09BE\u09B9\u09BE\u09AF\u09CD\u09AF \u0995\u09B0\u09A4\u09C7 \u09AA\u09BE\u09B0\u09BF?";
   }
   if (/^(হ্যালো|হেলো|হাই|হেই|hello|helo|hi|hey|assalamu alaikum|আসসালামু আলাইকুম|সালাম).*$/i.test(
     text
   ) && text.length < 35) {
-    return "\u09B9\u09CD\u09AF\u09BE\u09B2\u09CB! \u{1F44B} Chasma Express BD-\u09A4\u09C7 \u0986\u09AA\u09A8\u09BE\u0995\u09C7 \u09B8\u09CD\u09AC\u09BE\u0997\u09A4\u09AE\u0964 \u0995\u09C0\u09AD\u09BE\u09AC\u09C7 \u09B8\u09BE\u09B9\u09BE\u09AF\u09CD\u09AF \u0995\u09B0\u09A4\u09C7 \u09AA\u09BE\u09B0\u09BF?";
+    return "\u09B9\u09CD\u09AF\u09BE\u09B2\u09CB! \u{1F44B} Sera Place -\u09A4\u09C7 \u0986\u09AA\u09A8\u09BE\u0995\u09C7 \u09B8\u09CD\u09AC\u09BE\u0997\u09A4\u09AE\u0964 \u0995\u09C0\u09AD\u09BE\u09AC\u09C7 \u09B8\u09BE\u09B9\u09BE\u09AF\u09CD\u09AF \u0995\u09B0\u09A4\u09C7 \u09AA\u09BE\u09B0\u09BF?";
   }
   if (/^(কেমন আছেন|কেমন আছো|কেমন আছ|কী খবর|কি খবর|সব কেমন চলছে|ভালো আছেন|ভাল আছেন|how are you|how r u|how are u|hows it going|how is it going)$/.test(
     text
@@ -2469,7 +2469,7 @@ var getQuickReply = (message) => {
   if (/^(তুমি কে|আপনি কে|তোমরা কে|আপনারা কে|তোমার পরিচয় কি|আপনার পরিচয় কি|তোমার নাম কি|তোমার নাম কী|আপনার নাম কি|আপনার নাম কী|কে কথা বলছেন|কে কথা বলতেছে|who are you|what are you|what is your name|whats your name|your name|who is this)$/.test(
     text
   )) {
-    return "\u0986\u09AE\u09BF Chasma Express BD-\u098F\u09B0 AI Assistant \u{1F916}\u0964 \u099A\u09B6\u09AE\u09BE, \u09AA\u09CD\u09B0\u09CB\u09A1\u09BE\u0995\u09CD\u099F, \u0985\u09B0\u09CD\u09A1\u09BE\u09B0 \u0993 \u09A1\u09C7\u09B2\u09BF\u09AD\u09BE\u09B0\u09BF \u09B8\u09AE\u09CD\u09AA\u09B0\u09CD\u0995\u09BF\u09A4 \u09A4\u09A5\u09CD\u09AF \u09A6\u09BF\u09A4\u09C7 \u09AA\u09BE\u09B0\u09BF\u0964";
+    return "\u0986\u09AE\u09BF Sera Place-\u098F\u09B0 AI Assistant \u{1F916}\u0964 \u099A\u09B6\u09AE\u09BE, \u09AA\u09CD\u09B0\u09CB\u09A1\u09BE\u0995\u09CD\u099F, \u0985\u09B0\u09CD\u09A1\u09BE\u09B0 \u0993 \u09A1\u09C7\u09B2\u09BF\u09AD\u09BE\u09B0\u09BF \u09B8\u09AE\u09CD\u09AA\u09B0\u09CD\u0995\u09BF\u09A4 \u09A4\u09A5\u09CD\u09AF \u09A6\u09BF\u09A4\u09C7 \u09AA\u09BE\u09B0\u09BF\u0964";
   }
   if (/^(কি বিক্রি করেন|কি বিক্রি করেন আপনারা|কি কি বিক্রি করেন|কী বিক্রি করেন|কী কী বিক্রি করেন|কি প্রোডাক্ট বিক্রি করেন|কি কি প্রোডাক্ট বিক্রি করেন|কী কী প্রোডাক্ট আছে|কি কি প্রোডাক্ট আছে|আপনারা কি বিক্রি করেন|আপনারা কী বিক্রি করেন|আপনাদের কি আছে|আপনাদের কী আছে|কি কি পাওয়া যায়|কি কি পাওয়া যায়|কি কি পাওয়া যাবে|what do you sell|what are you selling|what products do you sell|what products are available|what do you have|products ki ki|ki ki product ache|ki ki product ase|ki ki sell koren|ki sell koren)$/.test(
     text

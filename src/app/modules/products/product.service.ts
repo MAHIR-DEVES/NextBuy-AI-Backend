@@ -80,7 +80,7 @@ const getAllProducts = async (query: ProductQuery) => {
       sortBy = 'createdAt',
       sortOrder = 'desc',
       page = '1',
-      limit = '10',
+      limit = '12',
       isFeatured,
       isPublished,
     } = query;
@@ -88,7 +88,7 @@ const getAllProducts = async (query: ProductQuery) => {
     // PAGINATION
 
     const pageNumber = Math.max(Number(page) || 1, 1);
-    const limitNumber = Math.max(Number(limit) || 10, 1);
+    const limitNumber = Math.max(Number(limit) || 12, 1);
 
     const skip = (pageNumber - 1) * limitNumber;
 
