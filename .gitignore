@@ -4,3 +4,5 @@ dist
 /src/generated
 config.bat
 .env
+.env.*
+!.env.example
