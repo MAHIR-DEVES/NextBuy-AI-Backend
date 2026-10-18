@@ -21,3 +21,12 @@ export interface GetAllOrdersParams {
   search?: string;
   status?: string;
 }
+
+export interface ICheckoutItem {
+  productId: string;
+  name: string;
+  price: number;
+  quantity: number;
+  size?: string | null;
+  color?: string | null;
+}

@@ -1222,9 +1222,112 @@ var ProductRoutes = router2;
 // src/app/modules/orders/order.route.ts
 import { Router as Router3 } from "express";
 
+// src/app/modules/orders/order-stock.service.ts
+var updateProductStock = async (tx, items, action) => {
+  for (const item of items) {
+    if (item.quantity <= 0) {
+      throw new Error("Invalid product quantity");
+    }
+    const product = await tx.product.findUnique({
+      where: {
+        id: item.productId
+      },
+      include: {
+        colorVariants: {
+          include: {
+            sizes: true
+          }
+        }
+      }
+    });
+    if (!product) {
+      throw new Error(`Product not found: ${item.productId}`);
+    }
+    if (product.colorVariants.length > 0) {
+      if (!item.color || !item.size) {
+        throw new Error(`Color and size are required for ${product.name}`);
+      }
+      const colorVariant = product.colorVariants.find(
+        (variant) => variant.color.toLowerCase() === item.color.toLowerCase()
+      );
+      if (!colorVariant) {
+        throw new Error(`Color not found: ${item.color}`);
+      }
+      const sizeVariant = colorVariant.sizes.find(
+        (variant) => variant.size === item.size
+      );
+      if (!sizeVariant) {
+        throw new Error(`Size not found: ${item.size}`);
+      }
+      if (action === "DECREASE") {
+        const result = await tx.productSizeVariant.updateMany({
+          where: {
+            id: sizeVariant.id,
+            stock: {
+              gte: item.quantity
+            }
+          },
+          data: {
+            stock: {
+              decrement: item.quantity
+            }
+          }
+        });
+        if (result.count === 0) {
+          throw new Error(`Insufficient stock for ${product.name}`);
+        }
+      } else {
+        await tx.productSizeVariant.update({
+          where: {
+            id: sizeVariant.id
+          },
+          data: {
+            stock: {
+              increment: item.quantity
+            }
+          }
+        });
+      }
+    } else {
+      if (action === "DECREASE") {
+        const result = await tx.product.updateMany({
+          where: {
+            id: product.id,
+            stock: {
+              gte: item.quantity
+            }
+          },
+          data: {
+            stock: {
+              decrement: item.quantity
+            }
+          }
+        });
+        if (result.count === 0) {
+          throw new Error(`Insufficient stock for ${product.name}`);
+        }
+      } else {
+        await tx.product.update({
+          where: {
+            id: product.id
+          },
+          data: {
+            stock: {
+              increment: item.quantity
+            }
+          }
+        });
+      }
+    }
+  }
+};
+
 // src/app/modules/orders/order.service.ts
 var createBuyNowOrder = async (userId, productId, quantity, name, phone, district, thana, address, note, isInsideDhaka, size, color) => {
   try {
+    if (!Number.isInteger(quantity) || quantity <= 0) {
+      throw new Error("Invalid product quantity");
+    }
     const product = await prisma.product.findUnique({
       where: { id: productId }
     });
@@ -1234,39 +1337,53 @@ var createBuyNowOrder = async (userId, productId, quantity, name, phone, distric
     const unitPrice = product.specialPrice ?? product.price;
     const subtotal = unitPrice * quantity;
     const shippingFee = isInsideDhaka ? 90 : 130;
-    const order = await prisma.order.create({
-      data: {
-        ...userId ? { userId } : {},
-        total: subtotal + shippingFee,
-        name,
-        phone,
-        district,
-        thana,
-        address,
-        note: note || null,
-        isInsideDhaka,
-        shippingFee,
-        items: {
-          create: [
-            {
-              productId: product.id,
-              name: product.name,
-              price: product.price,
-              quantity,
-              size: size || null,
-              color: color || null
-            }
-          ]
+    const order = await prisma.$transaction(async (tx) => {
+      await updateProductStock(
+        tx,
+        [
+          {
+            productId: product.id,
+            quantity,
+            size,
+            color
+          }
+        ],
+        "DECREASE"
+      );
+      return tx.order.create({
+        data: {
+          ...userId ? { userId } : {},
+          total: subtotal + shippingFee,
+          name,
+          phone,
+          district,
+          thana,
+          address,
+          note: note || null,
+          isInsideDhaka,
+          shippingFee,
+          items: {
+            create: [
+              {
+                productId: product.id,
+                name: product.name,
+                price: unitPrice,
+                quantity,
+                size: size || null,
+                color: color || null
+              }
+            ]
+          }
+        },
+        include: {
+          items: true
         }
-      },
-      include: {
-        items: true
-      }
+      });
     });
     return order;
   } catch (error) {
-    console.log(error);
-    throw new Error("Failed to create buy now order");
+    console.error("Create buy now order error:", error);
+    throw error;
   }
 };
 var checkoutCart = async (userId, name, phone, district, thana, address, note, isInsideDhaka, items) => {
@@ -1274,42 +1391,59 @@ var checkoutCart = async (userId, name, phone, district, thana, address, note, i
     if (!items || items.length === 0) {
       throw new Error("No products selected");
     }
+    for (const item of items) {
+      if (!Number.isInteger(item.quantity) || item.quantity <= 0) {
+        throw new Error(`Invalid quantity for ${item.name}`);
+      }
+    }
     const shippingFee = isInsideDhaka ? 90 : 130;
     const subtotal = items.reduce((sum, item) => {
       return sum + item.price * item.quantity;
     }, 0);
     const total = subtotal + shippingFee;
-    const order = await prisma.order.create({
-      data: {
-        userId,
-        name,
-        phone,
-        district,
-        thana,
-        address,
-        note: note || null,
-        isInsideDhaka,
-        shippingFee,
-        total,
-        items: {
-          create: items.map((item) => ({
-            productId: item.productId,
-            name: item.name,
-            price: item.price,
-            quantity: item.quantity,
-            size: item.size || null,
-            color: item.color || null
-          }))
+    const order = await prisma.$transaction(async (tx) => {
+      await updateProductStock(
+        tx,
+        items.map((item) => ({
+          productId: item.productId,
+          quantity: item.quantity,
+          size: item.size,
+          color: item.color
+        })),
+        "DECREASE"
+      );
+      return tx.order.create({
+        data: {
+          userId,
+          name,
+          phone,
+          district,
+          thana,
+          address,
+          note: note || null,
+          isInsideDhaka,
+          shippingFee,
+          total,
+          items: {
+            create: items.map((item) => ({
+              productId: item.productId,
+              name: item.name,
+              price: item.price,
+              quantity: item.quantity,
+              size: item.size || null,
+              color: item.color || null
+            }))
+          }
+        },
+        include: {
+          items: true
         }
-      },
-      include: {
-        items: true
-      }
+      });
     });
     return order;
   } catch (error) {
-    console.log(error);
-    throw new Error(error.message);
+    console.error("Checkout cart error:", error);
+    throw error;
   }
 };
 var getUserOrders = async (userId) => {
@@ -1532,33 +1666,69 @@ var updateOrderStatus = async (orderId, status3) => {
     if (!VALID_ORDER_STATUSES.includes(status3)) {
       throw new Error("Invalid order status");
     }
-    const existingOrder = await prisma.order.findUnique({
-      where: {
-        id: orderId
+    const updatedOrder = await prisma.$transaction(async (tx) => {
+      const existingOrder = await tx.order.findUnique({
+        where: {
+          id: orderId
+        },
+        include: {
+          items: true
+        }
+      });
+      if (!existingOrder) {
+        throw new Error("Order not found");
       }
-    });
-    if (!existingOrder) {
-      throw new Error("Order not found");
-    }
-    const updatedOrder = await prisma.order.update({
-      where: {
-        id: orderId
-      },
-      data: {
-        status: status3
-      },
-      include: {
-        items: true,
-        user: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            phone: true,
-            avatar: true
+      if (existingOrder.status === status3) {
+        return tx.order.findUniqueOrThrow({
+          where: {
+            id: orderId
+          },
+          include: {
+            items: true,
+            user: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+                phone: true,
+                avatar: true
+              }
+            }
+          }
+        });
+      }
+      const stockItems = existingOrder.items.map((item) => ({
+        productId: item.productId,
+        quantity: item.quantity,
+        size: item.size,
+        color: item.color
+      }));
+      if (status3 === "CANCELLED") {
+        await updateProductStock(tx, stockItems, "INCREASE");
+      }
+      if (existingOrder.status === "CANCELLED" && status3 !== "CANCELLED") {
+        await updateProductStock(tx, stockItems, "DECREASE");
+      }
+      return tx.order.update({
+        where: {
+          id: orderId
+        },
+        data: {
+          status: status3
+        },
+        include: {
+          items: true,
+          user: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              phone: true,
+              avatar: true
+            }
           }
         }
-      }
+      });
     });
     return updatedOrder;
   } catch (error) {
@@ -1570,7 +1740,9 @@ var updateOrderStatus = async (orderId, status3) => {
     ].includes(error.message)) {
       throw error;
     }
-    throw new Error("Failed to update order status");
+    throw new Error(
+      error instanceof Error ? error.message : "Failed to update order status"
+    );
   }
 };
 var updateOrder = async (orderId, payload) => {
@@ -1578,56 +1750,76 @@ var updateOrder = async (orderId, payload) => {
     if (!orderId) {
       throw new Error("Order ID is required");
     }
-    const existingOrder = await prisma.order.findUnique({
-      where: {
-        id: orderId
-      }
-    });
-    if (!existingOrder) {
-      throw new Error("Order not found");
-    }
-    if (payload.status && !VALID_ORDER_STATUSES.includes(payload.status)) {
+    if (payload.status !== void 0 && !VALID_ORDER_STATUSES.includes(payload.status)) {
       throw new Error("Invalid order status");
     }
-    const updatedOrder = await prisma.order.update({
-      where: {
-        id: orderId
-      },
-      data: {
-        ...payload.name !== void 0 && {
-          name: payload.name
+    const updatedOrder = await prisma.$transaction(async (tx) => {
+      const existingOrder = await tx.order.findUnique({
+        where: {
+          id: orderId
         },
-        ...payload.phone !== void 0 && {
-          phone: payload.phone
-        },
-        ...payload.district !== void 0 && {
-          district: payload.district
-        },
-        ...payload.thana !== void 0 && {
-          thana: payload.thana
-        },
-        ...payload.address !== void 0 && {
-          address: payload.address
-        },
-        ...payload.note !== void 0 && {
-          note: payload.note
-        },
-        ...payload.status !== void 0 && {
-          status: payload.status
+        include: {
+          items: true
         }
-      },
-      include: {
-        items: true,
-        user: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            phone: true,
-            avatar: true
-          }
+      });
+      if (!existingOrder) {
+        throw new Error("Order not found");
+      }
+      const newStatus = payload.status ?? existingOrder.status;
+      if (newStatus !== existingOrder.status) {
+        const stockItems = existingOrder.items.map((item) => ({
+          productId: item.productId,
+          quantity: item.quantity,
+          size: item.size,
+          color: item.color
+        }));
+        if (newStatus === "CANCELLED") {
+          await updateProductStock(tx, stockItems, "INCREASE");
+        }
+        if (existingOrder.status === "CANCELLED" && newStatus !== "CANCELLED") {
+          await updateProductStock(tx, stockItems, "DECREASE");
         }
       }
+      return tx.order.update({
+        where: {
+          id: orderId
+        },
+        data: {
+          ...payload.name !== void 0 && {
+            name: payload.name
+          },
+          ...payload.phone !== void 0 && {
+            phone: payload.phone
+          },
+          ...payload.district !== void 0 && {
+            district: payload.district
+          },
+          ...payload.thana !== void 0 && {
+            thana: payload.thana
+          },
+          ...payload.address !== void 0 && {
+            address: payload.address
+          },
+          ...payload.note !== void 0 && {
+            note: payload.note
+          },
+          ...payload.status !== void 0 && {
+            status: payload.status
+          }
+        },
+        include: {
+          items: true,
+          user: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              phone: true,
+              avatar: true
+            }
+          }
+        }
+      });
     });
     return updatedOrder;
   } catch (error) {
@@ -1639,7 +1831,9 @@ var updateOrder = async (orderId, payload) => {
     ].includes(error.message)) {
       throw error;
     }
-    throw new Error("Failed to update order");
+    throw new Error(
+      error instanceof Error ? error.message : "Failed to update order"
+    );
   }
 };
 var getCustomerOrderHistoryByPhone = async (phone) => {

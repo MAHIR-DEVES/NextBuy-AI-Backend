@@ -1,5 +1,7 @@
 import { Prisma } from '../../../generated/prisma/client';
 import { prisma } from '../../lib/prisma';
+import { updateProductStock, StockOrderItem } from './order-stock.service';
+import { ICheckoutItem } from './order.interface';
 
 type GetAllOrdersParams = {
   page?: number;
@@ -11,6 +13,7 @@ type GetAllOrdersParams = {
 /**
  * BUY NOW (single product order)
  */
+
 const createBuyNowOrder = async (
   userId: string | undefined,
   productId: string,
@@ -26,6 +29,10 @@ const createBuyNowOrder = async (
   color?: string | null,
 ) => {
   try {
+    if (!Number.isInteger(quantity) || quantity <= 0) {
+      throw new Error('Invalid product quantity');
+    }
+
     const product = await prisma.product.findUnique({
       where: { id: productId },
     });
@@ -34,66 +41,75 @@ const createBuyNowOrder = async (
       throw new Error('Product not found');
     }
 
-    // Use special price if available, otherwise regular price
+    // Use special price if available
     const unitPrice = product.specialPrice ?? product.price;
 
     const subtotal = unitPrice * quantity;
-
     const shippingFee = isInsideDhaka ? 90 : 130;
 
-    const order = await prisma.order.create({
-      data: {
-        ...(userId ? { userId } : {}),
+    // Stock update and order creation in one transaction
+    const order = await prisma.$transaction(async tx => {
+      // 1. Decrease product stock
+      await updateProductStock(
+        tx,
+        [
+          {
+            productId: product.id,
+            quantity,
+            size,
+            color,
+          },
+        ],
+        'DECREASE',
+      );
 
-        total: subtotal + shippingFee,
+      // 2. Create order
+      return tx.order.create({
+        data: {
+          ...(userId ? { userId } : {}),
 
-        name,
-        phone,
-        district,
-        thana,
-        address,
-        note: note || null,
-        isInsideDhaka,
-        shippingFee,
+          total: subtotal + shippingFee,
 
-        items: {
-          create: [
-            {
-              productId: product.id,
-              name: product.name,
-              price: product.price,
-              quantity,
-              size: size || null,
-              color: color || null,
-            },
-          ],
+          name,
+          phone,
+          district,
+          thana,
+          address,
+          note: note || null,
+          isInsideDhaka,
+          shippingFee,
+
+          items: {
+            create: [
+              {
+                productId: product.id,
+                name: product.name,
+                price: unitPrice,
+                quantity,
+                size: size || null,
+                color: color || null,
+              },
+            ],
+          },
         },
-      },
 
-      include: {
-        items: true,
-      },
+        include: {
+          items: true,
+        },
+      });
     });
 
     return order;
   } catch (error) {
-    console.log(error);
+    console.error('Create buy now order error:', error);
 
-    throw new Error('Failed to create buy now order');
+    throw error;
   }
 };
 
 /**
  * CART CHECKOUT (multiple product order)
  */
-interface ICheckoutItem {
-  productId: string;
-  name: string;
-  price: number;
-  quantity: number;
-  size?: string | null;
-  color?: string | null;
-}
 
 const checkoutCart = async (
   userId: string,
@@ -111,6 +127,13 @@ const checkoutCart = async (
       throw new Error('No products selected');
     }
 
+    // Validate quantities
+    for (const item of items) {
+      if (!Number.isInteger(item.quantity) || item.quantity <= 0) {
+        throw new Error(`Invalid quantity for ${item.name}`);
+      }
+    }
+
     const shippingFee = isInsideDhaka ? 90 : 130;
 
     const subtotal = items.reduce((sum, item) => {
@@ -119,43 +142,59 @@ const checkoutCart = async (
 
     const total = subtotal + shippingFee;
 
-    const order = await prisma.order.create({
-      data: {
-        userId,
+    // Stock update and order creation in one transaction
+    const order = await prisma.$transaction(async tx => {
+      // 1. Decrease stock for all products
+      await updateProductStock(
+        tx,
+        items.map(item => ({
+          productId: item.productId,
+          quantity: item.quantity,
+          size: item.size,
+          color: item.color,
+        })),
+        'DECREASE',
+      );
 
-        name,
-        phone,
-        district,
-        thana,
-        address,
-        note: note || null,
+      // 2. Create order
+      return tx.order.create({
+        data: {
+          userId,
 
-        isInsideDhaka,
-        shippingFee,
-        total,
+          name,
+          phone,
+          district,
+          thana,
+          address,
+          note: note || null,
 
-        items: {
-          create: items.map(item => ({
-            productId: item.productId,
-            name: item.name,
-            price: item.price,
-            quantity: item.quantity,
-            size: item.size || null,
-            color: item.color || null,
-          })),
+          isInsideDhaka,
+          shippingFee,
+          total,
+
+          items: {
+            create: items.map(item => ({
+              productId: item.productId,
+              name: item.name,
+              price: item.price,
+              quantity: item.quantity,
+              size: item.size || null,
+              color: item.color || null,
+            })),
+          },
         },
-      },
 
-      include: {
-        items: true,
-      },
+        include: {
+          items: true,
+        },
+      });
     });
 
     return order;
-  } catch (error: any) {
-    console.log(error);
+  } catch (error) {
+    console.error('Checkout cart error:', error);
 
-    throw new Error(error.message);
+    throw error;
   }
 };
 
@@ -436,7 +475,7 @@ const VALID_ORDER_STATUSES = [
 
 type OrderStatus = (typeof VALID_ORDER_STATUSES)[number];
 
-// UPDATE ORDER STATUS
+// UPDATE ORDER STATUS WITH STOCK MANAGEMENT
 
 export const updateOrderStatus = async (
   orderId: string,
@@ -451,38 +490,81 @@ export const updateOrderStatus = async (
       throw new Error('Invalid order status');
     }
 
-    const existingOrder = await prisma.order.findUnique({
-      where: {
-        id: orderId,
-      },
-    });
+    const updatedOrder = await prisma.$transaction(async tx => {
+      // 1. Find existing order with items
+      const existingOrder = await tx.order.findUnique({
+        where: {
+          id: orderId,
+        },
+        include: {
+          items: true,
+        },
+      });
 
-    if (!existingOrder) {
-      throw new Error('Order not found');
-    }
+      if (!existingOrder) {
+        throw new Error('Order not found');
+      }
 
-    const updatedOrder = await prisma.order.update({
-      where: {
-        id: orderId,
-      },
+      // 2. Same status: no stock changes
+      if (existingOrder.status === status) {
+        return tx.order.findUniqueOrThrow({
+          where: {
+            id: orderId,
+          },
+          include: {
+            items: true,
+            user: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+                phone: true,
+                avatar: true,
+              },
+            },
+          },
+        });
+      }
 
-      data: {
-        status,
-      },
+      // 3. Prepare stock items
+      const stockItems: StockOrderItem[] = existingOrder.items.map(item => ({
+        productId: item.productId,
+        quantity: item.quantity,
+        size: item.size,
+        color: item.color,
+      }));
 
-      include: {
-        items: true,
+      // 4. Cancel order: return stock
+      if (status === 'CANCELLED') {
+        await updateProductStock(tx, stockItems, 'INCREASE');
+      }
 
-        user: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            phone: true,
-            avatar: true,
+      // 5. Reopen cancelled order: decrease stock again
+      if (existingOrder.status === 'CANCELLED' && status !== 'CANCELLED') {
+        await updateProductStock(tx, stockItems, 'DECREASE');
+      }
+
+      // 6. Update order status
+      return tx.order.update({
+        where: {
+          id: orderId,
+        },
+        data: {
+          status,
+        },
+        include: {
+          items: true,
+          user: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              phone: true,
+              avatar: true,
+            },
           },
         },
-      },
+      });
     });
 
     return updatedOrder;
@@ -500,11 +582,13 @@ export const updateOrderStatus = async (
       throw error;
     }
 
-    throw new Error('Failed to update order status');
+    throw new Error(
+      error instanceof Error ? error.message : 'Failed to update order status',
+    );
   }
 };
 
-// order update
+// Update Order
 const updateOrder = async (
   orderId: string,
   payload: Partial<{
@@ -522,68 +606,99 @@ const updateOrder = async (
       throw new Error('Order ID is required');
     }
 
-    const existingOrder = await prisma.order.findUnique({
-      where: {
-        id: orderId,
-      },
-    });
-
-    if (!existingOrder) {
-      throw new Error('Order not found');
-    }
-
-    if (payload.status && !VALID_ORDER_STATUSES.includes(payload.status)) {
+    if (
+      payload.status !== undefined &&
+      !VALID_ORDER_STATUSES.includes(payload.status)
+    ) {
       throw new Error('Invalid order status');
     }
 
-    const updatedOrder = await prisma.order.update({
-      where: {
-        id: orderId,
-      },
+    const updatedOrder = await prisma.$transaction(async tx => {
+      // Find existing order with items
+      const existingOrder = await tx.order.findUnique({
+        where: {
+          id: orderId,
+        },
+        include: {
+          items: true,
+        },
+      });
 
-      data: {
-        ...(payload.name !== undefined && {
-          name: payload.name,
-        }),
+      if (!existingOrder) {
+        throw new Error('Order not found');
+      }
 
-        ...(payload.phone !== undefined && {
-          phone: payload.phone,
-        }),
+      const newStatus = payload.status ?? existingOrder.status;
 
-        ...(payload.district !== undefined && {
-          district: payload.district,
-        }),
+      // Check whether the status actually changed
+      if (newStatus !== existingOrder.status) {
+        const stockItems: StockOrderItem[] = existingOrder.items.map(item => ({
+          productId: item.productId,
+          quantity: item.quantity,
+          size: item.size,
+          color: item.color,
+        }));
 
-        ...(payload.thana !== undefined && {
-          thana: payload.thana,
-        }),
+        // Order cancelled: return stock
+        if (newStatus === 'CANCELLED') {
+          await updateProductStock(tx, stockItems, 'INCREASE');
+        }
 
-        ...(payload.address !== undefined && {
-          address: payload.address,
-        }),
+        // Cancelled order reopened: decrease stock again
+        if (existingOrder.status === 'CANCELLED' && newStatus !== 'CANCELLED') {
+          await updateProductStock(tx, stockItems, 'DECREASE');
+        }
+      }
 
-        ...(payload.note !== undefined && {
-          note: payload.note,
-        }),
+      // Update order details
+      return tx.order.update({
+        where: {
+          id: orderId,
+        },
 
-        ...(payload.status !== undefined && {
-          status: payload.status,
-        }),
-      },
+        data: {
+          ...(payload.name !== undefined && {
+            name: payload.name,
+          }),
 
-      include: {
-        items: true,
+          ...(payload.phone !== undefined && {
+            phone: payload.phone,
+          }),
 
-        user: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            phone: true,
-            avatar: true,
+          ...(payload.district !== undefined && {
+            district: payload.district,
+          }),
+
+          ...(payload.thana !== undefined && {
+            thana: payload.thana,
+          }),
+
+          ...(payload.address !== undefined && {
+            address: payload.address,
+          }),
+
+          ...(payload.note !== undefined && {
+            note: payload.note,
+          }),
+
+          ...(payload.status !== undefined && {
+            status: payload.status,
+          }),
+        },
+
+        include: {
+          items: true,
+          user: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              phone: true,
+              avatar: true,
+            },
           },
         },
-      },
+      });
     });
 
     return updatedOrder;
@@ -601,7 +716,9 @@ const updateOrder = async (
       throw error;
     }
 
-    throw new Error('Failed to update order');
+    throw new Error(
+      error instanceof Error ? error.message : 'Failed to update order',
+    );
   }
 };
 
