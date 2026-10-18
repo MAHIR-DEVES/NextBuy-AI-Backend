@@ -552,7 +552,7 @@ var loginUser = async (payload) => {
     },
     envVars.JWT_SECRET,
     {
-      expiresIn: "7d"
+      expiresIn: "180d"
     }
   );
   const { password: _, ...userWithoutPassword } = user;
