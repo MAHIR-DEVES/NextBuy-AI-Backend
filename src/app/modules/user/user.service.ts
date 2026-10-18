@@ -106,7 +106,7 @@ const loginUser = async (payload: ILoginUser) => {
     },
     envVars.JWT_SECRET,
     {
-      expiresIn: '7d',
+      expiresIn: '180d',
     },
   );
   // 4 Remove password before return
